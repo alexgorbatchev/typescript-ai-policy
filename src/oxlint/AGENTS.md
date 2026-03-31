@@ -8,20 +8,30 @@ This directory contains the local **Oxlint JS plugin** for this package.
 - `rules/` contains the individual Oxlint rule modules
 - `rules/__tests__/` contains Bun + `RuleTester` tests for those rules
 
+## Policy intent
+
+All rules in this plugin are specifically aimed at **steering agentic coding toward repository best practices**.
+
+Treat every lint rule in `rules/` as an **LLM steering instruction**, not as an arbitrary style preference.
+When adding or changing rules:
+
+- write rules to encode stable repository conventions that an LLM agent can follow reliably
+- prefer explicit, deterministic guidance over subjective style opinions
+- make rule names, `meta.docs.description`, messages, and tests read like concrete agent instructions about what must be done or avoided
+- reject vague or aesthetic-only rules that do not improve agent behavior, correctness, maintainability, or contract adherence
+
+If a policy cannot be expressed clearly as a steering instruction for an LLM coding agent, it does not belong in this plugin.
+
 ## Plugin-format contract
 
 **Keep the plugin entrypoint in JavaScript `.js` ESM format.**
 
-Oxlint JS plugins are authored with an ESLint 9+ compatible plugin shape, so `plugin.js` should look like:
+Oxlint JS plugins are authored with an ESLint 10+ compatible plugin shape, so `plugin.js` should look like:
 
 ```js
 const plugin = {
-  meta: {
-    name: 'your-plugin-name',
-  },
-  rules: {
-    'rule-name': ruleModule,
-  },
+  meta: { name: "..." },
+  rules: { "...": ruleModule },
 };
 
 export default plugin;
@@ -29,17 +39,13 @@ export default plugin;
 
 ## Delegated instructions
 
-- rule-writing instructions live in `rules/AGENTS.md`
-- rule-test instructions live in `rules/__tests__/AGENTS.md`
+- rule-writing and rule-test instructions live in `rules/AGENTS.md`
 
 ## Source of truth
 
 When unsure, consult:
 
 - Oxlint JS plugin docs
-- ESLint 9+ plugin docs
-- ESLint 9+ custom rule docs
+- ESLint 10+ plugin docs
+- ESLint 10+ custom rule docs
 
-The important repo-specific assumption is simple:
-
-> In this folder, the Oxlint plugin entrypoint and rule modules stay in JavaScript `.js` module format.

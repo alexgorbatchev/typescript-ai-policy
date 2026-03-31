@@ -21,28 +21,29 @@ If you know how to write an ESLint 9+ custom rule, you already know how to write
 - each `*.js` file in this directory is a single rule module
 - `helpers.js` contains shared JavaScript helpers reused by multiple rules
 - `../plugin.js` registers these rule modules under the plugin name
+- `__tests__/` contains Bun + `RuleTester` tests for the local rules
 
 ## Expected rule shape
 
 ```js
 export default {
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
-      description: 'Describe the rule clearly',
+      description: "Describe the rule clearly",
     },
     schema: [],
     messages: {
-      someMessage: 'Message text',
+      someMessage: "Message text",
     },
-    fixable: 'code',
+    fixable: "code",
   },
   create(context) {
     return {
       SomeAstNode(node) {
         context.report({
           node,
-          messageId: 'someMessage',
+          messageId: "someMessage",
         });
       },
     };
@@ -65,6 +66,71 @@ When adding or changing rules here:
 9. Put file-scoping exceptions in Oxlint config when possible, not inside rule heuristics.
 10. If a rule is fixable, implement it with standard ESLint fixer callbacks.
 
+## Rule test instructions
+
+Use the same structure for every Oxlint rule test in `__tests__/`.
+
+- Test files are **TypeScript**: `*.test.ts`
+- Rule modules under test stay in **JavaScript** and are imported from `../*.js`
+- Tests run with **Bun** and `@typescript-eslint/rule-tester`
+- Prefer **`RuleTester` rule tests** over ad-hoc subprocess wrappers
+- Use the shared language options from `./__tests__/helpers.ts`
+- Do **not** invent one-off helpers like `runOxlint()` inside a test file when the same behavior can be expressed with `RuleTester`
+
+### Required test structure
+
+```ts
+import { afterAll, describe, it } from "bun:test";
+import { RuleTester } from "@typescript-eslint/rule-tester";
+import { languageOpts } from "./helpers.ts";
+import ruleModule from "../my-rule.js";
+
+RuleTester.afterAll = afterAll;
+RuleTester.describe = describe;
+RuleTester.it = it;
+RuleTester.itOnly = it.only;
+
+const ruleTester = new RuleTester();
+
+ruleTester.run("my-rule", ruleModule, {
+  valid: [
+    {
+      code: `export function Example() { return <div />; }`,
+      filename: "Example.tsx",
+      languageOptions: languageOpts,
+    },
+  ],
+  invalid: [
+    {
+      code: `export function Example() { return <div bad />; }`,
+      filename: "Example.tsx",
+      languageOptions: languageOpts,
+      errors: [
+        {
+          messageId: "someMessageId",
+        },
+      ],
+      output: null,
+    },
+  ],
+});
+```
+
+### Assertion rules
+
+- Assert rule errors with `messageId`
+- Include `data` whenever the message contains placeholders
+- For **non-fixable** rules, set `output: null`
+- For **fixable** rules, assert the exact fixed output string
+
+### Repository-specific expectations
+
+- Test the **rule module directly** with `RuleTester`
+- Import rule modules from `../*.js`, not through `plugin.js`
+- Reuse `languageOpts` from `./__tests__/helpers.ts`
+- Keep tests colocated in `__tests__/`
+- Keep naming aligned between source rule files and test files
+
 ## Source of truth
 
 When unsure, consult:
@@ -72,12 +138,8 @@ When unsure, consult:
 - Oxlint JS plugin docs
 - ESLint 9+ plugin docs
 - ESLint 9+ custom rule docs
-
-## Adjacent docs
-
-- test-writing instructions live in `__tests__/AGENTS.md`
-- plugin entrypoint guidance lives in `../AGENTS.md`
+- `../AGENTS.md` for plugin-entry guidance
 
 The important repo-specific assumption is simple:
 
-> In this folder, **Oxlint rule files should be authored as ESLint 9+ lint files in JavaScript `.js` module format**.
+> In this folder, **Oxlint rule files should be authored as ESLint 9+ lint files in JavaScript `.js` module format**, and their tests should live in `__tests__/` as `*.test.ts` files.

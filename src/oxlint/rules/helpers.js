@@ -1,3 +1,13 @@
+export function normalizeFilename(filename) {
+  return filename.replaceAll("\\", "/");
+}
+
+export function getBaseName(filename) {
+  const normalizedFilename = normalizeFilename(filename);
+
+  return normalizedFilename.split("/").pop() ?? "";
+}
+
 export function getComponentNameFromAncestors(node) {
   let current = node;
   let componentName = null;
@@ -18,10 +28,123 @@ export function getComponentNameFromAncestors(node) {
 }
 
 export function getFilenameWithoutExtension(filename) {
-  const baseName = filename.split("/").pop() ?? "";
+  const baseName = getBaseName(filename);
   const extensionIndex = baseName.lastIndexOf(".");
 
   return extensionIndex === -1 ? baseName : baseName.slice(0, extensionIndex);
+}
+
+export function isInTestsDirectory(filename) {
+  const normalizedFilename = normalizeFilename(filename);
+
+  return normalizedFilename.startsWith("__tests__/") || normalizedFilename.includes("/__tests__/");
+}
+
+export function readPathFromTestsDirectory(filename) {
+  const normalizedFilename = normalizeFilename(filename);
+
+  if (normalizedFilename.startsWith("__tests__/")) {
+    return normalizedFilename.slice("__tests__/".length);
+  }
+
+  const testsDirectoryMarker = "/__tests__/";
+  const testsDirectoryIndex = normalizedFilename.indexOf(testsDirectoryMarker);
+  if (testsDirectoryIndex === -1) {
+    return null;
+  }
+
+  return normalizedFilename.slice(testsDirectoryIndex + testsDirectoryMarker.length);
+}
+
+export function isFixturesFile(filename) {
+  const relativePath = readPathFromTestsDirectory(filename);
+
+  return relativePath === "fixtures.ts" || relativePath === "fixtures.tsx";
+}
+
+export function isInFixturesArea(filename) {
+  const relativePath = readPathFromTestsDirectory(filename);
+
+  return (
+    relativePath === "fixtures.ts" || relativePath === "fixtures.tsx" || relativePath?.startsWith("fixtures/") === true
+  );
+}
+
+export function isTestFile(filename) {
+  const relativePath = readPathFromTestsDirectory(filename);
+
+  return relativePath !== null && /^[^/]+\.test\.tsx?$/u.test(relativePath);
+}
+
+export function isFixtureConstName(name) {
+  return /^fixture_[a-z][A-Za-z0-9]*$/u.test(name);
+}
+
+export function isFactoryFunctionName(name) {
+  return /^factory_[a-z][A-Za-z0-9]*$/u.test(name);
+}
+
+export function isFixtureLikeName(name) {
+  return name.startsWith("fixture_") || name.startsWith("factory_");
+}
+
+export function isAllowedFixturesImportPath(importPath) {
+  return importPath === "./fixtures";
+}
+
+export function readPatternIdentifierNames(pattern) {
+  if (pattern.type === "Identifier") {
+    return [pattern.name];
+  }
+
+  if (pattern.type === "RestElement") {
+    return readPatternIdentifierNames(pattern.argument);
+  }
+
+  if (pattern.type === "ArrayPattern") {
+    return pattern.elements.flatMap((element) => {
+      if (!element) {
+        return [];
+      }
+
+      return readPatternIdentifierNames(element);
+    });
+  }
+
+  if (pattern.type === "ObjectPattern") {
+    return pattern.properties.flatMap((property) => {
+      if (property.type === "RestElement") {
+        return readPatternIdentifierNames(property.argument);
+      }
+
+      return readPatternIdentifierNames(property.value);
+    });
+  }
+
+  if (pattern.type === "AssignmentPattern") {
+    return readPatternIdentifierNames(pattern.left);
+  }
+
+  return [];
+}
+
+export function readDeclarationIdentifierNames(declaration) {
+  if (declaration.type === "VariableDeclaration") {
+    return declaration.declarations.flatMap((declarator) => readPatternIdentifierNames(declarator.id));
+  }
+
+  if (
+    (declaration.type === "FunctionDeclaration" ||
+      declaration.type === "ClassDeclaration" ||
+      declaration.type === "TSTypeAliasDeclaration" ||
+      declaration.type === "TSInterfaceDeclaration" ||
+      declaration.type === "TSEnumDeclaration") &&
+    declaration.id
+  ) {
+    return [declaration.id.name];
+  }
+
+  return [];
 }
 
 export function unwrapExpression(expression) {

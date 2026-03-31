@@ -1,6 +1,6 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
-import { languageOpts } from "./helpers.js";
+import { languageOpts } from "./helpers.ts";
 import requireComponentRootTestIdRuleModule from "../require-component-root-testid.js";
 
 RuleTester.afterAll = afterAll;

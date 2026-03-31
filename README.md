@@ -48,7 +48,7 @@ bun run check
 - `@alexgorbatchev/typescript-common/oxlint-config`
 - `@alexgorbatchev/typescript-common/oxlint-plugin`
 
-The shared Oxlint config includes the custom React plugin rules automatically.
+The shared Oxlint config includes the custom React and test-policy plugin rules automatically.
 
 ## Included Oxlint rules
 
@@ -78,3 +78,73 @@ Enforces React component test-id structure:
 - child test ids must use `ComponentName--thing`
 - fragment roots and other non-element roots are rejected for exported components
 - local component roots must also use the plain component-name root test id
+
+### `jest/no-disabled-tests` and `jest/no-focused-tests`
+
+Enabled for `*.test.ts` and `*.test.tsx` files to block disabled and focused Jest-style test syntax such as:
+
+- `it.skip(...)`
+- `test.skip(...)`
+- `describe.skip(...)`
+- `xit(...)`
+- `xtest(...)`
+- `xdescribe(...)`
+- `it.only(...)`
+- `test.only(...)`
+- `describe.only(...)`
+- `fit(...)`
+- `fdescribe(...)`
+
+### `@alexgorbatchev/no-non-running-tests`
+
+Closes the remaining skip/todo gap in `*.test.ts` and `*.test.tsx` files that the Jest rules do not cover:
+
+- `test.skipIf(...)`
+- `describe.if(...)`
+- `it.todo(...)`
+- `test.todoIf(...)`
+
+### `@alexgorbatchev/no-module-mocking`
+
+Bans whole-module mocking across common test interfaces and steers tests toward dependency injection instead:
+
+- `jest.mock(...)`
+- `jest.doMock(...)`
+- `jest.setMock(...)`
+- `jest.createMockFromModule(...)`
+- `jest.enableAutomock(...)`
+- `jest.unstable_mockModule(...)`
+- `vi.mock(...)`
+- `vi.doMock(...)`
+- `vi.importMock(...)`
+- `mock.module(...)`
+- `t.mock.module(...)`
+
+### `@alexgorbatchev/no-test-file-exports`
+
+Prohibits exports from `*.test.ts` and `*.test.tsx` files.
+
+Move shared test code into:
+
+- `helpers.ts`
+- `fixtures.ts`
+- `fixtures/`
+
+### `@alexgorbatchev/test-file-location-convention`
+
+Requires actual test files to:
+
+- live in a sibling `__tests__/` directory
+- use the `*.test.ts` or `*.test.tsx` suffix
+
+### `@alexgorbatchev/tests-directory-file-convention`
+
+Restricts `__tests__/` contents to:
+
+- `*.test.ts`
+- `*.test.tsx`
+- `helpers.ts`
+- `helpers.tsx`
+- `fixtures.ts`
+- `fixtures.tsx`
+- anything under `fixtures/`
