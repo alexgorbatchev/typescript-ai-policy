@@ -1,1 +1,1 @@
-export { default } from "@alexgorbatchev/typescript-ai-policies/oxfmt-config";
+export { default } from "./src/oxfmt/oxfmt.config.ts";

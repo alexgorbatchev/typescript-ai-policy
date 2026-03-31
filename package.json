@@ -1,13 +1,14 @@
 {
-  "name": "@alexgorbatchev/typescript-ai-policies",
+  "name": "@alexgorbatchev/typescript-ai-policy",
   "type": "module",
   "files": [
     "src/oxfmt",
-    "src/oxlint"
+    "src/oxlint",
+    "src/shared"
   ],
   "exports": {
-    "./oxfmt-config": "./src/oxfmt/oxfmt.config.ts",
-    "./oxlint-config": "./src/oxlint/oxlint.config.ts",
+    "./oxfmt-config": "./src/oxfmt/createOxfmtConfig.ts",
+    "./oxlint-config": "./src/oxlint/createOxlintConfig.ts",
     "./oxlint-plugin": "./src/oxlint/plugin.js"
   },
   "peerDependencies": {

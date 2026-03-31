@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@alexgorbatchev/typescript-ai-policies",
+      "name": "@alexgorbatchev/typescript-ai-policy",
       "devDependencies": {
         "@types/bun": "latest",
         "@typescript-eslint/rule-tester": "^8.58.0",

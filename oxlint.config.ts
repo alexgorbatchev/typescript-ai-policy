@@ -1,1 +1,1 @@
-export { default } from "@alexgorbatchev/typescript-ai-policies/oxlint-config";
+export { default } from "./src/oxlint/oxlint.config.ts";

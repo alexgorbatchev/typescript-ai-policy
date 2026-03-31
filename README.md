@@ -1,4 +1,4 @@
-# @alexgorbatchev/typescript-ai-policies
+# @alexgorbatchev/typescript-ai-policy
 
 This package exists to codify TypeScript coding standards through lint rules as aggressively as practical.
 
@@ -28,7 +28,7 @@ If one of those fixture rules is disabled, the rest of the fixture contract beco
 ## Install
 
 ```bash
-bun add -d @alexgorbatchev/typescript-ai-policies oxfmt oxlint
+bun add -d @alexgorbatchev/typescript-ai-policy oxfmt oxlint
 ```
 
 ## Use
@@ -36,14 +36,32 @@ bun add -d @alexgorbatchev/typescript-ai-policies oxfmt oxlint
 `oxfmt.config.ts`
 
 ```ts
-export { default } from "@alexgorbatchev/typescript-ai-policies/oxfmt-config";
+import createOxfmtConfig from "@alexgorbatchev/typescript-ai-policy/oxfmt-config";
+
+export default createOxfmtConfig(() => ({
+  ignorePatterns: ["vendor/**"],
+}));
 ```
 
 `oxlint.config.ts`
 
 ```ts
-export { default } from "@alexgorbatchev/typescript-ai-policies/oxlint-config";
+import createOxlintConfig from "@alexgorbatchev/typescript-ai-policy/oxlint-config";
+
+export default createOxlintConfig(() => ({
+  ignorePatterns: ["coverage"],
+  rules: {
+    "no-var": "error",
+  },
+}));
 ```
+
+Both config entrypoints now export factory functions. The callback is optional, it must return a valid Oxfmt/Oxlint
+config object, and that object is deep-merged **before** the shared defaults so the shared policy still wins on any
+conflicting keys.
+
+For Oxlint specifically, consumer configs are extension-only: if the callback tries to redefine any shared rule name,
+the factory throws with guidance to change the shared package instead of overriding that rule downstream.
 
 ## Local package setup
 
@@ -102,4 +120,3 @@ For rule-by-rule rationale plus good/bad examples, see [`src/oxlint/README.md`](
 | `@alexgorbatchev/fixture-import-path-convention`                | Fixture-like imports inside tests must be named imports from the colocated `./fixtures` module with no aliasing.                                                                                                                             |
 | `@alexgorbatchev/no-local-type-declarations-in-fixture-files`   | Fixture files and `fixtures/` contents must import shared types instead of declaring local types, interfaces, or enums.                                                                                                                      |
 | `@alexgorbatchev/single-fixture-entrypoint`                     | Each `__tests__/` directory must choose exactly one fixture entrypoint shape: `fixtures.ts`, `fixtures.tsx`, or `fixtures/`.                                                                                                                 |
-
