@@ -48,7 +48,7 @@ bun run check
 - `@alexgorbatchev/typescript-common/oxlint-config`
 - `@alexgorbatchev/typescript-common/oxlint-plugin`
 
-The shared Oxlint config includes the custom index-barrel, type/value-boundary, React, test, and fixture-policy plugin rules automatically.
+The shared Oxlint config includes the custom interface-naming, index-barrel, type/value-boundary, React, test, and fixture-policy plugin rules automatically.
 
 ## Oxlint policy philosophy
 
@@ -108,6 +108,7 @@ If one of those fixture rules is disabled, the rest of the fixture contract beco
 | `@alexgorbatchev/no-module-mocking`                             | Ban whole-module mocking APIs and push tests toward dependency injection plus explicit stubs.                                                                    |
 | `@alexgorbatchev/no-test-file-exports`                          | Treat `*.test.ts(x)` files as execution units, not shared modules.                                                                                               |
 | `@alexgorbatchev/no-imports-from-tests-directory`               | Files outside `__tests__/` must not import, require, or re-export modules from any `__tests__/` directory.                                                       |
+| `@alexgorbatchev/interface-naming-convention`                   | Repository-owned interfaces must use `I` followed by PascalCase; ambient external contract interfaces such as `Window` stay exempt.                              |
 | `@alexgorbatchev/index-file-contract`                           | `index.ts` must stay a pure barrel: no local definitions, no side effects, only re-exports, and never `index.tsx`.                                               |
 | `@alexgorbatchev/no-type-imports-from-constants`                | Types must not be imported from `constants` modules, including inline `import("./constants")` type queries.                                                      |
 | `@alexgorbatchev/no-type-exports-from-constants`                | `constants.ts` files may export runtime values only; exported types must move to `types.ts`.                                                                     |

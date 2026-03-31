@@ -46,35 +46,38 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/hook-export-location-convention`
    - `@alexgorbatchev/test-file-location-convention`
    - `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
-2. **Component-area directory rules** run only inside `components/`, `templates/`, and `layouts/` trees:
+2. **TypeScript-wide naming rules** run on all `**/*.{ts,tsx,mts,cts}` files:
+   - `@alexgorbatchev/interface-naming-convention`
+3. **Component-area directory rules** run only inside `components/`, `templates/`, and `layouts/` trees:
    - `@alexgorbatchev/component-directory-file-convention` on `**/components/**/*.{ts,tsx}`, `**/templates/**/*.{ts,tsx}`, and `**/layouts/**/*.{ts,tsx}`
    - `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-test-file-convention` on direct-child `**/components/*.tsx`, `**/templates/*.tsx`, and `**/layouts/*.tsx` ownership files
-3. **Hook-area directory rules** run only inside `hooks/` trees:
+4. **Hook-area directory rules** run only inside `hooks/` trees:
    - `@alexgorbatchev/hooks-directory-file-convention` on `**/hooks/**/*.{ts,tsx}`
    - `@alexgorbatchev/hook-file-contract`, `@alexgorbatchev/hook-file-naming-convention`, and `@alexgorbatchev/hook-test-file-convention` on direct-child `**/hooks/use*.ts` and `**/hooks/use*.tsx` ownership files
-4. **Filename-addressable file-role rules** run only on the exact file role they govern:
+5. **Filename-addressable file-role rules** run only on the exact file role they govern:
    - `@alexgorbatchev/index-file-contract` on `**/index.ts` and `**/index.tsx`
    - `@alexgorbatchev/no-type-exports-from-constants` on `**/constants.{ts,tsx,mts,cts}` and `**/constants.d.{ts,tsx,mts,cts}`
    - `@alexgorbatchev/no-value-exports-from-types` on `**/types.{ts,tsx,mts,cts}` and `**/types.d.{ts,tsx,mts,cts}`
-5. **`__tests__/` directory rules** run only inside `__tests__/` because they govern that directory's allowed contents
+6. **`__tests__/` directory rules** run only inside `__tests__/` because they govern that directory's allowed contents
    and test helper behavior:
    - `@alexgorbatchev/tests-directory-file-convention`
    - `@alexgorbatchev/no-module-mocking`
-6. **Canonical test-file rules** run only on `__tests__/*.test.ts` and `__tests__/*.test.tsx`:
+7. **Canonical test-file rules** run only on `__tests__/*.test.ts` and `__tests__/*.test.tsx`:
    - `@alexgorbatchev/no-non-running-tests`
    - `@alexgorbatchev/no-test-file-exports`
    - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
    - `@alexgorbatchev/fixture-import-path-convention`
    - `jest/no-disabled-tests`
    - `jest/no-focused-tests`
-7. **Fixture-entrypoint and fixture-area rules** run only on `__tests__/fixtures.ts`, `__tests__/fixtures.tsx`, and
+8. **Fixture-entrypoint and fixture-area rules** run only on `__tests__/fixtures.ts`, `__tests__/fixtures.tsx`, and
    files under `__tests__/fixtures/`, depending on the rule.
 
 This staged configuration is part of the contract. The global location/leak rules are the front door that push `.tsx`
-files, hook exports, and tests into canonical locations; the component and hook area overrides then enforce ownership,
-naming, and colocated test contracts only after a file is in the correct subsystem; basename-addressable file-role rules
-such as `index.ts`, `constants.ts`, and `types.ts` stay narrow; and the `__tests__/` overrides enforce test-specific
-contracts only after the file has the correct test role.
+files, hook exports, and tests into canonical locations; the TypeScript-wide naming override keeps repository-owned
+interfaces consistent while exempting external declaration-merging contracts; the component and hook area overrides then
+enforce ownership, naming, and colocated test contracts only after a file is in the correct subsystem;
+basename-addressable file-role rules such as `index.ts`, `constants.ts`, and `types.ts` stay narrow; and the
+`__tests__/` overrides enforce test-specific contracts only after the file has the correct test role.
 
 ## Enabled rules
 
@@ -158,6 +161,43 @@ it("renders", () => {});
 
 ```ts
 it.only("renders", () => {});
+```
+
+## Type declaration naming policy
+
+### `@alexgorbatchev/interface-naming-convention`
+
+**Policy:** Repository-owned interfaces must use `I` followed by PascalCase. Ambient declaration-merging interfaces
+that must keep an external contract name, such as `Window`, `ImportMetaEnv`, or `JSX.IntrinsicElements`, are exempt.
+
+**Good**
+
+```ts
+export interface IUserProfile {
+  id: string;
+}
+```
+
+```ts
+declare global {
+  interface Window {
+    analytics: { track: () => void };
+  }
+}
+```
+
+**Bad**
+
+```ts
+export interface UserProfile {
+  id: string;
+}
+```
+
+```ts
+export interface IuserProfile {
+  id: string;
+}
 ```
 
 ## Type/value boundary policies

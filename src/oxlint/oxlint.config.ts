@@ -45,6 +45,12 @@ const oxlintConfig = defineConfig({
   },
   overrides: [
     {
+      files: ["**/*.{ts,tsx,mts,cts}"],
+      rules: {
+        "@alexgorbatchev/interface-naming-convention": "error",
+      },
+    },
+    {
       files: ["**/components/**/*.{ts,tsx}", "**/templates/**/*.{ts,tsx}", "**/layouts/**/*.{ts,tsx}"],
       rules: {
         "@alexgorbatchev/component-directory-file-convention": "error",
