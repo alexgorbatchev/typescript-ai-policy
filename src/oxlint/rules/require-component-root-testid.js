@@ -19,15 +19,15 @@ const requireComponentRootTestIdRule = {
     },
     messages: {
       invalidChildTestId:
-        'Component "{{ componentName }}" must use child test ids in the format "{{ componentName }}--thing". Received "{{ candidate }}".',
+        'Rename this child test id to the "{{ componentName }}--thing" form, for example "{{ componentName }}--label". Received "{{ candidate }}".',
       exportedFragmentRoot:
-        'Exported component "{{ componentName }}" returns a fragment root; wrap it in a DOM element with data-testid="{{ componentName }}".',
+        'Exported component "{{ componentName }}" must return a DOM element as its root, not a fragment. Wrap the fragment in an element with data-testid="{{ componentName }}".',
       exportedOtherRoot:
-        'Exported component "{{ componentName }}" returns {{ summary }}; render a root data-testid="{{ componentName }}" instead.',
+        'Exported component "{{ componentName }}" must render a DOM element as its root with data-testid="{{ componentName }}". Returning {{ summary }} is not allowed.',
       missingExportedRootTestId:
-        'Exported component "{{ componentName }}" must render a root data-testid or testId exactly equal to "{{ componentName }}".',
+        'Add data-testid="{{ componentName }}" or testId="{{ componentName }}" to the exported component\'s root element.',
       invalidLocalRootTestId:
-        'Component "{{ componentName }}" must use the plain root test id "{{ componentName }}" on its root element. Received "{{ candidate }}".',
+        'Rename the root test id of component "{{ componentName }}" to exactly "{{ componentName }}". Received "{{ candidate }}".',
     },
     schema: [],
   },

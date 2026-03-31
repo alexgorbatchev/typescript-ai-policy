@@ -9,7 +9,8 @@ const testIdNamingConventionRule = {
       recommended: false,
     },
     messages: {
-      invalidTestId: "{{ attributeName }} should be in the {{ format }}... format.",
+      invalidTestId:
+        'Rename {{ attributeName }} to "{{ componentName }}" on the component root, or to "{{ componentName }}--thing" on child elements. Received "{{ candidate }}".',
     },
     schema: [],
     fixable: /** @type {const} */ ("code"),
@@ -36,7 +37,8 @@ const testIdNamingConventionRule = {
             messageId: "invalidTestId",
             data: {
               attributeName,
-              format: expectedFormat,
+              candidate: attributeValue,
+              componentName,
             },
             fix(fixer) {
               let newValue;

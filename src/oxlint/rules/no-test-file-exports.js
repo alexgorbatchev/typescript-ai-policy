@@ -11,7 +11,7 @@ const noTestFileExportsRule = {
     schema: [],
     messages: {
       unexpectedTestExport:
-        "Test files must not export. Move shared test code into helpers.ts, fixtures.ts, or fixtures/.",
+        "Remove this export from the test file. Move shared test code into helpers.ts, fixtures.ts, or fixtures/ instead.",
     },
   },
   create(context) {

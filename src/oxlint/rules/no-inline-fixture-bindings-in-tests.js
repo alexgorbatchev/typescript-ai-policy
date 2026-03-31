@@ -9,7 +9,7 @@ const noInlineFixtureBindingsInTestsRule = {
     schema: [],
     messages: {
       unexpectedInlineFixtureBinding:
-        'Tests must import "{{ name }}" from the colocated fixtures module instead of declaring it inline.',
+        'Delete the inline "{{ name }}" declaration from this test file and import it from the colocated "./fixtures" module instead.',
     },
   },
   create(context) {

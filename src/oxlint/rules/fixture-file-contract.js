@@ -10,15 +10,15 @@ const fixtureFileContractRule = {
     schema: [],
     messages: {
       unexpectedDefaultExport:
-        "The __tests__/fixtures entrypoint (fixtures.ts or fixtures.tsx) must not use a default export.",
+        'Remove the default export. The "__tests__/fixtures" entrypoint must use only named exports.',
       unexpectedExportDeclaration:
-        "The __tests__/fixtures entrypoint may only export const declarations and function declarations.",
+        'Replace this export with either "export const fixture_* = ..." or "export function factory_*() { ... }" in the "__tests__/fixtures" entrypoint.',
       unexpectedExportList:
-        "The __tests__/fixtures entrypoint must declare fixture exports directly instead of using export lists or re-exports.",
+        'Inline the exported declaration in the "__tests__/fixtures" entrypoint. Do not use export lists or re-exports there.',
       unexpectedExportPattern:
-        "The __tests__/fixtures entrypoint exported const declarations must bind identifiers directly.",
+        'Bind the exported const to a direct identifier, for example "export const fixture_user = ...". Do not export destructuring patterns from the "__tests__/fixtures" entrypoint.',
       unexpectedVariableKind:
-        'The __tests__/fixtures entrypoint may only export const declarations. Received "{{ kind }}".',
+        'Change this exported "{{ kind }}" declaration to "const". The "__tests__/fixtures" entrypoint allows only exported const declarations.',
     },
   },
   create(context) {

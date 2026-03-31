@@ -27,12 +27,12 @@ const fixtureImportPathConventionRule = {
     schema: [],
     messages: {
       invalidFixturesImportAlias:
-        '"{{ name }}" imported from "./fixtures" must keep the same local name and must not be renamed.',
+        'Import "{{ name }}" from "./fixtures" without renaming it. The local binding must stay "{{ name }}".',
       invalidFixturesImportName:
-        'Only "fixture_*" and "factory_*" named imports are allowed from "./fixtures". Received "{{ name }}".',
-      invalidFixturesImportPath: '"{{ name }}" must be imported from "./fixtures".',
+        'Only named imports that start with "fixture_" or "factory_" are allowed from "./fixtures". Remove or rename "{{ name }}".',
+      invalidFixturesImportPath: 'Change this import so "{{ name }}" comes from "./fixtures".',
       invalidFixturesImportStyle:
-        'Tests must use named imports from "./fixtures". Default, namespace, and side-effect imports are not allowed.',
+        'Rewrite this as a named import from "./fixtures", for example: import { fixture_name } from "./fixtures".',
     },
   },
   create(context) {

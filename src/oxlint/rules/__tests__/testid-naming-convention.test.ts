@@ -64,7 +64,11 @@ testIdNamingConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestId",
-            data: { attributeName: "data-testid", format: "SignalPanel--" },
+            data: {
+              attributeName: "data-testid",
+              candidate: "WrongName--element",
+              componentName: "SignalPanel",
+            },
           },
         ],
         output: `
@@ -84,7 +88,11 @@ testIdNamingConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestId",
-            data: { attributeName: "data-testid", format: "SignalPanel--" },
+            data: {
+              attributeName: "data-testid",
+              candidate: "element",
+              componentName: "SignalPanel",
+            },
           },
         ],
         output: `
@@ -104,7 +112,11 @@ testIdNamingConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestId",
-            data: { attributeName: "testId", format: "AlertBeacon--" },
+            data: {
+              attributeName: "testId",
+              candidate: "WrongName--span",
+              componentName: "AlertBeacon",
+            },
           },
         ],
         output: `
@@ -124,7 +136,11 @@ testIdNamingConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestId",
-            data: { attributeName: "testId", format: "AlertBeacon--" },
+            data: {
+              attributeName: "testId",
+              candidate: "span",
+              componentName: "AlertBeacon",
+            },
           },
         ],
         output: `
@@ -144,7 +160,11 @@ testIdNamingConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestId",
-            data: { attributeName: "data-testid", format: "MuteSwitch--" },
+            data: {
+              attributeName: "data-testid",
+              candidate: "WrongName--button",
+              componentName: "MuteSwitch",
+            },
           },
         ],
         output: `
@@ -164,7 +184,11 @@ testIdNamingConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestId",
-            data: { attributeName: "data-testid", format: "MuteSwitch--" },
+            data: {
+              attributeName: "data-testid",
+              candidate: "button",
+              componentName: "MuteSwitch",
+            },
           },
         ],
         output: `
@@ -187,7 +211,11 @@ testIdNamingConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestId",
-            data: { attributeName: "data-testid", format: "WorkspaceFrame--" },
+            data: {
+              attributeName: "data-testid",
+              candidate: "InnerBadge--element",
+              componentName: "WorkspaceFrame",
+            },
           },
         ],
         output: `
@@ -213,7 +241,11 @@ testIdNamingConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestId",
-            data: { attributeName: "data-testid", format: "WorkspaceFrame--" },
+            data: {
+              attributeName: "data-testid",
+              candidate: "element",
+              componentName: "WorkspaceFrame",
+            },
           },
         ],
         output: `

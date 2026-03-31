@@ -24,7 +24,7 @@ const testsDirectoryFileConventionRule = {
     schema: [],
     messages: {
       invalidTestsDirectoryFile:
-        "Only *.test.ts, *.test.tsx, fixtures.{ts,tsx}, fixtures/*, and helpers.{ts,tsx} are allowed in __tests__ (found {{ relativePath }}).",
+        'Move or rename "{{ relativePath }}". A "__tests__" directory may contain only "*.test.ts", "*.test.tsx", "helpers.ts", "helpers.tsx", "fixtures.ts", "fixtures.tsx", or files under "fixtures/".',
     },
   },
   create(context) {

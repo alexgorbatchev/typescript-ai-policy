@@ -106,16 +106,17 @@ const fixtureExportTypeContractRule = {
     schema: [],
     messages: {
       forbiddenFactoryReturnTypeKeyword:
-        'Factory export "{{ name }}" must not use "{{ keyword }}" in its return type. Import a real type instead.',
+        'Replace "{{ keyword }}" with an imported concrete return type for factory export "{{ name }}". Do not use "{{ keyword }}" in fixture entrypoints.',
       forbiddenFixtureTypeKeyword:
-        'Fixture export "{{ name }}" must not use "{{ keyword }}" in its type contract. Import a real type instead.',
-      missingFactoryReturnTypeContract: 'Factory export "{{ name }}" must declare an explicit imported return type.',
+        'Replace "{{ keyword }}" with an imported concrete type for fixture export "{{ name }}". Do not use "{{ keyword }}" in fixture entrypoints.',
+      missingFactoryReturnTypeContract:
+        'Add an explicit return type to factory export "{{ name }}" and make that return type an imported concrete type.',
       missingFixtureTypeContract:
-        'Fixture export "{{ name }}" must declare an imported type with a type annotation or satisfies clause.',
+        'Add a type annotation or satisfies clause to fixture export "{{ name }}" and make it reference an imported concrete type.',
       missingImportedFactoryReturnType:
-        'Factory export "{{ name }}" must reference at least one imported type in its return type.',
+        'Change the return type of factory export "{{ name }}" so it references at least one imported concrete type.',
       missingImportedFixtureType:
-        'Fixture export "{{ name }}" must reference at least one imported type in its type annotation or satisfies clause.',
+        'Change the type annotation or satisfies clause of fixture export "{{ name }}" so it references at least one imported concrete type.',
     },
   },
   create(context) {

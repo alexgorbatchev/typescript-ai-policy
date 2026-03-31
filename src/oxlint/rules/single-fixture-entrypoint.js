@@ -50,7 +50,7 @@ const singleFixtureEntrypointRule = {
     schema: [],
     messages: {
       conflictingFixtureEntrypoints:
-        'Only one fixture entrypoint shape is allowed per __tests__ directory for imports from "./fixtures". Found {{ entries }}.',
+        'Keep exactly one fixture entrypoint shape in this "__tests__" directory so "./fixtures" resolves unambiguously. Remove all but one of: {{ entries }}.',
     },
   },
   create(context) {

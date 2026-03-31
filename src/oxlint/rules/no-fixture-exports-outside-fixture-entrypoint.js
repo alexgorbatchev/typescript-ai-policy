@@ -9,7 +9,7 @@ const noFixtureExportsOutsideFixtureEntrypointRule = {
     schema: [],
     messages: {
       unexpectedFixtureExport:
-        '"{{ name }}" may only be exported from the __tests__/fixtures entrypoint (fixtures.ts or fixtures.tsx).',
+        'Move "{{ name }}" into the "__tests__/fixtures" entrypoint ("fixtures.ts" or "fixtures.tsx") and export it only from there.',
     },
   },
   create(context) {

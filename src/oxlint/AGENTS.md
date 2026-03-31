@@ -48,4 +48,3 @@ When unsure, consult:
 - Oxlint JS plugin docs
 - ESLint 10+ plugin docs
 - ESLint 10+ custom rule docs
-

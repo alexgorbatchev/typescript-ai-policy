@@ -6,8 +6,9 @@ const noReactCreateElementRule = {
     },
     schema: [],
     messages: {
-      noImportedCreateElement: "Use JSX instead of importing createElement from react in regular application code.",
-      noReactCreateElement: "Use JSX instead of React.createElement in regular application code.",
+      noImportedCreateElement:
+        'Remove the createElement import from "react" and rewrite the rendered output as JSX syntax.',
+      noReactCreateElement: "Replace React.createElement(...) with equivalent JSX syntax.",
     },
   },
   create(context) {

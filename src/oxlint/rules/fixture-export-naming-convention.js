@@ -9,9 +9,9 @@ const fixtureExportNamingConventionRule = {
     schema: [],
     messages: {
       invalidFactoryExportName:
-        'Factory exports in the __tests__/fixtures entrypoint must be named "factory_<lowerCamelCase>". Received "{{ name }}".',
+        'Rename this factory export to the "factory_<lowerCamelCase>" form. Received "{{ name }}".',
       invalidFixtureExportName:
-        'Fixture exports in the __tests__/fixtures entrypoint must be named "fixture_<lowerCamelCase>". Received "{{ name }}".',
+        'Rename this fixture export to the "fixture_<lowerCamelCase>" form. Received "{{ name }}".',
     },
   },
   create(context) {

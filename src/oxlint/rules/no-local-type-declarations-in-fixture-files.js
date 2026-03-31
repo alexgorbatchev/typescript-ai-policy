@@ -14,11 +14,12 @@ const noLocalTypeDeclarationsInFixtureFilesRule = {
     },
     schema: [],
     messages: {
-      unexpectedEnumDeclaration: "Fixture files must import enums from elsewhere instead of declaring them locally.",
+      unexpectedEnumDeclaration:
+        "Remove this local enum declaration from the fixture file. Define it elsewhere and import it here.",
       unexpectedInterfaceDeclaration:
-        "Fixture files must import interfaces from elsewhere instead of declaring them locally.",
+        "Remove this local interface declaration from the fixture file. Define it elsewhere and import it here.",
       unexpectedTypeAliasDeclaration:
-        "Fixture files must import type aliases from elsewhere instead of declaring them locally.",
+        "Remove this local type alias declaration from the fixture file. Define it elsewhere and import it here.",
     },
   },
   create(context) {

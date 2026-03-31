@@ -45,7 +45,8 @@ const noModuleMockingRule = {
     },
     schema: [],
     messages: {
-      noModuleMocking: 'Use the dependency injection pattern instead of module mocking via "{{ fullName }}".',
+      noModuleMocking:
+        'Remove "{{ fullName }}". Pass collaborators into the unit under test and stub those injected dependencies in the test instead of mocking the whole module.',
     },
   },
   create(context) {

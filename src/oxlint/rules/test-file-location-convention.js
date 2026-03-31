@@ -30,8 +30,8 @@ const testFileLocationConventionRule = {
     },
     schema: [],
     messages: {
-      invalidTestFileName: "Test files must be named *.test.ts or *.test.tsx.",
-      missingTestsDirectory: "Test files must be placed in a sibling __tests__ directory.",
+      invalidTestFileName: 'Rename this file to match the "*.test.ts" or "*.test.tsx" pattern.',
+      missingTestsDirectory: 'Move this test file into a sibling "__tests__" directory.',
     },
   },
   create(context) {

@@ -27,7 +27,8 @@ const noNonRunningTestsRule = {
     },
     schema: [],
     messages: {
-      forbiddenModifier: "Do not use {{ fullName }} in committed tests.",
+      forbiddenModifier:
+        'Remove "{{ fullName }}". Committed tests must always run, so use plain describe(...), it(...), or test(...) instead of gated, skipped, or todo variants.',
     },
   },
   create(context) {
