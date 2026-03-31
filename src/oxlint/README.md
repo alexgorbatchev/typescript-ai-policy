@@ -46,8 +46,9 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/hook-export-location-convention`
    - `@alexgorbatchev/test-file-location-convention`
    - `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
-2. **TypeScript-wide naming rules** run on all `**/*.{ts,tsx,mts,cts}` files:
+2. **TypeScript-wide naming and explicit-type rules** run on all `**/*.{ts,tsx,mts,cts}` files:
    - `@alexgorbatchev/interface-naming-convention`
+   - `@alexgorbatchev/no-inline-type-expressions`
 3. **Component-area directory rules** run only inside `components/`, `templates/`, and `layouts/` trees:
    - `@alexgorbatchev/component-directory-file-convention` on `**/components/**/*.{ts,tsx}`, `**/templates/**/*.{ts,tsx}`, and `**/layouts/**/*.{ts,tsx}`
    - `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-test-file-convention` on direct-child `**/components/*.tsx`, `**/templates/*.tsx`, and `**/layouts/*.tsx` ownership files
@@ -197,6 +198,50 @@ export interface UserProfile {
 ```ts
 export interface IuserProfile {
   id: string;
+}
+```
+
+## Explicit type-expression policies
+
+### `@alexgorbatchev/no-inline-type-expressions`
+
+**Policy:** Outside type declarations, explicit type usage must rely on named declarations or inference. Do not define object, tuple, function, union, intersection, mapped, or conditional types inline at the usage site.
+
+**Good**
+
+```ts
+interface IUserRef {
+  id: string;
+}
+
+const userRef: IUserRef = sourceUserRef;
+```
+
+```ts
+type NullableUser = User | null;
+
+export function readUser(): NullableUser {
+  return null;
+}
+```
+
+```ts
+const sorted = items.sort((left, right) => right.score - left.score);
+```
+
+**Bad**
+
+```ts
+const userRef: { id: string } = sourceUserRef;
+```
+
+```ts
+const pairs: Array<[string, number]> = Object.entries(counts);
+```
+
+```ts
+export function readUser(): User | null {
+  return null;
 }
 ```
 

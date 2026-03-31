@@ -10,6 +10,7 @@ import noTypeImportsFromConstantsRule from "./rules/no-type-imports-from-constan
 import noTypeExportsFromConstantsRule from "./rules/no-type-exports-from-constants.js";
 import noValueExportsFromTypesRule from "./rules/no-value-exports-from-types.js";
 import interfaceNamingConventionRule from "./rules/interface-naming-convention.js";
+import noInlineTypeExpressionsRule from "./rules/no-inline-type-expressions.js";
 import componentFileLocationConventionRule from "./rules/component-file-location-convention.js";
 import componentDirectoryFileConventionRule from "./rules/component-directory-file-convention.js";
 import componentFileContractRule from "./rules/component-file-contract.js";
@@ -48,6 +49,7 @@ const plugin = {
     "no-type-exports-from-constants": noTypeExportsFromConstantsRule,
     "no-value-exports-from-types": noValueExportsFromTypesRule,
     "interface-naming-convention": interfaceNamingConventionRule,
+    "no-inline-type-expressions": noInlineTypeExpressionsRule,
     "component-file-location-convention": componentFileLocationConventionRule,
     "component-directory-file-convention": componentDirectoryFileConventionRule,
     "component-file-contract": componentFileContractRule,

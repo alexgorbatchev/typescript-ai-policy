@@ -48,6 +48,7 @@ const oxlintConfig = defineConfig({
       files: ["**/*.{ts,tsx,mts,cts}"],
       rules: {
         "@alexgorbatchev/interface-naming-convention": "error",
+        "@alexgorbatchev/no-inline-type-expressions": "error",
       },
     },
     {
