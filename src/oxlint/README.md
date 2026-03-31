@@ -42,30 +42,39 @@ on files that cannot meaningfully violate them.
    location:
    - `@alexgorbatchev/no-imports-from-tests-directory`
    - `@alexgorbatchev/no-type-imports-from-constants`
+   - `@alexgorbatchev/component-file-location-convention`
+   - `@alexgorbatchev/hook-export-location-convention`
    - `@alexgorbatchev/test-file-location-convention`
    - `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
-2. **Filename-addressable file-role rules** run only on the exact file role they govern:
+2. **Component-area directory rules** run only inside `components/`, `templates/`, and `layouts/` trees:
+   - `@alexgorbatchev/component-directory-file-convention` on `**/components/**/*.{ts,tsx}`, `**/templates/**/*.{ts,tsx}`, and `**/layouts/**/*.{ts,tsx}`
+   - `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-test-file-convention` on direct-child `**/components/*.tsx`, `**/templates/*.tsx`, and `**/layouts/*.tsx` ownership files
+3. **Hook-area directory rules** run only inside `hooks/` trees:
+   - `@alexgorbatchev/hooks-directory-file-convention` on `**/hooks/**/*.{ts,tsx}`
+   - `@alexgorbatchev/hook-file-contract`, `@alexgorbatchev/hook-file-naming-convention`, and `@alexgorbatchev/hook-test-file-convention` on direct-child `**/hooks/use*.ts` and `**/hooks/use*.tsx` ownership files
+4. **Filename-addressable file-role rules** run only on the exact file role they govern:
    - `@alexgorbatchev/index-file-contract` on `**/index.ts` and `**/index.tsx`
    - `@alexgorbatchev/no-type-exports-from-constants` on `**/constants.{ts,tsx,mts,cts}` and `**/constants.d.{ts,tsx,mts,cts}`
    - `@alexgorbatchev/no-value-exports-from-types` on `**/types.{ts,tsx,mts,cts}` and `**/types.d.{ts,tsx,mts,cts}`
-3. **`__tests__/` directory rules** run only inside `__tests__/` because they govern that directory's allowed contents
+5. **`__tests__/` directory rules** run only inside `__tests__/` because they govern that directory's allowed contents
    and test helper behavior:
    - `@alexgorbatchev/tests-directory-file-convention`
    - `@alexgorbatchev/no-module-mocking`
-4. **Canonical test-file rules** run only on `__tests__/*.test.ts` and `__tests__/*.test.tsx`:
+6. **Canonical test-file rules** run only on `__tests__/*.test.ts` and `__tests__/*.test.tsx`:
    - `@alexgorbatchev/no-non-running-tests`
    - `@alexgorbatchev/no-test-file-exports`
    - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
    - `@alexgorbatchev/fixture-import-path-convention`
    - `jest/no-disabled-tests`
    - `jest/no-focused-tests`
-5. **Fixture-entrypoint and fixture-area rules** run only on `__tests__/fixtures.ts`, `__tests__/fixtures.tsx`, and
+7. **Fixture-entrypoint and fixture-area rules** run only on `__tests__/fixtures.ts`, `__tests__/fixtures.tsx`, and
    files under `__tests__/fixtures/`, depending on the rule.
 
-This staged configuration is part of the contract. The naming/location rule is the front door that steers misplaced
-files into canonical `__tests__/*.test.ts[x]` form; basename-addressable file-role rules such as `index.ts`,
-`constants.ts`, and `types.ts` are scoped by `overrides`; and the narrower overrides then enforce the rest of the
-policy only after a file has the correct role.
+This staged configuration is part of the contract. The global location/leak rules are the front door that push `.tsx`
+files, hook exports, and tests into canonical locations; the component and hook area overrides then enforce ownership,
+naming, and colocated test contracts only after a file is in the correct subsystem; basename-addressable file-role rules
+such as `index.ts`, `constants.ts`, and `types.ts` stay narrow; and the `__tests__/` overrides enforce test-specific
+contracts only after the file has the correct test role.
 
 ## Enabled rules
 
@@ -323,6 +332,119 @@ export function SurfacePanel() {
   );
 }
 ```
+
+### `@alexgorbatchev/component-file-location-convention`
+
+**Policy:** Every non-hook, non-test `.tsx` file must live under `components/`, `templates/`, or `layouts/`.
+
+**Good**
+
+```text
+src/accounts/components/AccountPanel.tsx
+src/accounts/templates/AccountEmail.tsx
+src/accounts/layouts/AccountLayout.tsx
+```
+
+**Bad**
+
+```text
+src/accounts/AccountPanel.tsx
+src/email/Welcome.tsx
+```
+
+### `@alexgorbatchev/component-directory-file-convention`
+
+**Policy:** `components/`, `templates/`, and `layouts/` directories may contain only direct-child component ownership
+files, direct-child `index.ts` / `types.ts` support files, and a direct-child `__tests__/` tree. Shared runtime
+constants and shared helpers must live outside these strict ownership directories.
+
+### `@alexgorbatchev/component-file-contract`
+
+**Policy:** A component ownership file may export exactly one main runtime component plus unrestricted type-only API.
+Plain components must use `export function ComponentName() {}`. Wrapped components must use a direct named `export const`
+binding whose innermost function expression is named and matches the exported symbol.
+
+**Good**
+
+```tsx
+export function Button() {
+  return <button />;
+}
+```
+
+```tsx
+export const Button = memo(function Button() {
+  return <button />;
+});
+```
+
+**Bad**
+
+```tsx
+export const Button = () => <button />;
+```
+
+```tsx
+export const Button = memo(function RenderButton() {
+  return <button />;
+});
+```
+
+### `@alexgorbatchev/component-file-naming-convention`
+
+**Policy:** The exported component name must be PascalCase, and the filename must match it as either `ComponentName.tsx`
+or `component-name.tsx`.
+
+### `@alexgorbatchev/component-test-file-convention`
+
+**Policy:** Every component ownership file must have a sibling `__tests__/basename.test.tsx` file whose basename exactly
+matches the source basename.
+
+### `@alexgorbatchev/hook-export-location-convention`
+
+**Policy:** Any exported runtime binding named `use*` must live in a direct-child `hooks/use*.ts` or `hooks/use*.tsx`
+ownership file. Only `index.ts` barrels and `types.ts` type modules are exempt from this placement rule.
+
+### `@alexgorbatchev/hooks-directory-file-convention`
+
+**Policy:** A `hooks/` directory may contain only direct-child hook ownership files, direct-child `index.ts` /
+`types.ts` support files, and a direct-child `__tests__/` tree. Shared runtime constants and shared helpers must live
+outside the strict `hooks/` ownership directory.
+
+### `@alexgorbatchev/hook-file-contract`
+
+**Policy:** A hook ownership file may export exactly one main runtime hook plus unrestricted type-only API. The main
+hook export must be a plain named function declaration: `export function useThing() {}`.
+
+**Good**
+
+```ts
+export function useAccount() {
+  return null;
+}
+```
+
+**Bad**
+
+```ts
+export const useAccount = () => null;
+```
+
+```ts
+export const useAccount = trace(function useAccount() {
+  return null;
+});
+```
+
+### `@alexgorbatchev/hook-file-naming-convention`
+
+**Policy:** Hook ownership files must use matching `useFoo.ts[x]` or `use-foo.ts[x]` basenames, and the exported hook
+name must match the filename's camelCase conversion exactly.
+
+### `@alexgorbatchev/hook-test-file-convention`
+
+**Policy:** Every hook ownership file must have a sibling `__tests__/basename.test.ts` or `.test.tsx` file whose
+basename exactly matches the source basename and whose extension matches the source extension.
 
 ## Test execution and layout policies
 

@@ -37,11 +37,41 @@ const oxlintConfig = defineConfig({
     "@alexgorbatchev/require-component-root-testid": "error",
     "@alexgorbatchev/no-imports-from-tests-directory": "error",
     "@alexgorbatchev/no-type-imports-from-constants": "error",
+    "@alexgorbatchev/component-file-location-convention": "error",
+    "@alexgorbatchev/hook-export-location-convention": "error",
     "@alexgorbatchev/test-file-location-convention": "error",
     "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
     "typescript/no-explicit-any": "error",
   },
   overrides: [
+    {
+      files: ["**/components/**/*.{ts,tsx}", "**/templates/**/*.{ts,tsx}", "**/layouts/**/*.{ts,tsx}"],
+      rules: {
+        "@alexgorbatchev/component-directory-file-convention": "error",
+      },
+    },
+    {
+      files: ["**/components/*.tsx", "**/templates/*.tsx", "**/layouts/*.tsx"],
+      rules: {
+        "@alexgorbatchev/component-file-contract": "error",
+        "@alexgorbatchev/component-file-naming-convention": "error",
+        "@alexgorbatchev/component-test-file-convention": "error",
+      },
+    },
+    {
+      files: ["**/hooks/**/*.{ts,tsx}"],
+      rules: {
+        "@alexgorbatchev/hooks-directory-file-convention": "error",
+      },
+    },
+    {
+      files: ["**/hooks/use*.ts", "**/hooks/use*.tsx"],
+      rules: {
+        "@alexgorbatchev/hook-file-contract": "error",
+        "@alexgorbatchev/hook-file-naming-convention": "error",
+        "@alexgorbatchev/hook-test-file-convention": "error",
+      },
+    },
     {
       files: ["**/index.{ts,tsx}"],
       rules: {

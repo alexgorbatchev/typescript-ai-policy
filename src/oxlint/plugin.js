@@ -9,6 +9,16 @@ import indexFileContractRule from "./rules/index-file-contract.js";
 import noTypeImportsFromConstantsRule from "./rules/no-type-imports-from-constants.js";
 import noTypeExportsFromConstantsRule from "./rules/no-type-exports-from-constants.js";
 import noValueExportsFromTypesRule from "./rules/no-value-exports-from-types.js";
+import componentFileLocationConventionRule from "./rules/component-file-location-convention.js";
+import componentDirectoryFileConventionRule from "./rules/component-directory-file-convention.js";
+import componentFileContractRule from "./rules/component-file-contract.js";
+import componentFileNamingConventionRule from "./rules/component-file-naming-convention.js";
+import componentTestFileConventionRule from "./rules/component-test-file-convention.js";
+import hookExportLocationConventionRule from "./rules/hook-export-location-convention.js";
+import hooksDirectoryFileConventionRule from "./rules/hooks-directory-file-convention.js";
+import hookFileContractRule from "./rules/hook-file-contract.js";
+import hookFileNamingConventionRule from "./rules/hook-file-naming-convention.js";
+import hookTestFileConventionRule from "./rules/hook-test-file-convention.js";
 import testFileLocationConventionRule from "./rules/test-file-location-convention.js";
 import testsDirectoryFileConventionRule from "./rules/tests-directory-file-convention.js";
 import fixtureFileContractRule from "./rules/fixture-file-contract.js";
@@ -36,6 +46,16 @@ const plugin = {
     "no-type-imports-from-constants": noTypeImportsFromConstantsRule,
     "no-type-exports-from-constants": noTypeExportsFromConstantsRule,
     "no-value-exports-from-types": noValueExportsFromTypesRule,
+    "component-file-location-convention": componentFileLocationConventionRule,
+    "component-directory-file-convention": componentDirectoryFileConventionRule,
+    "component-file-contract": componentFileContractRule,
+    "component-file-naming-convention": componentFileNamingConventionRule,
+    "component-test-file-convention": componentTestFileConventionRule,
+    "hook-export-location-convention": hookExportLocationConventionRule,
+    "hooks-directory-file-convention": hooksDirectoryFileConventionRule,
+    "hook-file-contract": hookFileContractRule,
+    "hook-file-naming-convention": hookFileNamingConventionRule,
+    "hook-test-file-convention": hookTestFileConventionRule,
     "test-file-location-convention": testFileLocationConventionRule,
     "tests-directory-file-convention": testsDirectoryFileConventionRule,
     "fixture-file-contract": fixtureFileContractRule,

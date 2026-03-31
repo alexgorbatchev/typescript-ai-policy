@@ -1,11 +1,104 @@
+const NON_OWNERSHIP_SUPPORT_BASENAMES = new Set(["index", "types", "constants", "helpers"]);
+const STRICT_AREA_ALLOWED_SUPPORT_FILES = new Set(["index.ts", "types.ts"]);
+
 export function normalizeFilename(filename) {
   return filename.replaceAll("\\", "/");
+}
+
+export function getPathSegments(filename) {
+  return normalizeFilename(filename).split("/").filter(Boolean);
 }
 
 export function getBaseName(filename) {
   const normalizedFilename = normalizeFilename(filename);
 
   return normalizedFilename.split("/").pop() ?? "";
+}
+
+export function getFilenameWithoutExtension(filename) {
+  const baseName = getBaseName(filename);
+  const extensionIndex = baseName.lastIndexOf(".");
+
+  return extensionIndex === -1 ? baseName : baseName.slice(0, extensionIndex);
+}
+
+export function getExtension(filename) {
+  const baseName = getBaseName(filename);
+  const extensionIndex = baseName.lastIndexOf(".");
+
+  return extensionIndex === -1 ? "" : baseName.slice(extensionIndex);
+}
+
+export function hasBaseName(path, expectedBaseName) {
+  const baseName = getBaseName(path);
+
+  return (
+    baseName === expectedBaseName ||
+    getFilenameWithoutExtension(baseName) === expectedBaseName ||
+    baseName === `${expectedBaseName}.d.ts` ||
+    baseName === `${expectedBaseName}.d.tsx` ||
+    baseName === `${expectedBaseName}.d.mts` ||
+    baseName === `${expectedBaseName}.d.cts`
+  );
+}
+
+export function hasPathSegment(filename, expectedSegment) {
+  return getPathSegments(filename).includes(expectedSegment);
+}
+
+export function readPathFromDirectory(filename, expectedDirectoryName) {
+  const pathSegments = getPathSegments(filename);
+  const directoryIndex = pathSegments.indexOf(expectedDirectoryName);
+  if (directoryIndex === -1) {
+    return null;
+  }
+
+  return pathSegments.slice(directoryIndex + 1).join("/");
+}
+
+export function readPathFromFirstMatchingDirectory(filename, expectedDirectoryNames) {
+  const expectedDirectoryNameSet =
+    expectedDirectoryNames instanceof Set ? expectedDirectoryNames : new Set(expectedDirectoryNames);
+  const pathSegments = getPathSegments(filename);
+
+  for (let directoryIndex = 0; directoryIndex < pathSegments.length; directoryIndex += 1) {
+    const pathSegment = pathSegments[directoryIndex];
+    if (!expectedDirectoryNameSet.has(pathSegment)) {
+      continue;
+    }
+
+    return {
+      directoryName: pathSegment,
+      relativePath: pathSegments.slice(directoryIndex + 1).join("/"),
+    };
+  }
+
+  return null;
+}
+
+export function isDirectChildOfDirectory(filename, expectedDirectoryName) {
+  const relativePath = readPathFromDirectory(filename, expectedDirectoryName);
+
+  return relativePath !== null && relativePath !== "" && !relativePath.includes("/");
+}
+
+export function isDirectChildOfAnyDirectory(filename, expectedDirectoryNames) {
+  const expectedDirectoryNameSet =
+    expectedDirectoryNames instanceof Set ? expectedDirectoryNames : new Set(expectedDirectoryNames);
+  const pathSegments = getPathSegments(filename);
+  if (pathSegments.length < 2) {
+    return false;
+  }
+
+  return expectedDirectoryNameSet.has(pathSegments[pathSegments.length - 2]);
+}
+
+export function isExemptSupportBasename(filename) {
+  return NON_OWNERSHIP_SUPPORT_BASENAMES.has(getFilenameWithoutExtension(filename));
+}
+
+export function isStrictAreaAllowedSupportFile(filename) {
+  return STRICT_AREA_ALLOWED_SUPPORT_FILES.has(getBaseName(filename));
 }
 
 export function getComponentNameFromAncestors(node) {
@@ -25,26 +118,6 @@ export function getComponentNameFromAncestors(node) {
   }
 
   return componentName;
-}
-
-export function getFilenameWithoutExtension(filename) {
-  const baseName = getBaseName(filename);
-  const extensionIndex = baseName.lastIndexOf(".");
-
-  return extensionIndex === -1 ? baseName : baseName.slice(0, extensionIndex);
-}
-
-export function hasBaseName(path, expectedBaseName) {
-  const baseName = getBaseName(path);
-
-  return (
-    baseName === expectedBaseName ||
-    getFilenameWithoutExtension(baseName) === expectedBaseName ||
-    baseName === `${expectedBaseName}.d.ts` ||
-    baseName === `${expectedBaseName}.d.tsx` ||
-    baseName === `${expectedBaseName}.d.mts` ||
-    baseName === `${expectedBaseName}.d.cts`
-  );
 }
 
 export function isTestsDirectoryPath(path) {
