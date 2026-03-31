@@ -130,3 +130,27 @@ Before adding a rule, ask:
 4. Can an agent satisfy the rule mechanically without actually improving the code?
 
 If the answer to (4) is yes, the policy is incomplete and needs an ownership, naming, or placement constraint in addition to the syntax check.
+
+## Development scripts
+
+Available scripts:
+
+```bash
+bun run check
+./scripts/lint-target.sh /Users/alex/development/projects/date-maker
+bun run lint:target -- /Users/alex/development/projects/date-maker
+```
+
+`check` runs:
+
+- `oxfmt --check .`
+- `oxlint .`
+- `tsgo --noEmit`
+- `bun test`
+
+`lint:target` runs this repository's current Oxlint policy against another directory by:
+
+- using `src/oxlint/oxlint.config.ts`
+- disabling nested target configs via `--disable-nested-config` so results are not mixed with the target project's own Oxlint config
+- changing into the target directory first, which avoids an Oxlint crash when linting a path outside the current working root
+- forwarding any extra Oxlint CLI flags after the target path

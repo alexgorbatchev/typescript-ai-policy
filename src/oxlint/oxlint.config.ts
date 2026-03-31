@@ -18,20 +18,18 @@ const oxlintConfig = defineConfig({
     "**/*.generated.ts",
     "**/*.gen.ts",
     "**/routeTree.gen.ts",
-    "docs/.vitepress/cache",
-    "docs/.vitepress/dist",
+    "**/.vitepress/cache",
+    "**/.vitepress/dist",
   ],
   plugins: ["unicorn", "typescript", "oxc", "react", "jsx-a11y", "jest"],
   jsPlugins: [
     {
       name: "@alexgorbatchev",
-      specifier: "@alexgorbatchev/typescript-common/oxlint-plugin",
+      specifier: "@alexgorbatchev/typescript-ai-policies/oxlint-plugin",
     },
   ],
   rules: {
-    "no-console": "off",
     eqeqeq: "error",
-    "jsx-a11y/no-autofocus": "off",
     "@alexgorbatchev/testid-naming-convention": "error",
     "@alexgorbatchev/no-react-create-element": "error",
     "@alexgorbatchev/require-component-root-testid": "error",

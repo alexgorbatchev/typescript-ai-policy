@@ -1,5 +1,5 @@
 {
-  "name": "@alexgorbatchev/typescript-common",
+  "name": "@alexgorbatchev/typescript-ai-policies",
   "type": "module",
   "files": [
     "src/oxfmt",
@@ -15,7 +15,8 @@
     "oxlint": "^1.57.0"
   },
   "scripts": {
-    "check": "./scripts/check.sh"
+    "check": "./scripts/check.sh",
+    "lint:target": "./scripts/lint-target.sh"
   },
   "devDependencies": {
     "@types/bun": "latest",
