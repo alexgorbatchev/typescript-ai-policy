@@ -34,6 +34,19 @@ export function getFilenameWithoutExtension(filename) {
   return extensionIndex === -1 ? baseName : baseName.slice(0, extensionIndex);
 }
 
+export function hasBaseName(path, expectedBaseName) {
+  const baseName = getBaseName(path);
+
+  return (
+    baseName === expectedBaseName ||
+    getFilenameWithoutExtension(baseName) === expectedBaseName ||
+    baseName === `${expectedBaseName}.d.ts` ||
+    baseName === `${expectedBaseName}.d.tsx` ||
+    baseName === `${expectedBaseName}.d.mts` ||
+    baseName === `${expectedBaseName}.d.cts`
+  );
+}
+
 export function isTestsDirectoryPath(path) {
   const normalizedPath = normalizeFilename(path);
 
@@ -149,6 +162,18 @@ export function readDeclarationIdentifierNames(declaration) {
   }
 
   return [];
+}
+
+export function readLiteralStringValue(node) {
+  if (node?.type === "Literal" && typeof node.value === "string") {
+    return node.value;
+  }
+
+  return null;
+}
+
+export function isTypeDeclaration(node) {
+  return node?.type === "TSTypeAliasDeclaration" || node?.type === "TSInterfaceDeclaration";
 }
 
 export function unwrapExpression(expression) {

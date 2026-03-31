@@ -7,6 +7,7 @@ This directory contains the local **Oxlint JS plugin** for this package.
 - `plugin.js` is the JavaScript plugin entrypoint that registers the local rules under a plugin name
 - `rules/` contains the individual Oxlint rule modules
 - `rules/__tests__/` contains Bun + `RuleTester` tests for those rules
+- when making changes, update `README.md` at root level and in `oxlint`
 
 ## Policy intent
 

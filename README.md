@@ -48,110 +48,70 @@ bun run check
 - `@alexgorbatchev/typescript-common/oxlint-config`
 - `@alexgorbatchev/typescript-common/oxlint-plugin`
 
-The shared Oxlint config includes the custom React and test-policy plugin rules automatically.
+The shared Oxlint config includes the custom type/value-boundary, React, test, and fixture-policy plugin rules automatically.
 
-## Included Oxlint rules
+## Oxlint policy philosophy
 
-### `@alexgorbatchev/testid-naming-convention`
+This package treats linting as a **policy surface for agentic workflows**, not just as style enforcement.
 
-Enforces React test ids to use the component name as the prefix:
+The custom `@alexgorbatchev/*` rules encode repository conventions as deterministic, machine-followable policies, and
+their error messages are intentionally written as **LLM steering instructions** that tell an agent exactly what to do
+next. Upstream Oxlint/Jest/TypeScript rules stay enabled as generic correctness guardrails around that custom policy
+layer.
 
-- root elements: `ComponentName`
-- child elements: `ComponentName--thing`
+These rules are designed to work as a **full policy set**, not as a grab bag of independent preferences. Disabling one
+rule can weaken contracts enforced by other rules, because many of the rules deliberately compose into a larger workflow
+for React structure, test layout, fixture ownership, and import discipline. Treat rule removal as a policy change, not
+as a local lint tweak.
 
-This rule is fixable for static string values.
+The fixture rules in particular form a **coupled contract** across:
 
-### `@alexgorbatchev/no-react-create-element`
+- location
+- allowed contents
+- export shape
+- naming
+- typing
+- import path
+- single entrypoint
 
-Bans `createElement` in regular application code:
+If one of those fixture rules is disabled, the rest of the fixture contract becomes less reliable as agent guidance.
 
-- `import { createElement } from "react"`
-- `React.createElement(...)`
+## Enabled Oxlint error rules
 
-Use JSX instead.
+### Built-in guardrails
 
-### `@alexgorbatchev/require-component-root-testid`
+| Rule                         | Policy encoded                                                            |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| `eqeqeq`                     | Require `===` and `!==` so agents do not rely on coercion-based equality. |
+| `typescript/no-explicit-any` | Ban explicit `any` so type contracts stay checkable and reviewable.       |
+| `jest/no-disabled-tests`     | Block skipped or disabled tests in committed `*.test.ts(x)` files.        |
+| `jest/no-focused-tests`      | Block focused tests so CI and local runs exercise the full suite.         |
 
-Enforces React component test-id structure:
+### Custom agentic workflow rules
 
-- exported components must render a root `data-testid` or `testId` exactly equal to `ComponentName`
-- child test ids must use `ComponentName--thing`
-- fragment roots and other non-element roots are rejected for exported components
-- local component roots must also use the plain component-name root test id
+| Rule                                                            | Policy encoded                                                                                                                                                   |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@alexgorbatchev/testid-naming-convention`                      | Every React test id must be scoped to the owning component as `ComponentName` or `ComponentName--thing`.                                                         |
+| `@alexgorbatchev/no-react-create-element`                       | Regular application code must use JSX instead of `createElement`.                                                                                                |
+| `@alexgorbatchev/require-component-root-testid`                 | Exported React components must render a DOM root with `data-testid`/`testId` exactly equal to the component name, and child ids must use `ComponentName--thing`. |
+| `@alexgorbatchev/no-non-running-tests`                          | Ban skip/todo/gated test modifiers that still leave non-running test code after the Jest rules run.                                                              |
+| `@alexgorbatchev/no-module-mocking`                             | Ban whole-module mocking APIs and push tests toward dependency injection plus explicit stubs.                                                                    |
+| `@alexgorbatchev/no-test-file-exports`                          | Treat `*.test.ts(x)` files as execution units, not shared modules.                                                                                               |
+| `@alexgorbatchev/no-imports-from-tests-directory`               | Files outside `__tests__/` must not import, require, or re-export modules from any `__tests__/` directory.                                                       |
+| `@alexgorbatchev/no-type-imports-from-constants`                | Types must not be imported from `constants` modules, including inline `import("./constants")` type queries.                                                     |
+| `@alexgorbatchev/no-type-exports-from-constants`                | `constants.ts` files may export runtime values only; exported types must move to `types.ts`.                                                                      |
+| `@alexgorbatchev/no-value-exports-from-types`                   | `types.ts` files may export type-only API only; runtime values and value re-exports must move elsewhere.                                                          |
+| `@alexgorbatchev/test-file-location-convention`                 | Real tests must live in sibling `__tests__/` directories and use the `.test.ts` / `.test.tsx` suffix.                                                            |
+| `@alexgorbatchev/tests-directory-file-convention`               | `__tests__/` may contain only test files, helpers, fixture entrypoints, or files under `fixtures/`.                                                              |
+| `@alexgorbatchev/fixture-file-contract`                         | `__tests__/fixtures.ts(x)` may export only direct named `const` fixtures and named factory functions.                                                            |
+| `@alexgorbatchev/fixture-export-naming-convention`              | Fixture entrypoint exports must use `fixture_<lowerCamelCase>` and `factory_<lowerCamelCase>`.                                                                   |
+| `@alexgorbatchev/fixture-export-type-contract`                  | Fixture entrypoint exports must declare explicit imported concrete types and must not use `any` or `unknown`.                                                    |
+| `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint` | `fixture_*` and `factory_*` exports may exist only in the dedicated `__tests__/fixtures.ts(x)` entrypoint.                                                       |
+| `@alexgorbatchev/no-inline-fixture-bindings-in-tests`           | Tests must import `fixture_*` and `factory_*` bindings from `./fixtures` instead of declaring them inline.                                                       |
+| `@alexgorbatchev/fixture-import-path-convention`                | Fixture-like imports inside tests must be named imports from the colocated `./fixtures` module with no aliasing.                                                 |
+| `@alexgorbatchev/no-local-type-declarations-in-fixture-files`   | Fixture files and `fixtures/` contents must import shared types instead of declaring local types, interfaces, or enums.                                          |
+| `@alexgorbatchev/single-fixture-entrypoint`                     | Each `__tests__/` directory must choose exactly one fixture entrypoint shape: `fixtures.ts`, `fixtures.tsx`, or `fixtures/`.                                     |
 
-### `jest/no-disabled-tests` and `jest/no-focused-tests`
+Rules explicitly disabled in the shared config: `no-console`, `jsx-a11y/no-autofocus`.
 
-Enabled for `*.test.ts` and `*.test.tsx` files to block disabled and focused Jest-style test syntax such as:
-
-- `it.skip(...)`
-- `test.skip(...)`
-- `describe.skip(...)`
-- `xit(...)`
-- `xtest(...)`
-- `xdescribe(...)`
-- `it.only(...)`
-- `test.only(...)`
-- `describe.only(...)`
-- `fit(...)`
-- `fdescribe(...)`
-
-### `@alexgorbatchev/no-non-running-tests`
-
-Closes the remaining skip/todo gap in `*.test.ts` and `*.test.tsx` files that the Jest rules do not cover:
-
-- `test.skipIf(...)`
-- `describe.if(...)`
-- `it.todo(...)`
-- `test.todoIf(...)`
-
-### `@alexgorbatchev/no-module-mocking`
-
-Bans whole-module mocking across common test interfaces and steers tests toward dependency injection instead:
-
-- `jest.mock(...)`
-- `jest.doMock(...)`
-- `jest.setMock(...)`
-- `jest.createMockFromModule(...)`
-- `jest.enableAutomock(...)`
-- `jest.unstable_mockModule(...)`
-- `vi.mock(...)`
-- `vi.doMock(...)`
-- `vi.importMock(...)`
-- `mock.module(...)`
-- `t.mock.module(...)`
-
-### `@alexgorbatchev/no-test-file-exports`
-
-Prohibits exports from `*.test.ts` and `*.test.tsx` files.
-
-Move shared test code into:
-
-- `helpers.ts`
-- `fixtures.ts`
-- `fixtures/`
-
-### `@alexgorbatchev/no-imports-from-tests-directory`
-
-Prevents files outside `__tests__/` from importing, requiring, or re-exporting modules from any `__tests__/`
-directory.
-
-Use this to stop test-only helpers, fixtures, and support modules from leaking into runtime or shared production code.
-
-### `@alexgorbatchev/test-file-location-convention`
-
-Requires actual test files to:
-
-- live in a sibling `__tests__/` directory
-- use the `*.test.ts` or `*.test.tsx` suffix
-
-### `@alexgorbatchev/tests-directory-file-convention`
-
-Restricts `__tests__/` contents to:
-
-- `*.test.ts`
-- `*.test.tsx`
-- `helpers.ts`
-- `helpers.tsx`
-- `fixtures.ts`
-- `fixtures.tsx`
-- anything under `fixtures/`
+For rule-by-rule rationale plus good/bad examples, see [`src/oxlint/README.md`](./src/oxlint/README.md).
