@@ -61,6 +61,30 @@ noInlineTypeExpressionsRuleTester.run(
       },
       {
         code: `
+          export function readUser(): User | null {
+            return null;
+          }
+
+          export function readCachedUser(): User | undefined {
+            return undefined;
+          }
+
+          export function readOptionalUser(): User | null | undefined {
+            return undefined;
+          }
+        `,
+        filename: "src/domain/users/readUser.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+          const maybeUserPromise: Promise<User | null> = readUserPromise();
+        `,
+        filename: "src/domain/users/readUserPromise.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
           interface IUserConfig {
             loader: (value: string) => Promise<User | null>;
             fields: Pick<User, "id" | "name">;
@@ -137,7 +161,7 @@ noInlineTypeExpressionsRuleTester.run(
       },
       {
         code: `
-          export function readUser(): User | null {
+          export function readUser(): User | Admin | null {
             return null;
           }
         `,
@@ -172,6 +196,22 @@ noInlineTypeExpressionsRuleTester.run(
       {
         code: `
           const config = value satisfies { id: string; metadata: { score: number } };
+        `,
+        filename: "src/domain/users/readUser.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedInlineTypeExpression",
+            data: {
+              kind: "object-literal type expression",
+            },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          const maybeUser: { id: string } | null = sourceUser;
         `,
         filename: "src/domain/users/readUser.ts",
         languageOptions: languageOpts,

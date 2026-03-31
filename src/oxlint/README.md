@@ -205,7 +205,7 @@ export interface IuserProfile {
 
 ### `@alexgorbatchev/no-inline-type-expressions`
 
-**Policy:** Outside type declarations, explicit type usage must rely on named declarations or inference. Do not define object, tuple, function, union, intersection, mapped, or conditional types inline at the usage site.
+**Policy:** Outside type declarations, explicit type usage must rely on named declarations or inference. Do not define object, tuple, function, broad union, intersection, mapped, or conditional types inline at the usage site. Narrow nullable or undefinable wrappers such as `T | null`, `T | undefined`, and `T | null | undefined` stay allowed.
 
 **Good**
 
@@ -229,6 +229,12 @@ export function readUser(): NullableUser {
 const sorted = items.sort((left, right) => right.score - left.score);
 ```
 
+```ts
+export function readUser(): User | null {
+  return null;
+}
+```
+
 **Bad**
 
 ```ts
@@ -240,7 +246,7 @@ const pairs: Array<[string, number]> = Object.entries(counts);
 ```
 
 ```ts
-export function readUser(): User | null {
+export function readUser(): User | Admin | null {
   return null;
 }
 ```

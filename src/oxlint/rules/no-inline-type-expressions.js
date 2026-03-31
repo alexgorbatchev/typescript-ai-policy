@@ -15,6 +15,34 @@ function isInlineTypeExpressionNode(node) {
   return node !== null && typeof node === "object" && Object.hasOwn(INLINE_TYPE_LABEL_BY_NODE_TYPE, node.type);
 }
 
+function isNullishTypeNode(node) {
+  return node?.type === "TSNullKeyword" || node?.type === "TSUndefinedKeyword";
+}
+
+function isAllowedNullableUnionType(node) {
+  if (node?.type !== "TSUnionType") {
+    return false;
+  }
+
+  let nonNullishTypeCount = 0;
+  let hasNullishType = false;
+
+  for (const memberType of node.types) {
+    if (isNullishTypeNode(memberType)) {
+      hasNullishType = true;
+      continue;
+    }
+
+    nonNullishTypeCount += 1;
+
+    if (nonNullishTypeCount > 1) {
+      return false;
+    }
+  }
+
+  return hasNullishType && nonNullishTypeCount === 1;
+}
+
 function isInsideAllowedTypeDeclaration(node) {
   let current = node.parent;
 
@@ -38,6 +66,11 @@ function hasInlineTypeExpressionAncestor(node) {
     }
 
     if (isInlineTypeExpressionNode(current)) {
+      if (isAllowedNullableUnionType(current)) {
+        current = current.parent;
+        continue;
+      }
+
       return true;
     }
 
@@ -48,7 +81,11 @@ function hasInlineTypeExpressionAncestor(node) {
 }
 
 function reportUnexpectedInlineTypeExpression(context, node) {
-  if (isInsideAllowedTypeDeclaration(node) || hasInlineTypeExpressionAncestor(node)) {
+  if (
+    isInsideAllowedTypeDeclaration(node) ||
+    hasInlineTypeExpressionAncestor(node) ||
+    isAllowedNullableUnionType(node)
+  ) {
     return;
   }
 
@@ -66,7 +103,7 @@ const noInlineTypeExpressionsRule = {
     type: /** @type {const} */ ("problem"),
     docs: {
       description:
-        "Disallow inline type expressions outside type declarations; require named type declarations or inference instead",
+        "Disallow inline type expressions outside type declarations; require named type declarations or inference instead, except for nullable or undefinable wrappers around a single existing type",
     },
     schema: [],
     messages: {
