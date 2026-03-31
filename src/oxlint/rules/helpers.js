@@ -34,10 +34,14 @@ export function getFilenameWithoutExtension(filename) {
   return extensionIndex === -1 ? baseName : baseName.slice(0, extensionIndex);
 }
 
-export function isInTestsDirectory(filename) {
-  const normalizedFilename = normalizeFilename(filename);
+export function isTestsDirectoryPath(path) {
+  const normalizedPath = normalizeFilename(path);
 
-  return normalizedFilename.startsWith("__tests__/") || normalizedFilename.includes("/__tests__/");
+  return /(^|\/)__tests__(\/|$)/u.test(normalizedPath);
+}
+
+export function isInTestsDirectory(filename) {
+  return isTestsDirectoryPath(filename);
 }
 
 export function readPathFromTestsDirectory(filename) {

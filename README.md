@@ -130,6 +130,13 @@ Move shared test code into:
 - `fixtures.ts`
 - `fixtures/`
 
+### `@alexgorbatchev/no-imports-from-tests-directory`
+
+Prevents files outside `__tests__/` from importing, requiring, or re-exporting modules from any `__tests__/`
+directory.
+
+Use this to stop test-only helpers, fixtures, and support modules from leaking into runtime or shared production code.
+
 ### `@alexgorbatchev/test-file-location-convention`
 
 Requires actual test files to:

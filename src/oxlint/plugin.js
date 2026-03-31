@@ -4,6 +4,7 @@ import requireComponentRootTestIdRule from "./rules/require-component-root-testi
 import noNonRunningTestsRule from "./rules/no-non-running-tests.js";
 import noModuleMockingRule from "./rules/no-module-mocking.js";
 import noTestFileExportsRule from "./rules/no-test-file-exports.js";
+import noImportsFromTestsDirectoryRule from "./rules/no-imports-from-tests-directory.js";
 import testFileLocationConventionRule from "./rules/test-file-location-convention.js";
 import testsDirectoryFileConventionRule from "./rules/tests-directory-file-convention.js";
 import fixtureFileContractRule from "./rules/fixture-file-contract.js";
@@ -26,6 +27,7 @@ const plugin = {
     "no-non-running-tests": noNonRunningTestsRule,
     "no-module-mocking": noModuleMockingRule,
     "no-test-file-exports": noTestFileExportsRule,
+    "no-imports-from-tests-directory": noImportsFromTestsDirectoryRule,
     "test-file-location-convention": testFileLocationConventionRule,
     "tests-directory-file-convention": testsDirectoryFileConventionRule,
     "fixture-file-contract": fixtureFileContractRule,

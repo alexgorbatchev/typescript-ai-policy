@@ -28,6 +28,7 @@ const oxlintConfig = defineConfig({
     "@alexgorbatchev/testid-naming-convention": "error",
     "@alexgorbatchev/no-react-create-element": "error",
     "@alexgorbatchev/require-component-root-testid": "error",
+    "@alexgorbatchev/no-imports-from-tests-directory": "error",
     "@alexgorbatchev/no-non-running-tests": "error",
     "@alexgorbatchev/no-module-mocking": "error",
     "@alexgorbatchev/no-test-file-exports": "error",
