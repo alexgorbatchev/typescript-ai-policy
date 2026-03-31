@@ -64,7 +64,8 @@ When adding or changing rules here:
 7. Prefer clear `meta.docs.description`, `schema`, and `messages` over ad-hoc reporting.
 8. Use `messageId` + `data` in `context.report(...)` when the rule defines `meta.messages`.
 9. Put file-scoping exceptions in Oxlint config when possible, not inside rule heuristics.
-10. If a rule is fixable, implement it with standard ESLint fixer callbacks.
+10. If a rule applies to a path-glob-addressable file role such as `index.ts`, `constants.ts`, or `types.ts`, require narrow `overrides[].files` activation in `../oxlint.config.ts` instead of global `rules`.
+11. If a rule is fixable, implement it with standard ESLint fixer callbacks.
 
 ## Rule test instructions
 

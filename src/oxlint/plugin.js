@@ -5,6 +5,7 @@ import noNonRunningTestsRule from "./rules/no-non-running-tests.js";
 import noModuleMockingRule from "./rules/no-module-mocking.js";
 import noTestFileExportsRule from "./rules/no-test-file-exports.js";
 import noImportsFromTestsDirectoryRule from "./rules/no-imports-from-tests-directory.js";
+import indexFileContractRule from "./rules/index-file-contract.js";
 import noTypeImportsFromConstantsRule from "./rules/no-type-imports-from-constants.js";
 import noTypeExportsFromConstantsRule from "./rules/no-type-exports-from-constants.js";
 import noValueExportsFromTypesRule from "./rules/no-value-exports-from-types.js";
@@ -31,6 +32,7 @@ const plugin = {
     "no-module-mocking": noModuleMockingRule,
     "no-test-file-exports": noTestFileExportsRule,
     "no-imports-from-tests-directory": noImportsFromTestsDirectoryRule,
+    "index-file-contract": indexFileContractRule,
     "no-type-imports-from-constants": noTypeImportsFromConstantsRule,
     "no-type-exports-from-constants": noTypeExportsFromConstantsRule,
     "no-value-exports-from-types": noValueExportsFromTypesRule,

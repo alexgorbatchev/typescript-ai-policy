@@ -1,0 +1,146 @@
+import { afterAll, describe, it } from "bun:test";
+import { RuleTester } from "@typescript-eslint/rule-tester";
+import { languageOpts } from "./helpers.ts";
+import indexFileContractRuleModule from "../index-file-contract.js";
+
+RuleTester.afterAll = afterAll;
+RuleTester.describe = describe;
+RuleTester.it = it;
+RuleTester.itOnly = it.only;
+
+const indexFileContractRuleTester = new RuleTester();
+
+indexFileContractRuleTester.run(
+  "index-file-contract enforces pure re-export index barrels",
+  indexFileContractRuleModule,
+  {
+    valid: [
+      {
+        code: `
+        export { createRule } from './createRule';
+        export { default as indexFileContractRule } from './index-file-contract';
+        export type { RuleConfig } from './types';
+      `,
+        filename: "src/oxlint/rules/index.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+        export * from './helpers';
+        export type * from './types';
+      `,
+        filename: "src/shared/index.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+        export function createRule() {
+          return {};
+        }
+      `,
+        filename: "src/oxlint/rules/createRule.ts",
+        languageOptions: languageOpts,
+      },
+    ],
+    invalid: [
+      {
+        code: `
+        import './register';
+      `,
+        filename: "src/oxlint/index.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedIndexStatement",
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+        export const createRule = () => ({ ok: true });
+      `,
+        filename: "src/oxlint/index.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedIndexExport",
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+        export type RuleConfig = { isEnabled: boolean };
+      `,
+        filename: "src/oxlint/index.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedIndexExport",
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+        export { createRule };
+      `,
+        filename: "src/oxlint/index.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedIndexExport",
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+        export default function createRule() {
+          return {};
+        }
+      `,
+        filename: "src/oxlint/index.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedIndexExport",
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+        export { createRule } from './createRule';
+      `,
+        filename: "src/oxlint/index.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedIndexTsxFilename",
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+        export function createRule() {
+          return <div />;
+        }
+      `,
+        filename: "src/oxlint/index.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedIndexTsxFilename",
+          },
+          {
+            messageId: "unexpectedIndexExport",
+          },
+        ],
+        output: null,
+      },
+    ],
+  },
+);

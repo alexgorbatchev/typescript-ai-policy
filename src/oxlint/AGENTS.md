@@ -38,6 +38,16 @@ const plugin = {
 export default plugin;
 ```
 
+## Rule activation scope contract
+
+When wiring a rule into `oxlint.config.ts`, classify its scope before you enable it:
+
+- use global `rules` only for true ingress/leak rules that must inspect arbitrary files outside the rule's canonical area
+- if a rule's target set is identifiable from path globs alone, enable it in the narrowest `overrides[].files` entry instead of global `rules`
+- do not treat a `context.filename` early return inside the rule module as the primary scoping mechanism; that is only a safety backstop
+- basename-addressable file-role rules such as `index.ts`, `constants.ts`, and `types.ts` are **override-scoped**, not global
+- when adding a new rule, update `src/oxlint/README.md` so the enforcement model explains why the rule is global or override-scoped
+
 ## Delegated instructions
 
 - rule-writing and rule-test instructions live in `rules/AGENTS.md`

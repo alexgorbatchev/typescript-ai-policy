@@ -48,7 +48,7 @@ bun run check
 - `@alexgorbatchev/typescript-common/oxlint-config`
 - `@alexgorbatchev/typescript-common/oxlint-plugin`
 
-The shared Oxlint config includes the custom type/value-boundary, React, test, and fixture-policy plugin rules automatically.
+The shared Oxlint config includes the custom index-barrel, type/value-boundary, React, test, and fixture-policy plugin rules automatically.
 
 ## Oxlint policy philosophy
 
@@ -98,9 +98,10 @@ If one of those fixture rules is disabled, the rest of the fixture contract beco
 | `@alexgorbatchev/no-module-mocking`                             | Ban whole-module mocking APIs and push tests toward dependency injection plus explicit stubs.                                                                    |
 | `@alexgorbatchev/no-test-file-exports`                          | Treat `*.test.ts(x)` files as execution units, not shared modules.                                                                                               |
 | `@alexgorbatchev/no-imports-from-tests-directory`               | Files outside `__tests__/` must not import, require, or re-export modules from any `__tests__/` directory.                                                       |
-| `@alexgorbatchev/no-type-imports-from-constants`                | Types must not be imported from `constants` modules, including inline `import("./constants")` type queries.                                                     |
-| `@alexgorbatchev/no-type-exports-from-constants`                | `constants.ts` files may export runtime values only; exported types must move to `types.ts`.                                                                      |
-| `@alexgorbatchev/no-value-exports-from-types`                   | `types.ts` files may export type-only API only; runtime values and value re-exports must move elsewhere.                                                          |
+| `@alexgorbatchev/index-file-contract`                           | `index.ts` must stay a pure barrel: no local definitions, no side effects, only re-exports, and never `index.tsx`.                                               |
+| `@alexgorbatchev/no-type-imports-from-constants`                | Types must not be imported from `constants` modules, including inline `import("./constants")` type queries.                                                      |
+| `@alexgorbatchev/no-type-exports-from-constants`                | `constants.ts` files may export runtime values only; exported types must move to `types.ts`.                                                                     |
+| `@alexgorbatchev/no-value-exports-from-types`                   | `types.ts` files may export type-only API only; runtime values and value re-exports must move elsewhere.                                                         |
 | `@alexgorbatchev/test-file-location-convention`                 | Real tests must live in sibling `__tests__/` directories and use the `.test.ts` / `.test.tsx` suffix.                                                            |
 | `@alexgorbatchev/tests-directory-file-convention`               | `__tests__/` may contain only test files, helpers, fixture entrypoints, or files under `fixtures/`.                                                              |
 | `@alexgorbatchev/fixture-file-contract`                         | `__tests__/fixtures.ts(x)` may export only direct named `const` fixtures and named factory functions.                                                            |

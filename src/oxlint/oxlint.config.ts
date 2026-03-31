@@ -1,10 +1,12 @@
 import { defineConfig } from "oxlint";
 
 //
-// The rules must be optimized for performance, meaning that rules should only
-// run for files they are designed for (global rules do run globally of
-// course).
-// 
+// The rules must be optimized for performance:
+// - global rules are reserved for true ingress/leak policies that must inspect
+//   arbitrary files
+// - filename-addressable roles such as index barrels, constants files, and
+//   types files belong in narrow overrides
+//
 const oxlintConfig = defineConfig({
   ignorePatterns: [
     ".cache",
@@ -35,13 +37,29 @@ const oxlintConfig = defineConfig({
     "@alexgorbatchev/require-component-root-testid": "error",
     "@alexgorbatchev/no-imports-from-tests-directory": "error",
     "@alexgorbatchev/no-type-imports-from-constants": "error",
-    "@alexgorbatchev/no-type-exports-from-constants": "error",
-    "@alexgorbatchev/no-value-exports-from-types": "error",
     "@alexgorbatchev/test-file-location-convention": "error",
     "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
     "typescript/no-explicit-any": "error",
   },
   overrides: [
+    {
+      files: ["**/index.{ts,tsx}"],
+      rules: {
+        "@alexgorbatchev/index-file-contract": "error",
+      },
+    },
+    {
+      files: ["**/constants.{ts,tsx,mts,cts}", "**/constants.d.{ts,tsx,mts,cts}"],
+      rules: {
+        "@alexgorbatchev/no-type-exports-from-constants": "error",
+      },
+    },
+    {
+      files: ["**/types.{ts,tsx,mts,cts}", "**/types.d.{ts,tsx,mts,cts}"],
+      rules: {
+        "@alexgorbatchev/no-value-exports-from-types": "error",
+      },
+    },
     {
       files: ["**/__tests__/**"],
       rules: {

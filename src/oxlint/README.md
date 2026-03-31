@@ -6,8 +6,8 @@ workflows.
 ## Philosophy
 
 The custom `@alexgorbatchev/*` rules are not generic style rules. They are **codified policies** that make
-constants-vs-types boundaries, test layout, fixture structure, React test ids, and test isolation deterministic enough
-for LLM agents to follow reliably.
+index-barrel structure, constants-vs-types boundaries, test layout, fixture structure, React test ids, and test
+isolation deterministic enough for LLM agents to follow reliably.
 
 Within the custom plugin, rule messages are intentionally written as **LLM steering instructions**: they explain what
 must change, where it must move, and which replacement shape is required.
@@ -42,27 +42,30 @@ on files that cannot meaningfully violate them.
    location:
    - `@alexgorbatchev/no-imports-from-tests-directory`
    - `@alexgorbatchev/no-type-imports-from-constants`
-   - `@alexgorbatchev/no-type-exports-from-constants`
-   - `@alexgorbatchev/no-value-exports-from-types`
    - `@alexgorbatchev/test-file-location-convention`
    - `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
-2. **`__tests__/` directory rules** run only inside `__tests__/` because they govern that directory's allowed contents
+2. **Filename-addressable file-role rules** run only on the exact file role they govern:
+   - `@alexgorbatchev/index-file-contract` on `**/index.ts` and `**/index.tsx`
+   - `@alexgorbatchev/no-type-exports-from-constants` on `**/constants.{ts,tsx,mts,cts}` and `**/constants.d.{ts,tsx,mts,cts}`
+   - `@alexgorbatchev/no-value-exports-from-types` on `**/types.{ts,tsx,mts,cts}` and `**/types.d.{ts,tsx,mts,cts}`
+3. **`__tests__/` directory rules** run only inside `__tests__/` because they govern that directory's allowed contents
    and test helper behavior:
    - `@alexgorbatchev/tests-directory-file-convention`
    - `@alexgorbatchev/no-module-mocking`
-3. **Canonical test-file rules** run only on `__tests__/*.test.ts` and `__tests__/*.test.tsx`:
+4. **Canonical test-file rules** run only on `__tests__/*.test.ts` and `__tests__/*.test.tsx`:
    - `@alexgorbatchev/no-non-running-tests`
    - `@alexgorbatchev/no-test-file-exports`
    - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
    - `@alexgorbatchev/fixture-import-path-convention`
    - `jest/no-disabled-tests`
    - `jest/no-focused-tests`
-4. **Fixture-entrypoint and fixture-area rules** run only on `__tests__/fixtures.ts`, `__tests__/fixtures.tsx`, and
+5. **Fixture-entrypoint and fixture-area rules** run only on `__tests__/fixtures.ts`, `__tests__/fixtures.tsx`, and
    files under `__tests__/fixtures/`, depending on the rule.
 
 This staged configuration is part of the contract. The naming/location rule is the front door that steers misplaced
-files into canonical `__tests__/*.test.ts[x]` form; the narrower overrides then enforce the rest of the policy only
-after a file has the correct role.
+files into canonical `__tests__/*.test.ts[x]` form; basename-addressable file-role rules such as `index.ts`,
+`constants.ts`, and `types.ts` are scoped by `overrides`; and the narrower overrides then enforce the rest of the
+policy only after a file has the correct role.
 
 ## Enabled rules
 
@@ -149,6 +152,28 @@ it.only("renders", () => {});
 ```
 
 ## Type/value boundary policies
+
+### `@alexgorbatchev/index-file-contract`
+
+**Policy:** `index.ts` is a pure barrel entrypoint. It must not define local symbols, execute side-effect statements, or use the `index.tsx` filename. Every top-level statement must be a re-export from another module.
+
+**Good**
+
+```ts
+export { createUser } from "./createUser";
+export { default as UserService } from "./UserService";
+export type { UserConfig } from "./types";
+```
+
+**Bad**
+
+```tsx
+import "./register";
+
+export function UserService() {
+  return <section />;
+}
+```
 
 ### `@alexgorbatchev/no-type-imports-from-constants`
 
