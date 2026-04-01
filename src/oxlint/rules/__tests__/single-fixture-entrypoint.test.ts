@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import singleFixtureEntrypointRuleModule from "../single-fixture-entrypoint.js";
+import singleFixtureEntrypointRuleModule from "../single-fixture-entrypoint.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import hookFileContractRuleModule from "../hook-file-contract.js";
+import hookFileContractRuleModule from "../hook-file-contract.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

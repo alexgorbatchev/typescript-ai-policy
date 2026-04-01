@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import noTypeExportsFromConstantsRuleModule from "../no-type-exports-from-constants.js";
+import noTypeExportsFromConstantsRuleModule from "../no-type-exports-from-constants.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

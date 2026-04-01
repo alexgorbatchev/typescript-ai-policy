@@ -1,6 +1,6 @@
 import { defineConfig, type OxlintConfig } from "oxlint";
 import { mergeConfig } from "../shared/mergeConfig.ts";
-import { assertNoRuleCollisions } from "./assertNoRuleCollisions.js";
+import { assertNoRuleCollisions } from "./assertNoRuleCollisions.ts";
 
 export type OxlintConfigCallback = () => OxlintConfig;
 

@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import fixtureExportNamingConventionRuleModule from "../fixture-export-naming-convention.js";
+import fixtureExportNamingConventionRuleModule from "../fixture-export-naming-convention.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

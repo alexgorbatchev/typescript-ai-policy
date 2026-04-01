@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import noNonRunningTestsRuleModule from "../no-non-running-tests.js";
+import noNonRunningTestsRuleModule from "../no-non-running-tests.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

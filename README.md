@@ -8,6 +8,8 @@ as direct repair instructions so an agent can make the required change instead o
 
 **The benefit is twofold: guaranteed enforcement and reduced number of context instructions.**
 
+The shared Oxlint policy is implemented in TypeScript-authored custom rule modules under `src/oxlint/`.
+
 Upstream rules stay enabled as baseline correctness guardrails around that stricter policy layer.
 
 These rules are designed to work as a **full policy set**, not as a grab bag of independent preferences. Disabling one

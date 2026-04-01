@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import hookExportLocationConventionRuleModule from "../hook-export-location-convention.js";
+import hookExportLocationConventionRuleModule from "../hook-export-location-convention.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

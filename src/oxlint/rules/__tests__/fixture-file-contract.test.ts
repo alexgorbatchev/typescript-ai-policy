@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import fixtureFileContractRuleModule from "../fixture-file-contract.js";
+import fixtureFileContractRuleModule from "../fixture-file-contract.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

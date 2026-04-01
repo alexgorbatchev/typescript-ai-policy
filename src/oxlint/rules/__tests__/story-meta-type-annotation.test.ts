@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import storyMetaTypeAnnotationRuleModule from "../story-meta-type-annotation.js";
+import storyMetaTypeAnnotationRuleModule from "../story-meta-type-annotation.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

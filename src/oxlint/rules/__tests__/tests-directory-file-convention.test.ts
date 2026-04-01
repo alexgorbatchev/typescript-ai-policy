@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import testsDirectoryFileConventionRuleModule from "../tests-directory-file-convention.js";
+import testsDirectoryFileConventionRuleModule from "../tests-directory-file-convention.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

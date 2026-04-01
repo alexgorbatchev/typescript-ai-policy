@@ -1,10 +1,10 @@
 # AGENTS
 
-This directory contains the local **Oxlint JS plugin** for this package.
+This directory contains the local **Oxlint plugin source** for this package.
 
 ## Folder intent
 
-- `plugin.js` is the JavaScript plugin entrypoint that registers the local rules under a plugin name
+- `plugin.ts` is the TypeScript plugin entrypoint that registers the local rules under a plugin name
 - `rules/` contains the individual Oxlint rule modules
 - `rules/__tests__/` contains Bun + `RuleTester` tests for those rules
 - when making changes, update `README.md` at root level and in `oxlint`
@@ -25,11 +25,11 @@ If a policy cannot be expressed clearly as a steering instruction for an LLM cod
 
 ## Plugin-format contract
 
-**Keep the plugin entrypoint in JavaScript `.js` ESM format.**
+**Keep the plugin entrypoint in TypeScript `.ts` ESM format.**
 
-Oxlint JS plugins are authored with an ESLint 10+ compatible plugin shape, so `plugin.js` should look like:
+This repository now stores the plugin source in `plugin.ts`, using the same ESLint 10+ compatible plugin shape:
 
-```js
+```ts
 const plugin = {
   meta: { name: "..." },
   rules: { "...": ruleModule },

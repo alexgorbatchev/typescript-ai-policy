@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import interfaceNamingConventionRuleModule from "../interface-naming-convention.js";
+import interfaceNamingConventionRuleModule from "../interface-naming-convention.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

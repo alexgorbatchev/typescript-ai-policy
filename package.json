@@ -9,7 +9,7 @@
   "exports": {
     "./oxfmt-config": "./src/oxfmt/createOxfmtConfig.ts",
     "./oxlint-config": "./src/oxlint/createOxlintConfig.ts",
-    "./oxlint-plugin": "./src/oxlint/plugin.js"
+    "./oxlint-plugin": "./src/oxlint/plugin.ts"
   },
   "peerDependencies": {
     "oxfmt": "^0.42.0",

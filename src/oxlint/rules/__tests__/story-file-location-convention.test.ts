@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import storyFileLocationConventionRuleModule from "../story-file-location-convention.js";
+import storyFileLocationConventionRuleModule from "../story-file-location-convention.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

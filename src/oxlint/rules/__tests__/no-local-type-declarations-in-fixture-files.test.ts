@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import noLocalTypeDeclarationsInFixtureFilesRuleModule from "../no-local-type-declarations-in-fixture-files.js";
+import noLocalTypeDeclarationsInFixtureFilesRuleModule from "../no-local-type-declarations-in-fixture-files.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

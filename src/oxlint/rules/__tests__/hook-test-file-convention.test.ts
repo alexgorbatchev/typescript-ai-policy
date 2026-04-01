@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import hookTestFileConventionRuleModule from "../hook-test-file-convention.js";
+import hookTestFileConventionRuleModule from "../hook-test-file-convention.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import noFixtureExportsOutsideFixtureEntrypointRuleModule from "../no-fixture-exports-outside-fixture-entrypoint.js";
+import noFixtureExportsOutsideFixtureEntrypointRuleModule from "../no-fixture-exports-outside-fixture-entrypoint.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

@@ -1,7 +1,7 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import noInlineTypeExpressionsRuleModule from "../no-inline-type-expressions.js";
+import noInlineTypeExpressionsRuleModule from "../no-inline-type-expressions.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;

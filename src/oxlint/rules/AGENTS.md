@@ -1,15 +1,15 @@
 # AGENTS
 
-This directory contains the local **Oxlint JS rule modules** used by `../plugin.js`.
+This directory contains the local **Oxlint rule modules** used by `../plugin.ts`.
 
 ## Core rule-format contract
 
-**Write rule files exactly like ESLint 9+ rule files, but keep them in JavaScript files.**
+**Write rule files exactly like ESLint 9+ rule files, but keep them in TypeScript files.**
 
 Oxlint's JS plugin API is documented as **ESLint v9+ compatible**. In practice, that means:
 
 - Rule modules use the normal ESLint shape: `export default { meta, create(context) { ... } }`
-- Rule files must stay as **`.js` ESM modules**; do not convert them to `.ts`, because Oxlint currently loads JavaScript plugins, not TypeScript source files
+- Rule files now live as **`.ts` ESM modules** in this repository
 - Visitors are standard ESLint/ESTree visitors like `Program`, `CallExpression`, `JSXAttribute`, etc.
 - `context.report(...)`, `messageId`, `fix(fixer)`, `schema`, `messages`, and `fixable` should be used exactly like normal ESLint 9+ rules
 - `meta.messages` is required for stable testing; do not rely on ad-hoc raw messages
@@ -18,9 +18,9 @@ If you know how to write an ESLint 9+ custom rule, you already know how to write
 
 ## Folder intent
 
-- each `*.js` file in this directory is a single rule module
-- `helpers.js` contains shared JavaScript helpers reused by multiple rules
-- `../plugin.js` registers these rule modules under the plugin name
+- each `*.ts` file in this directory is a single rule module
+- `helpers.ts` contains shared helpers reused by multiple rules
+- `../plugin.ts` registers these rule modules under the plugin name
 - `__tests__/` contains Bun + `RuleTester` tests for the local rules
 
 ## Expected rule shape
@@ -56,8 +56,8 @@ export default {
 When adding or changing rules here:
 
 1. Follow **ESLint 9+ custom rule conventions** first.
-2. Keep each rule in its own `.js` file and export a single rule module as the default export.
-3. Put reusable JavaScript helpers in `helpers.js` instead of duplicating them across rules.
+2. Keep each rule in its own `.ts` file and export a single rule module as the default export.
+3. Put reusable shared helpers in `helpers.ts` instead of duplicating them across rules.
 4. Keep rule file names aligned with plugin rule ids in kebab-case whenever possible.
 5. Prefer conventional ESLint-style rule ids: use `no-*` for bans, `require-*` for must-exist policies, and `*-convention` / `consistent-*` for naming or formatting rules.
 6. Keep each rule focused on one repository policy.
@@ -72,7 +72,7 @@ When adding or changing rules here:
 Use the same structure for every Oxlint rule test in `__tests__/`.
 
 - Test files are **TypeScript**: `*.test.ts`
-- Rule modules under test stay in **JavaScript** and are imported from `../*.js`
+- Rule modules under test live in **TypeScript** and are imported from `../*.ts`
 - Tests run with **Bun** and `@typescript-eslint/rule-tester`
 - Prefer **`RuleTester` rule tests** over ad-hoc subprocess wrappers
 - Use the shared language options from `./__tests__/helpers.ts`
@@ -84,7 +84,7 @@ Use the same structure for every Oxlint rule test in `__tests__/`.
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
-import ruleModule from "../my-rule.js";
+import ruleModule from "../my-rule.ts";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;
@@ -127,7 +127,7 @@ ruleTester.run("my-rule", ruleModule, {
 ### Repository-specific expectations
 
 - Test the **rule module directly** with `RuleTester`
-- Import rule modules from `../*.js`, not through `plugin.js`
+- Import rule modules from `../*.ts`, not through `plugin.ts`
 - Reuse `languageOpts` from `./__tests__/helpers.ts`
 - Keep tests colocated in `__tests__/`
 - Keep naming aligned between source rule files and test files
@@ -143,4 +143,4 @@ When unsure, consult:
 
 The important repo-specific assumption is simple:
 
-> In this folder, **Oxlint rule files should be authored as ESLint 9+ lint files in JavaScript `.js` module format**, and their tests should live in `__tests__/` as `*.test.ts` files.
+> In this folder, **Oxlint rule files are authored as ESLint 9+ lint files in TypeScript `.ts` module format**, and their tests live in `__tests__/` as `*.test.ts` files.

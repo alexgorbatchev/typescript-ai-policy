@@ -1,7 +1,7 @@
 # Oxlint policy pack
 
-This package ships a shared Oxlint config plus a local JS plugin that encodes repository policy for agentic coding
-workflows.
+This package ships a shared Oxlint config plus a local TypeScript plugin source that encodes repository policy for
+agentic coding workflows.
 
 ## Philosophy
 
