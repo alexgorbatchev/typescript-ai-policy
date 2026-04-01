@@ -34,6 +34,13 @@ fixtureFileContractRuleTester.run(
       },
       {
         code: `
+          export const fixture_userAccountRows = [{ id: "1" }];
+        `,
+        filename: "src/accounts/components/stories/fixtures.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
           export default { fixture_userAccountRows: [] };
         `,
         filename: "src/accounts/fixtures.ts",
@@ -93,6 +100,19 @@ fixtureFileContractRuleTester.run(
         errors: [
           {
             messageId: "unexpectedExportDeclaration",
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          export default { fixture_userAccountRows: [] };
+        `,
+        filename: "src/accounts/components/stories/fixtures.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedDefaultExport",
           },
         ],
         output: null,

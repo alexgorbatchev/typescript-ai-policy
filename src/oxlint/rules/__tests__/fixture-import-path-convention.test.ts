@@ -37,6 +37,13 @@ fixtureImportPathConventionRuleTester.run(
         filename: "src/accounts/__tests__/rows.test.ts",
         languageOptions: languageOpts,
       },
+      {
+        code: `
+          import { fixture_userAccountRows } from "./fixtures";
+        `,
+        filename: "src/accounts/components/stories/AccountPanel.stories.tsx",
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {
@@ -167,6 +174,22 @@ fixtureImportPathConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidFixturesImportPath",
+            data: {
+              name: "fixture_userAccountRows",
+            },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          import { fixture_userAccountRows as accountRows } from "./fixtures";
+        `,
+        filename: "src/accounts/components/stories/AccountPanel.stories.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "invalidFixturesImportAlias",
             data: {
               name: "fixture_userAccountRows",
             },

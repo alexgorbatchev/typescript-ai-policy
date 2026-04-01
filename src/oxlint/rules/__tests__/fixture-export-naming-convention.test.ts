@@ -36,6 +36,13 @@ fixtureExportNamingConventionRuleTester.run(
         code: `
           export const fixture_userAccountRows = [{ id: "1" }];
         `,
+        filename: "src/accounts/components/stories/fixtures.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+          export const fixture_userAccountRows = [{ id: "1" }];
+        `,
         filename: "src/accounts/fixtures.ts",
         languageOptions: languageOpts,
       },

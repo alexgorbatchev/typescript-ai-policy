@@ -33,6 +33,13 @@ noLocalTypeDeclarationsInFixtureFilesRuleTester.run(
       },
       {
         code: `
+          export const buildRows = () => [];
+        `,
+        filename: "src/accounts/components/stories/fixtures/buildRows.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
           type UserRow = { id: string };
           export const buildRows = () => [];
         `,
@@ -85,6 +92,20 @@ noLocalTypeDeclarationsInFixtureFilesRuleTester.run(
         errors: [
           {
             messageId: "unexpectedEnumDeclaration",
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          type StoryRow = { id: string };
+          export const fixture_storyRows = [];
+        `,
+        filename: "src/accounts/components/stories/fixtures.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedTypeAliasDeclaration",
           },
         ],
         output: null,

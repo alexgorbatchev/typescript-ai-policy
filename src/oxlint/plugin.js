@@ -15,7 +15,11 @@ import componentFileLocationConventionRule from "./rules/component-file-location
 import componentDirectoryFileConventionRule from "./rules/component-directory-file-convention.js";
 import componentFileContractRule from "./rules/component-file-contract.js";
 import componentFileNamingConventionRule from "./rules/component-file-naming-convention.js";
-import componentTestFileConventionRule from "./rules/component-test-file-convention.js";
+import componentStoryFileConventionRule from "./rules/component-story-file-convention.js";
+import storiesDirectoryFileConventionRule from "./rules/stories-directory-file-convention.js";
+import storyFileLocationConventionRule from "./rules/story-file-location-convention.js";
+import storyMetaTypeAnnotationRule from "./rules/story-meta-type-annotation.js";
+import storyExportContractRule from "./rules/story-export-contract.js";
 import hookExportLocationConventionRule from "./rules/hook-export-location-convention.js";
 import hooksDirectoryFileConventionRule from "./rules/hooks-directory-file-convention.js";
 import hookFileContractRule from "./rules/hook-file-contract.js";
@@ -54,7 +58,11 @@ const plugin = {
     "component-directory-file-convention": componentDirectoryFileConventionRule,
     "component-file-contract": componentFileContractRule,
     "component-file-naming-convention": componentFileNamingConventionRule,
-    "component-test-file-convention": componentTestFileConventionRule,
+    "component-story-file-convention": componentStoryFileConventionRule,
+    "stories-directory-file-convention": storiesDirectoryFileConventionRule,
+    "story-file-location-convention": storyFileLocationConventionRule,
+    "story-meta-type-annotation": storyMetaTypeAnnotationRule,
+    "story-export-contract": storyExportContractRule,
     "hook-export-location-convention": hookExportLocationConventionRule,
     "hooks-directory-file-convention": hooksDirectoryFileConventionRule,
     "hook-file-contract": hookFileContractRule,

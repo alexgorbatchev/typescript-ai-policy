@@ -14,9 +14,7 @@ describe("createOxlintConfig", () => {
     ]);
     expect(oxlintConfig.rules).toEqual({
       eqeqeq: "error",
-      "@alexgorbatchev/testid-naming-convention": "error",
       "@alexgorbatchev/no-react-create-element": "error",
-      "@alexgorbatchev/require-component-root-testid": "error",
       "@alexgorbatchev/no-imports-from-tests-directory": "error",
       "@alexgorbatchev/no-type-imports-from-constants": "error",
       "@alexgorbatchev/component-file-location-convention": "error",
@@ -24,6 +22,44 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/test-file-location-convention": "error",
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "typescript/no-explicit-any": "error",
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/stories/**"],
+      rules: {
+        "@alexgorbatchev/stories-directory-file-convention": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/*.stories.tsx"],
+      rules: {
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/story-file-location-convention": "error",
+        "@alexgorbatchev/story-meta-type-annotation": "error",
+        "@alexgorbatchev/story-export-contract": "error",
+        "@alexgorbatchev/no-inline-fixture-bindings-in-tests": "error",
+        "@alexgorbatchev/fixture-import-path-convention": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/components/*.tsx", "**/templates/*.tsx", "**/layouts/*.tsx"],
+      rules: {
+        "@alexgorbatchev/component-file-contract": "error",
+        "@alexgorbatchev/component-file-naming-convention": "error",
+        "@alexgorbatchev/component-story-file-convention": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/__tests__/fixtures.{ts,tsx}", "**/stories/fixtures.{ts,tsx}"],
+      rules: {
+        "@alexgorbatchev/fixture-file-contract": "error",
+        "@alexgorbatchev/fixture-export-naming-convention": "error",
+        "@alexgorbatchev/fixture-export-type-contract": "error",
+      },
     });
   });
 
@@ -52,9 +88,7 @@ describe("createOxlintConfig", () => {
     expect(oxlintConfig.rules).toEqual({
       "no-var": "error",
       eqeqeq: "error",
-      "@alexgorbatchev/testid-naming-convention": "error",
       "@alexgorbatchev/no-react-create-element": "error",
-      "@alexgorbatchev/require-component-root-testid": "error",
       "@alexgorbatchev/no-imports-from-tests-directory": "error",
       "@alexgorbatchev/no-type-imports-from-constants": "error",
       "@alexgorbatchev/component-file-location-convention": "error",

@@ -1,18 +1,14 @@
-import {
-  getExtension,
-  isExemptSupportBasename,
-  isStrictAreaAllowedSupportFile,
-  readPathFromFirstMatchingDirectory,
-} from "./helpers.js";
+import { getBaseName, getExtension, isExemptSupportBasename, readPathFromFirstMatchingDirectory } from "./helpers.js";
 
 const COMPONENT_DIRECTORY_NAMES = new Set(["components", "templates", "layouts"]);
+const COMPONENT_ALLOWED_SUPPORT_FILES = new Set(["constants.ts", "index.ts", "types.ts"]);
 
 function isAllowedComponentDirectoryRelativePath(relativePath, filename) {
   if (!relativePath) {
     return false;
   }
 
-  if (relativePath.startsWith("__tests__/")) {
+  if (relativePath.startsWith("stories/")) {
     return true;
   }
 
@@ -20,7 +16,7 @@ function isAllowedComponentDirectoryRelativePath(relativePath, filename) {
     return false;
   }
 
-  if (isStrictAreaAllowedSupportFile(filename)) {
+  if (COMPONENT_ALLOWED_SUPPORT_FILES.has(getBaseName(filename))) {
     return true;
   }
 
@@ -32,12 +28,12 @@ const componentDirectoryFileConventionRule = {
     type: /** @type {const} */ ("problem"),
     docs: {
       description:
-        'Restrict "components", "templates", and "layouts" directories to direct-child component files, exempt support basenames, and sibling "__tests__" trees',
+        'Restrict "components", "templates", and "layouts" directories to direct-child component files, direct-child support files (`constants.ts`, `index.ts`, `types.ts`), and sibling "stories/" trees',
     },
     schema: [],
     messages: {
       invalidComponentDirectoryFile:
-        'Move or rename "{{ relativePath }}". A "{{ directoryName }}/" directory may contain only direct-child component ".tsx" files, direct-child "index.ts" or "types.ts" files, or a direct-child "__tests__/" tree.',
+        'Move or rename "{{ relativePath }}". A "{{ directoryName }}/" directory may contain only direct-child component ".tsx" files, direct-child "constants.ts", "index.ts", or "types.ts" files, or a direct-child "stories/" tree.',
     },
   },
   create(context) {

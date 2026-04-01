@@ -55,6 +55,15 @@ fixtureExportTypeContractRuleTester.run(
       },
       {
         code: `
+          import type { UserRow } from "../UserRow";
+
+          export const fixture_userAccountRows: UserRow[] = [];
+        `,
+        filename: "src/accounts/components/stories/fixtures.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
           type UserRow = { id: string };
           export const fixture_userAccountRows: UserRow[] = [];
         `,

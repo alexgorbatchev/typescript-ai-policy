@@ -34,9 +34,7 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
   ],
   rules: {
     eqeqeq: "error",
-    "@alexgorbatchev/testid-naming-convention": "error",
     "@alexgorbatchev/no-react-create-element": "error",
-    "@alexgorbatchev/require-component-root-testid": "error",
     "@alexgorbatchev/no-imports-from-tests-directory": "error",
     "@alexgorbatchev/no-type-imports-from-constants": "error",
     "@alexgorbatchev/component-file-location-convention": "error",
@@ -54,6 +52,31 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       },
     },
     {
+      files: ["**/*.tsx"],
+      rules: {
+        "@alexgorbatchev/testid-naming-convention": "error",
+        "@alexgorbatchev/require-component-root-testid": "error",
+      },
+    },
+    {
+      files: ["**/stories/**"],
+      rules: {
+        "@alexgorbatchev/stories-directory-file-convention": "error",
+      },
+    },
+    {
+      files: ["**/*.stories.tsx"],
+      rules: {
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/story-file-location-convention": "error",
+        "@alexgorbatchev/story-meta-type-annotation": "error",
+        "@alexgorbatchev/story-export-contract": "error",
+        "@alexgorbatchev/no-inline-fixture-bindings-in-tests": "error",
+        "@alexgorbatchev/fixture-import-path-convention": "error",
+      },
+    },
+    {
       files: ["**/components/**/*.{ts,tsx}", "**/templates/**/*.{ts,tsx}", "**/layouts/**/*.{ts,tsx}"],
       rules: {
         "@alexgorbatchev/component-directory-file-convention": "error",
@@ -64,7 +87,7 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       rules: {
         "@alexgorbatchev/component-file-contract": "error",
         "@alexgorbatchev/component-file-naming-convention": "error",
-        "@alexgorbatchev/component-test-file-convention": "error",
+        "@alexgorbatchev/component-story-file-convention": "error",
       },
     },
     {
@@ -118,18 +141,23 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       },
     },
     {
-      files: ["**/__tests__/fixtures.{ts,tsx}"],
+      files: ["**/__tests__/fixtures.{ts,tsx}", "**/stories/fixtures.{ts,tsx}"],
       rules: {
         "@alexgorbatchev/fixture-file-contract": "error",
         "@alexgorbatchev/fixture-export-naming-convention": "error",
         "@alexgorbatchev/fixture-export-type-contract": "error",
-        "@alexgorbatchev/single-fixture-entrypoint": "error",
       },
     },
     {
-      files: ["**/__tests__/fixtures.{ts,tsx}", "**/__tests__/fixtures/**/*.{ts,tsx}"],
+      files: [
+        "**/__tests__/fixtures.{ts,tsx}",
+        "**/__tests__/fixtures/**/*.{ts,tsx}",
+        "**/stories/fixtures.{ts,tsx}",
+        "**/stories/fixtures/**/*.{ts,tsx}",
+      ],
       rules: {
         "@alexgorbatchev/no-local-type-declarations-in-fixture-files": "error",
+        "@alexgorbatchev/single-fixture-entrypoint": "error",
       },
     },
   ],

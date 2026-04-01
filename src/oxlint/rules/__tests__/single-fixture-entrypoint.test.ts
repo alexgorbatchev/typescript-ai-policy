@@ -11,46 +11,51 @@ RuleTester.describe = describe;
 RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
+type SupportDirectoryName = "__tests__" | "stories";
+
 const tempRootDirectoryPath = mkdtempSync(join(tmpdir(), "single-fixture-entrypoint-"));
 
 afterAll(() => {
   rmSync(tempRootDirectoryPath, { recursive: true, force: true });
 });
 
-function createTestsDirectoryPath(name: string): string {
-  const directoryPath = join(tempRootDirectoryPath, name, "__tests__");
+function createSupportDirectoryPath(name: string, directoryName: SupportDirectoryName): string {
+  const directoryPath = join(tempRootDirectoryPath, name, directoryName);
   mkdirSync(directoryPath, { recursive: true });
   return directoryPath;
 }
 
-const fixturesTsOnlyDirectoryPath = createTestsDirectoryPath("fixtures-ts-only");
+const fixturesTsOnlyDirectoryPath = createSupportDirectoryPath("fixtures-ts-only", "__tests__");
 writeFileSync(join(fixturesTsOnlyDirectoryPath, "fixtures.ts"), "export const fixture_userAccountRows = [];\n");
 
-const fixturesTsxOnlyDirectoryPath = createTestsDirectoryPath("fixtures-tsx-only");
+const fixturesTsxOnlyDirectoryPath = createSupportDirectoryPath("fixtures-tsx-only", "__tests__");
 writeFileSync(join(fixturesTsxOnlyDirectoryPath, "fixtures.tsx"), "export const fixture_userAccountRows = <div />;\n");
 
-const fixturesDirectoryOnlyPath = createTestsDirectoryPath("fixtures-directory-only");
+const fixturesDirectoryOnlyPath = createSupportDirectoryPath("fixtures-directory-only", "__tests__");
 mkdirSync(join(fixturesDirectoryOnlyPath, "fixtures"), { recursive: true });
 writeFileSync(join(fixturesDirectoryOnlyPath, "fixtures", "rows.ts"), "export const rows = [];\n");
 
-const fixturesTsAndTsxDirectoryPath = createTestsDirectoryPath("fixtures-ts-and-tsx");
+const storyFixturesTsOnlyDirectoryPath = createSupportDirectoryPath("story-fixtures-ts-only", "stories");
+writeFileSync(join(storyFixturesTsOnlyDirectoryPath, "fixtures.ts"), "export const fixture_storyRows = [];\n");
+
+const fixturesTsAndTsxDirectoryPath = createSupportDirectoryPath("fixtures-ts-and-tsx", "__tests__");
 writeFileSync(join(fixturesTsAndTsxDirectoryPath, "fixtures.ts"), "export const fixture_userAccountRows = [];\n");
 writeFileSync(join(fixturesTsAndTsxDirectoryPath, "fixtures.tsx"), "export const fixture_userAccountRows = <div />;\n");
 
-const fixturesTsAndDirectoryPath = createTestsDirectoryPath("fixtures-ts-and-directory");
+const fixturesTsAndDirectoryPath = createSupportDirectoryPath("fixtures-ts-and-directory", "__tests__");
 writeFileSync(join(fixturesTsAndDirectoryPath, "fixtures.ts"), "export const fixture_userAccountRows = [];\n");
 mkdirSync(join(fixturesTsAndDirectoryPath, "fixtures"), { recursive: true });
 writeFileSync(join(fixturesTsAndDirectoryPath, "fixtures", "rows.ts"), "export const rows = [];\n");
 
-const fixturesTsxAndDirectoryPath = createTestsDirectoryPath("fixtures-tsx-and-directory");
-writeFileSync(join(fixturesTsxAndDirectoryPath, "fixtures.tsx"), "export const fixture_userAccountRows = <div />;\n");
-mkdirSync(join(fixturesTsxAndDirectoryPath, "fixtures"), { recursive: true });
-writeFileSync(join(fixturesTsxAndDirectoryPath, "fixtures", "rows.ts"), "export const rows = [];\n");
+const storyFixturesTsxAndDirectoryPath = createSupportDirectoryPath("story-fixtures-tsx-and-directory", "stories");
+writeFileSync(join(storyFixturesTsxAndDirectoryPath, "fixtures.tsx"), "export const fixture_storyRows = <div />;\n");
+mkdirSync(join(storyFixturesTsxAndDirectoryPath, "fixtures"), { recursive: true });
+writeFileSync(join(storyFixturesTsxAndDirectoryPath, "fixtures", "rows.ts"), "export const rows = [];\n");
 
 const ruleTester = new RuleTester();
 
 ruleTester.run(
-  "single-fixture-entrypoint allows only one fixture entrypoint shape per __tests__ directory",
+  "single-fixture-entrypoint allows only one fixture entrypoint shape per support directory",
   singleFixtureEntrypointRuleModule,
   {
     valid: [
@@ -69,6 +74,11 @@ ruleTester.run(
         filename: join(fixturesDirectoryOnlyPath, "fixtures", "rows.ts"),
         languageOptions: languageOpts,
       },
+      {
+        code: `export const fixture_storyRows = [];`,
+        filename: join(storyFixturesTsOnlyDirectoryPath, "fixtures.ts"),
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {
@@ -79,6 +89,7 @@ ruleTester.run(
           {
             messageId: "conflictingFixtureEntrypoints",
             data: {
+              directoryLabel: "__tests__",
               entries: "fixtures.ts, fixtures.tsx",
             },
           },
@@ -93,6 +104,7 @@ ruleTester.run(
           {
             messageId: "conflictingFixtureEntrypoints",
             data: {
+              directoryLabel: "__tests__",
               entries: "fixtures.ts, fixtures/",
             },
           },
@@ -100,13 +112,14 @@ ruleTester.run(
         output: null,
       },
       {
-        code: `export const fixture_userAccountRows = <div />;`,
-        filename: join(fixturesTsxAndDirectoryPath, "fixtures.tsx"),
+        code: `export const fixture_storyRows = <div />;`,
+        filename: join(storyFixturesTsxAndDirectoryPath, "fixtures.tsx"),
         languageOptions: languageOpts,
         errors: [
           {
             messageId: "conflictingFixtureEntrypoints",
             data: {
+              directoryLabel: "stories",
               entries: "fixtures.tsx, fixtures/",
             },
           },

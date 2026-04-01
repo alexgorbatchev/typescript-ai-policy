@@ -11,7 +11,7 @@ RuleTester.itOnly = it.only;
 const ruleTester = new RuleTester();
 
 ruleTester.run(
-  "component-directory-file-convention restricts component area contents to direct-child ownership files, support basenames, and sibling tests",
+  "component-directory-file-convention restricts component area contents to direct-child ownership files, support basenames, and sibling stories",
   componentDirectoryFileConventionRuleModule,
   {
     valid: [
@@ -31,8 +31,23 @@ ruleTester.run(
         languageOptions: languageOpts,
       },
       {
-        code: `import { test } from 'bun:test'; test('renders', () => {});`,
-        filename: "src/accounts/components/__tests__/AccountPanel.test.tsx",
+        code: `export const ACCOUNT_PANEL_KIND = 'primary';`,
+        filename: "src/accounts/components/constants.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export default {};`,
+        filename: "src/accounts/components/stories/AccountPanel.stories.tsx",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export const renderPanel = () => null;`,
+        filename: "src/accounts/components/stories/helpers.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export const fixture_accountPanel = {};`,
+        filename: "src/accounts/components/stories/fixtures.ts",
         languageOptions: languageOpts,
       },
     ],
@@ -62,21 +77,6 @@ ruleTester.run(
             data: {
               directoryName: "components",
               relativePath: "utils.ts",
-            },
-          },
-        ],
-        output: null,
-      },
-      {
-        code: `export const ACCOUNT_PANEL_KIND = 'primary';`,
-        filename: "src/accounts/components/constants.ts",
-        languageOptions: languageOpts,
-        errors: [
-          {
-            messageId: "invalidComponentDirectoryFile",
-            data: {
-              directoryName: "components",
-              relativePath: "constants.ts",
             },
           },
         ],
@@ -122,6 +122,51 @@ ruleTester.run(
             data: {
               directoryName: "templates",
               relativePath: "email/Welcome.tsx",
+            },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `import { test } from 'bun:test'; test('renders', () => {});`,
+        filename: "src/accounts/components/__tests__/AccountPanel.test.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "invalidComponentDirectoryFile",
+            data: {
+              directoryName: "components",
+              relativePath: "__tests__/AccountPanel.test.tsx",
+            },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `export const renderPanel = () => null;`,
+        filename: "src/accounts/components/__tests__/helpers.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "invalidComponentDirectoryFile",
+            data: {
+              directoryName: "components",
+              relativePath: "__tests__/helpers.ts",
+            },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `export const fixture_accountPanel = {};`,
+        filename: "src/accounts/components/__tests__/fixtures.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "invalidComponentDirectoryFile",
+            data: {
+              directoryName: "components",
+              relativePath: "__tests__/fixtures.ts",
             },
           },
         ],

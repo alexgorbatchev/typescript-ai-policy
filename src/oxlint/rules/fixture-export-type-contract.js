@@ -101,7 +101,7 @@ const fixtureExportTypeContractRule = {
     type: /** @type {const} */ ("problem"),
     docs: {
       description:
-        "Require fixture entrypoint exports to use imported types and ban explicit any/unknown type contracts",
+        "Require __tests__/fixtures and stories/fixtures exports to use imported types and ban explicit any/unknown type contracts",
     },
     schema: [],
     messages: {

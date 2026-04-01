@@ -10,7 +10,8 @@ const noLocalTypeDeclarationsInFixtureFilesRule = {
   meta: {
     type: /** @type {const} */ ("problem"),
     docs: {
-      description: "Disallow local type aliases, interfaces, and enums anywhere in fixture files",
+      description:
+        "Disallow local type aliases, interfaces, and enums anywhere in __tests__/fixtures or stories/fixtures files",
     },
     schema: [],
     messages: {

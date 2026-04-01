@@ -49,36 +49,52 @@ on files that cannot meaningfully violate them.
 2. **TypeScript-wide naming and explicit-type rules** run on all `**/*.{ts,tsx,mts,cts}` files:
    - `@alexgorbatchev/interface-naming-convention`
    - `@alexgorbatchev/no-inline-type-expressions`
-3. **Component-area directory rules** run only inside `components/`, `templates/`, and `layouts/` trees:
-   - `@alexgorbatchev/component-directory-file-convention` on `**/components/**/*.{ts,tsx}`, `**/templates/**/*.{ts,tsx}`, and `**/layouts/**/*.{ts,tsx}`
-   - `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-test-file-convention` on direct-child `**/components/*.tsx`, `**/templates/*.tsx`, and `**/layouts/*.tsx` ownership files
-4. **Hook-area directory rules** run only inside `hooks/` trees:
+3. **Non-story React JSX rules** run on all `**/*.tsx` files:
+   - `@alexgorbatchev/testid-naming-convention`
+   - `@alexgorbatchev/require-component-root-testid`
+4. **Story support-directory rules** run only inside `**/stories/**`:
+   - `@alexgorbatchev/stories-directory-file-convention`
+5. **Storybook file rules** run only on `**/*.stories.tsx`:
+   - story files explicitly turn off `@alexgorbatchev/testid-naming-convention` and `@alexgorbatchev/require-component-root-testid` because story harnesses are not ownership components
+   - `@alexgorbatchev/story-file-location-convention`
+   - `@alexgorbatchev/story-meta-type-annotation`
+   - `@alexgorbatchev/story-export-contract`
+   - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
+   - `@alexgorbatchev/fixture-import-path-convention`
+6. **Component-area directory rules** run only inside `components/`, `templates/`, and `layouts/` trees:
+   - `@alexgorbatchev/component-directory-file-convention` on `**/components/**/*.{ts,tsx}`, `**/templates/**/*.{ts,tsx}`, and `**/layouts/**/*.{ts,tsx}` to allow only direct-child ownership files, direct-child `constants.ts` / `index.ts` / `types.ts` support files, and a sibling `stories/` tree
+   - `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-story-file-convention` on direct-child `**/components/*.tsx`, `**/templates/*.tsx`, and `**/layouts/*.tsx` ownership files
+7. **Hook-area directory rules** run only inside `hooks/` trees:
    - `@alexgorbatchev/hooks-directory-file-convention` on `**/hooks/**/*.{ts,tsx}`
    - `@alexgorbatchev/hook-file-contract`, `@alexgorbatchev/hook-file-naming-convention`, and `@alexgorbatchev/hook-test-file-convention` on direct-child `**/hooks/use*.ts` and `**/hooks/use*.tsx` ownership files
-5. **Filename-addressable file-role rules** run only on the exact file role they govern:
+8. **Filename-addressable file-role rules** run only on the exact file role they govern:
    - `@alexgorbatchev/index-file-contract` on `**/index.ts` and `**/index.tsx`
    - `@alexgorbatchev/no-type-exports-from-constants` on `**/constants.{ts,tsx,mts,cts}` and `**/constants.d.{ts,tsx,mts,cts}`
    - `@alexgorbatchev/no-value-exports-from-types` on `**/types.{ts,tsx,mts,cts}` and `**/types.d.{ts,tsx,mts,cts}`
-6. **`__tests__/` directory rules** run only inside `__tests__/` because they govern that directory's allowed contents
+9. **`__tests__/` directory rules** run only inside `__tests__/` because they govern that directory's allowed contents
    and test helper behavior:
    - `@alexgorbatchev/tests-directory-file-convention`
    - `@alexgorbatchev/no-module-mocking`
-7. **Canonical test-file rules** run only on `__tests__/*.test.ts` and `__tests__/*.test.tsx`:
-   - `@alexgorbatchev/no-non-running-tests`
-   - `@alexgorbatchev/no-test-file-exports`
-   - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
-   - `@alexgorbatchev/fixture-import-path-convention`
-   - `jest/no-disabled-tests`
-   - `jest/no-focused-tests`
-8. **Fixture-entrypoint and fixture-area rules** run only on `__tests__/fixtures.ts`, `__tests__/fixtures.tsx`, and
-   files under `__tests__/fixtures/`, depending on the rule.
+10. **Canonical test-file rules** run only on `__tests__/*.test.ts` and `__tests__/*.test.tsx`:
+    - `@alexgorbatchev/no-non-running-tests`
+    - `@alexgorbatchev/no-test-file-exports`
+    - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
+    - `@alexgorbatchev/fixture-import-path-convention`
+    - `jest/no-disabled-tests`
+    - `jest/no-focused-tests`
+11. **Fixture-entrypoint and fixture-area rules** run on `__tests__/fixtures.ts`, `__tests__/fixtures.tsx`,
+    `stories/fixtures.ts`, `stories/fixtures.tsx`, and files under those `fixtures/` directories, depending on the
+    rule.
 
 This staged configuration is part of the contract. The global location/leak rules are the front door that push `.tsx`
 files, hook exports, and tests into canonical locations; the TypeScript-wide naming override keeps repository-owned
-interfaces consistent while exempting external declaration-merging contracts; the component and hook area overrides then
-enforce ownership, naming, and colocated test contracts only after a file is in the correct subsystem;
-basename-addressable file-role rules such as `index.ts`, `constants.ts`, and `types.ts` stay narrow; and the
-`__tests__/` overrides enforce test-specific contracts only after the file has the correct test role.
+interfaces consistent while exempting external declaration-merging contracts; the non-story React override applies
+ownership-component JSX policies only where that contract makes sense; the stories-directory override constrains the
+support area for component stories; the storybook override then swaps in the story file contract for `*.stories.tsx`;
+the component and hook area overrides enforce ownership, naming, and colocated story or test contracts only after a
+file is in the correct subsystem; basename-addressable file-role rules such as `index.ts`, `constants.ts`, and
+`types.ts` stay narrow; and the `__tests__/` overrides enforce test-specific contracts only after the file has the
+correct test role.
 
 ## Enabled rules
 
@@ -345,8 +361,9 @@ export { USER_STATUS } from "./constants";
 
 ### `@alexgorbatchev/testid-naming-convention`
 
-**Policy:** React test ids must always be scoped to the file's component name: root ids use `ComponentName`, and child
-ids use `ComponentName--thing`.
+**Policy:** In non-story `.tsx` files, React test ids must always be scoped to the file's component name: root ids use
+`ComponentName`, and child ids use `ComponentName--thing`. Storybook files are exempt because their harnesses are not
+ownership components.
 
 **Good**
 
@@ -396,9 +413,10 @@ export function SignalPanel() {
 
 ### `@alexgorbatchev/require-component-root-testid`
 
-**Policy:** Exported React components must render a DOM root whose `data-testid`/`testId` is exactly the component
-name, and every child test id must use `ComponentName--thing`. Fragment roots and other non-element roots are not
-allowed for exported components.
+**Policy:** In non-story `.tsx` files, exported React components must render a DOM root whose `data-testid`/`testId`
+is exactly the component name, and every child test id must use `ComponentName--thing`. Fragment roots and other
+non-element roots are not allowed for exported components. Storybook files are exempt because story exports are not
+component ownership files.
 
 **Good**
 
@@ -446,8 +464,9 @@ src/email/Welcome.tsx
 ### `@alexgorbatchev/component-directory-file-convention`
 
 **Policy:** `components/`, `templates/`, and `layouts/` directories may contain only direct-child component ownership
-files, direct-child `index.ts` / `types.ts` support files, and a direct-child `__tests__/` tree. Shared runtime
-constants and shared helpers must live outside these strict ownership directories.
+files, direct-child `constants.ts` / `index.ts` / `types.ts` support files, and a direct-child `stories/` tree.
+Shared runtime helpers must live outside these strict ownership directories; component-story support helpers and
+fixtures belong under `stories/`, not under `__tests__/`.
 
 ### `@alexgorbatchev/component-file-contract`
 
@@ -486,10 +505,121 @@ export const Button = memo(function RenderButton() {
 **Policy:** The exported component name must be PascalCase, and the filename must match it as either `ComponentName.tsx`
 or `component-name.tsx`.
 
-### `@alexgorbatchev/component-test-file-convention`
+### `@alexgorbatchev/component-story-file-convention`
 
-**Policy:** Every component ownership file must have a sibling `__tests__/basename.test.tsx` file whose basename exactly
-matches the source basename.
+**Policy:** Every component ownership file must have a sibling `stories/basename.stories.tsx` file whose basename
+exactly matches the source basename, and it must not keep legacy component support files under `__tests__/`.
+
+### `@alexgorbatchev/stories-directory-file-convention`
+
+**Policy:** A `stories/` directory may contain only direct-child `*.stories.tsx` files, `helpers.ts`, `helpers.tsx`,
+`fixtures.ts`, `fixtures.tsx`, or files under `fixtures/`.
+
+**Good**
+
+```text
+src/accounts/components/stories/
+├── AccountPanel.stories.tsx
+├── helpers.ts
+└── fixtures/
+    └── rows.ts
+```
+
+**Bad**
+
+```text
+src/accounts/components/stories/
+├── setup.ts
+└── internal/AccountPanel.stories.tsx
+```
+
+### `@alexgorbatchev/story-file-location-convention`
+
+**Policy:** A story file must live as a direct child of a sibling `stories/` directory and must map back to a sibling
+component ownership file by basename.
+
+**Good**
+
+```text
+src/accounts/components/AccountPanel.tsx
+src/accounts/components/stories/AccountPanel.stories.tsx
+src/accounts/components/account-panel.tsx
+src/accounts/components/stories/account-panel.stories.tsx
+```
+
+**Bad**
+
+```text
+src/accounts/components/AccountPanel.stories.tsx
+src/accounts/components/stories/internal/AccountPanel.stories.tsx
+```
+
+### `@alexgorbatchev/story-meta-type-annotation`
+
+**Policy:** Storybook files must bind their default-exported meta object as a top-level `const meta: Meta<typeof
+ComponentName> = { ... }`. Do not use object assertions or rely on inference for the meta contract.
+
+**Good**
+
+```tsx
+const meta: Meta<typeof AccountPanel> = {
+  component: AccountPanel,
+};
+
+export default meta;
+```
+
+**Bad**
+
+```tsx
+const meta = {
+  component: AccountPanel,
+} as Meta<typeof AccountPanel>;
+
+export default meta;
+```
+
+### `@alexgorbatchev/story-export-contract`
+
+**Policy:** After the default meta, exported runtime object bindings are treated as stories. Story exports must use
+typed `Story` bindings, every exported story must define a `play` property, and the export shape depends on story count:
+
+- single story: `const Default: Story = { ... }; export { Default as ComponentName };`
+- multiple stories: `export const StoryName: Story = { ... };`
+
+**Good**
+
+```tsx
+const Default: Story = {
+  play: async () => {},
+};
+
+export { Default as AccountPanel };
+```
+
+```tsx
+export const Default: Story = {
+  play: async () => {},
+};
+
+export const WithProps: Story = {
+  args: { isReady: true },
+  play: async () => {},
+};
+```
+
+**Bad**
+
+```tsx
+export const Default: Story = {
+  play: async () => {},
+};
+```
+
+```tsx
+const Default = {} as Story;
+export { Default as AccountPanel };
+```
 
 ### `@alexgorbatchev/hook-export-location-convention`
 

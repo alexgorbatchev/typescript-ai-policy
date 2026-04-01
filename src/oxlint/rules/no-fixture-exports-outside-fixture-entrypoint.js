@@ -4,12 +4,13 @@ const noFixtureExportsOutsideFixtureEntrypointRule = {
   meta: {
     type: /** @type {const} */ ("problem"),
     docs: {
-      description: "Disallow exporting fixture_ or factory_ bindings outside the __tests__/fixtures entrypoint",
+      description:
+        "Disallow exporting fixture_ or factory_ bindings outside the __tests__/fixtures or stories/fixtures entrypoint",
     },
     schema: [],
     messages: {
       unexpectedFixtureExport:
-        'Move "{{ name }}" into the "__tests__/fixtures" entrypoint ("fixtures.ts" or "fixtures.tsx") and export it only from there.',
+        'Move "{{ name }}" into a fixture entrypoint under "__tests__/fixtures" or "stories/fixtures" ("fixtures.ts" or "fixtures.tsx") and export it only from there.',
     },
   },
   create(context) {

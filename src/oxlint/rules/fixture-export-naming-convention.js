@@ -4,7 +4,8 @@ const fixtureExportNamingConventionRule = {
   meta: {
     type: /** @type {const} */ ("problem"),
     docs: {
-      description: "Enforce fixture_ and factory_ lowerCamelCase export names in the __tests__/fixtures entrypoint",
+      description:
+        "Enforce fixture_ and factory_ lowerCamelCase export names in the __tests__/fixtures or stories/fixtures entrypoint",
     },
     schema: [],
     messages: {

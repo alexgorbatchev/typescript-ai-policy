@@ -88,6 +88,24 @@ noInlineFixtureBindingsInTestsRuleTester.run(
         ],
         output: null,
       },
+      {
+        code: `
+          function factory_userAccountRows() {
+            return [{ id: "1" }];
+          }
+        `,
+        filename: "src/accounts/components/stories/AccountPanel.stories.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedInlineFixtureBinding",
+            data: {
+              name: "factory_userAccountRows",
+            },
+          },
+        ],
+        output: null,
+      },
     ],
   },
 );

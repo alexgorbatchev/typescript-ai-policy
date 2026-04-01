@@ -34,6 +34,13 @@ noFixtureExportsOutsideFixtureEntrypointRuleTester.run(
       },
       {
         code: `
+          export const fixture_userAccountRows = [{ id: "1" }];
+        `,
+        filename: "src/accounts/components/stories/fixtures.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
           const fixture_userAccountRows = [{ id: "1" }];
           export const userAccountRows = fixture_userAccountRows;
         `,

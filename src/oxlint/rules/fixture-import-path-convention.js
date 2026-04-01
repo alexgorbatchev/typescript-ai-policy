@@ -1,4 +1,4 @@
-import { isAllowedFixturesImportPath, isFixtureLikeName, isTestFile } from "./helpers.js";
+import { isAllowedFixturesImportPath, isFixtureConsumerFile, isFixtureLikeName } from "./helpers.js";
 
 function readImportSpecifierNames(specifier) {
   if (specifier.type === "ImportSpecifier") {
@@ -22,7 +22,7 @@ const fixtureImportPathConventionRule = {
     type: /** @type {const} */ ("problem"),
     docs: {
       description:
-        'Require tests to import fixture_ and factory_ bindings only as named imports from the colocated "./fixtures" module',
+        'Require test and story files to import fixture_ and factory_ bindings only as named imports from the colocated "./fixtures" module',
     },
     schema: [],
     messages: {
@@ -36,7 +36,7 @@ const fixtureImportPathConventionRule = {
     },
   },
   create(context) {
-    if (!isTestFile(context.filename)) {
+    if (!isFixtureConsumerFile(context.filename)) {
       return {};
     }
 

@@ -1,19 +1,19 @@
-import { isFixtureLikeName, isTestFile, readPatternIdentifierNames } from "./helpers.js";
+import { isFixtureConsumerFile, isFixtureLikeName, readPatternIdentifierNames } from "./helpers.js";
 
 const noInlineFixtureBindingsInTestsRule = {
   meta: {
     type: /** @type {const} */ ("problem"),
     docs: {
-      description: "Disallow inline fixture_ and factory_ bindings inside test files",
+      description: "Disallow inline fixture_ and factory_ bindings inside test and story files",
     },
     schema: [],
     messages: {
       unexpectedInlineFixtureBinding:
-        'Delete the inline "{{ name }}" declaration from this test file and import it from the colocated "./fixtures" module instead.',
+        'Delete the inline "{{ name }}" declaration from this file and import it from the colocated "./fixtures" module instead.',
     },
   },
   create(context) {
-    if (!isTestFile(context.filename)) {
+    if (!isFixtureConsumerFile(context.filename)) {
       return {};
     }
 
