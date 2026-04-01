@@ -120,6 +120,19 @@ When changing the policy surface:
 - treat rule removal or relaxation as a policy change, not as a small local tweak
 - call out interactions with other rules when a contract is coupled across multiple checks
 
+## Whole-policy compatibility requirement
+
+When making changes to rules, config, docs, examples, or when reviewing code against this repository's policy set:
+
+- evaluate the entire enabled policy surface as one coupled system, not as isolated rules
+- identify any direct or indirect incompatibilities, impossible states, overlapping file-role requirements, or rule interactions that cannot be satisfied at the same time
+- immediately report any such incompatibility to the user; do not silently pick one rule over another or proceed with partial compliance
+- if a user request would create, preserve, or depend on a policy conflict, stop and explicitly tell the user that the request is incompatible with the repository contract
+- offer concrete resolution paths so the policy set returns to a compatible state; for example, narrow a rule's scope, change ownership boundaries, adjust file-role contracts, or change the conflicting request
+- do not implement, recommend, or leave behind a state where different parts of the policy require mutually incompatible outcomes
+
+This requirement applies both when evolving the policy set itself and when reviewing repository code for compliance. The goal is a policy system whose rules can all be satisfied together without hidden contradictions.
+
 ## Practical review heuristic
 
 Before adding a rule, ask:
