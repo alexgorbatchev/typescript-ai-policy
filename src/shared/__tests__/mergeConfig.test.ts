@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { mergeConfig } from "../mergeConfig.ts";
 
-type IMergeConfigFixture = {
+type MergeConfigFixture = {
   ignorePatterns: string[];
   plugins: string[];
   rules: Record<string, string>;
@@ -20,7 +20,7 @@ type IMergeConfigFixture = {
 
 describe("mergeConfig", () => {
   it("deep-merges objects while keeping user-only keys", () => {
-    const userConfig: IMergeConfigFixture = {
+    const userConfig: MergeConfigFixture = {
       ignorePatterns: ["coverage"],
       plugins: ["promise"],
       rules: {
@@ -36,7 +36,7 @@ describe("mergeConfig", () => {
         },
       },
     };
-    const defaultConfig: IMergeConfigFixture = {
+    const defaultConfig: MergeConfigFixture = {
       ignorePatterns: ["dist"],
       plugins: ["typescript"],
       rules: {
@@ -74,7 +74,7 @@ describe("mergeConfig", () => {
   });
 
   it("does not mutate either input config", () => {
-    const userConfig: IMergeConfigFixture = {
+    const userConfig: MergeConfigFixture = {
       ignorePatterns: ["coverage"],
       plugins: ["promise"],
       rules: {
@@ -86,7 +86,7 @@ describe("mergeConfig", () => {
         },
       },
     };
-    const defaultConfig: IMergeConfigFixture = {
+    const defaultConfig: MergeConfigFixture = {
       ignorePatterns: ["dist"],
       plugins: ["typescript"],
       rules: {
@@ -128,7 +128,7 @@ describe("mergeConfig", () => {
   });
 
   it("returns a new object graph instead of reusing input references", () => {
-    const userConfig: IMergeConfigFixture = {
+    const userConfig: MergeConfigFixture = {
       ignorePatterns: ["coverage"],
       plugins: ["promise"],
       rules: {
@@ -140,7 +140,7 @@ describe("mergeConfig", () => {
         },
       },
     };
-    const defaultConfig: IMergeConfigFixture = {
+    const defaultConfig: MergeConfigFixture = {
       ignorePatterns: ["dist"],
       plugins: ["typescript"],
       rules: {

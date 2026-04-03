@@ -5,16 +5,16 @@ import { createInterfaceNamingConventionSemanticFixProvider } from "./providers/
 import { createTestFileLocationConventionSemanticFixProvider } from "./providers/createTestFileLocationConventionSemanticFixProvider.ts";
 import { runOxlintJson } from "./runOxlintJson.ts";
 import type {
-  IApplySemanticFixesOptions,
-  IApplySemanticFixesProgressEvent,
-  IApplySemanticFixesResult,
-  IOxlintDiagnostic,
-  ISemanticFixOperation,
-  ISemanticFixPlan,
-  ISkippedDiagnostic,
+  ApplySemanticFixesOptions,
+  ApplySemanticFixesProgressEvent,
+  ApplySemanticFixesResult,
+  OxlintDiagnostic,
+  SemanticFixOperation,
+  SemanticFixPlan,
+  SkippedDiagnostic,
 } from "./types.ts";
 
-function readAbsoluteDiagnosticFilePath(targetDirectoryPath: string, diagnostic: IOxlintDiagnostic): string {
+function readAbsoluteDiagnosticFilePath(targetDirectoryPath: string, diagnostic: OxlintDiagnostic): string {
   if (isAbsolute(diagnostic.filename)) {
     return diagnostic.filename;
   }
@@ -24,9 +24,9 @@ function readAbsoluteDiagnosticFilePath(targetDirectoryPath: string, diagnostic:
 
 function readSkippedDiagnostic(
   targetDirectoryPath: string,
-  diagnostic: IOxlintDiagnostic,
+  diagnostic: OxlintDiagnostic,
   reason: string,
-): ISkippedDiagnostic {
+): SkippedDiagnostic {
   return {
     filePath: readAbsoluteDiagnosticFilePath(targetDirectoryPath, diagnostic),
     reason,
@@ -34,14 +34,14 @@ function readSkippedDiagnostic(
   };
 }
 
-function readPlanSignature(plan: ISemanticFixPlan): string {
+function readPlanSignature(plan: SemanticFixPlan): string {
   return JSON.stringify({
     fileMoves: plan.fileMoves,
     textEdits: plan.textEdits,
   });
 }
 
-function readChangedFilePaths(plans: readonly ISemanticFixPlan[]): readonly string[] {
+function readChangedFilePaths(plans: readonly SemanticFixPlan[]): readonly string[] {
   const changedFilePathSet = new Set<string>();
   const movedFilePathMap = new Map<string, string>();
 
@@ -61,7 +61,7 @@ function readChangedFilePaths(plans: readonly ISemanticFixPlan[]): readonly stri
   return [...changedFilePathSet].sort((left, right) => left.localeCompare(right));
 }
 
-function readOperationDescription(operation: ISemanticFixOperation): string {
+function readOperationDescription(operation: SemanticFixOperation): string {
   switch (operation.kind) {
     case "rename-symbol": {
       return `Rename ${operation.symbolName} to ${operation.newName}`;
@@ -72,7 +72,7 @@ function readOperationDescription(operation: ISemanticFixOperation): string {
   }
 }
 
-function readOperationEmptyPlanReason(operation: ISemanticFixOperation): string {
+function readOperationEmptyPlanReason(operation: SemanticFixOperation): string {
   switch (operation.kind) {
     case "rename-symbol": {
       return `No text edits were produced for ${operation.symbolName}.`;
@@ -83,8 +83,8 @@ function readOperationEmptyPlanReason(operation: ISemanticFixOperation): string 
   }
 }
 
-function readUniqueOperations(operations: readonly ISemanticFixOperation[]): readonly ISemanticFixOperation[] {
-  const operationMap = new Map<string, ISemanticFixOperation>();
+function readUniqueOperations(operations: readonly SemanticFixOperation[]): readonly SemanticFixOperation[] {
+  const operationMap = new Map<string, SemanticFixOperation>();
 
   for (const operation of operations) {
     operationMap.set(operation.id, operation);
@@ -93,8 +93,8 @@ function readUniqueOperations(operations: readonly ISemanticFixOperation[]): rea
   return [...operationMap.values()];
 }
 
-function readUniquePlans(plans: readonly ISemanticFixPlan[]): readonly ISemanticFixPlan[] {
-  const planMap = new Map<string, ISemanticFixPlan>();
+function readUniquePlans(plans: readonly SemanticFixPlan[]): readonly SemanticFixPlan[] {
+  const planMap = new Map<string, SemanticFixPlan>();
 
   for (const plan of plans) {
     planMap.set(readPlanSignature(plan), plan);
@@ -103,8 +103,8 @@ function readUniquePlans(plans: readonly ISemanticFixPlan[]): readonly ISemantic
   return [...planMap.values()];
 }
 
-export async function applySemanticFixes(options: IApplySemanticFixesOptions): Promise<IApplySemanticFixesResult> {
-  const reportProgress = (event: IApplySemanticFixesProgressEvent): void => {
+export async function applySemanticFixes(options: ApplySemanticFixesOptions): Promise<ApplySemanticFixesResult> {
+  const reportProgress = (event: ApplySemanticFixesProgressEvent): void => {
     options.onProgress?.(event);
   };
   const semanticFixProviders = new Map(
@@ -133,8 +133,8 @@ export async function applySemanticFixes(options: IApplySemanticFixesOptions): P
       kind: "collected-diagnostics",
     });
 
-    const skippedDiagnostics: ISkippedDiagnostic[] = [];
-    const operations: ISemanticFixOperation[] = [];
+    const skippedDiagnostics: SkippedDiagnostic[] = [];
+    const operations: SemanticFixOperation[] = [];
 
     for (const diagnostic of diagnostics) {
       const semanticFixProviderForDiagnostic = semanticFixProviders.get(diagnostic.code);
@@ -160,7 +160,7 @@ export async function applySemanticFixes(options: IApplySemanticFixesOptions): P
     }
 
     const uniqueOperations = readUniqueOperations(operations);
-    const plans: ISemanticFixPlan[] = [];
+    const plans: SemanticFixPlan[] = [];
 
     reportProgress({
       kind: "planning-start",

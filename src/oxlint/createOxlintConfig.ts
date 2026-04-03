@@ -47,6 +47,7 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       files: ["**/*.{ts,tsx,mts,cts}"],
       rules: {
         "@alexgorbatchev/interface-naming-convention": "error",
+        "@alexgorbatchev/no-i-prefixed-type-aliases": "error",
         "@alexgorbatchev/no-inline-type-expressions": "error",
         "@alexgorbatchev/require-template-indent": "error",
       },

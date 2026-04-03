@@ -1,20 +1,20 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import ts from "typescript";
-import type { ITextEdit } from "./types.ts";
+import type { TextEdit } from "./types.ts";
 
-type IOffsetTextEdit = {
+type OffsetTextEdit = {
   endOffset: number;
   newText: string;
   startOffset: number;
 };
 
-type IFileEditEntry = {
+type FileEditEntry = {
   filePath: string;
-  textEdits: readonly ITextEdit[];
+  textEdits: readonly TextEdit[];
 };
 
-function readFileEditEntries(textEdits: readonly ITextEdit[]): readonly IFileEditEntry[] {
-  const textEditsByFilePath = new Map<string, ITextEdit[]>();
+function readFileEditEntries(textEdits: readonly TextEdit[]): readonly FileEditEntry[] {
+  const textEditsByFilePath = new Map<string, TextEdit[]>();
 
   for (const textEdit of textEdits) {
     const existingTextEdits = textEditsByFilePath.get(textEdit.filePath);
@@ -32,7 +32,7 @@ function readFileEditEntries(textEdits: readonly ITextEdit[]): readonly IFileEdi
   }));
 }
 
-function compareOffsetTextEditsAscending(left: IOffsetTextEdit, right: IOffsetTextEdit): number {
+function compareOffsetTextEditsAscending(left: OffsetTextEdit, right: OffsetTextEdit): number {
   if (left.startOffset !== right.startOffset) {
     return left.startOffset - right.startOffset;
   }
@@ -44,7 +44,7 @@ function compareOffsetTextEditsAscending(left: IOffsetTextEdit, right: IOffsetTe
   return left.newText.localeCompare(right.newText);
 }
 
-function compareOffsetTextEditsDescending(left: IOffsetTextEdit, right: IOffsetTextEdit): number {
+function compareOffsetTextEditsDescending(left: OffsetTextEdit, right: OffsetTextEdit): number {
   return compareOffsetTextEditsAscending(right, left);
 }
 
@@ -53,7 +53,7 @@ function readOffset(positionContent: string, line: number, character: number): n
   return ts.getPositionOfLineAndCharacter(sourceFile, line, character);
 }
 
-function readOffsetTextEdit(content: string, textEdit: ITextEdit): IOffsetTextEdit {
+function readOffsetTextEdit(content: string, textEdit: TextEdit): OffsetTextEdit {
   return {
     endOffset: readOffset(content, textEdit.end.line, textEdit.end.character),
     newText: textEdit.newText,
@@ -61,31 +61,31 @@ function readOffsetTextEdit(content: string, textEdit: ITextEdit): IOffsetTextEd
   };
 }
 
-function haveSameRange(left: IOffsetTextEdit, right: IOffsetTextEdit): boolean {
+function haveSameRange(left: OffsetTextEdit, right: OffsetTextEdit): boolean {
   return left.startOffset === right.startOffset && left.endOffset === right.endOffset;
 }
 
-function isInsertion(edit: IOffsetTextEdit): boolean {
+function isInsertion(edit: OffsetTextEdit): boolean {
   return edit.startOffset === edit.endOffset;
 }
 
-function haveSameInsertionPoint(left: IOffsetTextEdit, right: IOffsetTextEdit): boolean {
+function haveSameInsertionPoint(left: OffsetTextEdit, right: OffsetTextEdit): boolean {
   return isInsertion(left) && isInsertion(right) && left.startOffset === right.startOffset;
 }
 
-function rangesOverlap(left: IOffsetTextEdit, right: IOffsetTextEdit): boolean {
+function rangesOverlap(left: OffsetTextEdit, right: OffsetTextEdit): boolean {
   return left.startOffset < right.endOffset && right.startOffset < left.endOffset;
 }
 
-function containsRange(container: IOffsetTextEdit, candidate: IOffsetTextEdit): boolean {
+function containsRange(container: OffsetTextEdit, candidate: OffsetTextEdit): boolean {
   return container.startOffset <= candidate.startOffset && container.endOffset >= candidate.endOffset;
 }
 
 function readNormalizedOffsetTextEdits(
   filePath: string,
-  offsetTextEdits: readonly IOffsetTextEdit[],
-): readonly IOffsetTextEdit[] {
-  const normalizedOffsetTextEdits: IOffsetTextEdit[] = [];
+  offsetTextEdits: readonly OffsetTextEdit[],
+): readonly OffsetTextEdit[] {
+  const normalizedOffsetTextEdits: OffsetTextEdit[] = [];
 
   for (const offsetTextEdit of [...offsetTextEdits].sort(compareOffsetTextEditsAscending)) {
     const previousOffsetTextEdit = normalizedOffsetTextEdits.at(-1);
@@ -123,7 +123,7 @@ function readNormalizedOffsetTextEdits(
   return normalizedOffsetTextEdits;
 }
 
-export function readUpdatedContent(filePath: string, content: string, textEdits: readonly ITextEdit[]): string {
+export function readUpdatedContent(filePath: string, content: string, textEdits: readonly TextEdit[]): string {
   const offsetTextEdits = [
     ...readNormalizedOffsetTextEdits(
       filePath,
@@ -143,7 +143,7 @@ export function readUpdatedContent(filePath: string, content: string, textEdits:
   return updatedContent;
 }
 
-function applyFileTextEdits(filePath: string, textEdits: readonly ITextEdit[]): void {
+function applyFileTextEdits(filePath: string, textEdits: readonly TextEdit[]): void {
   const content = readFileSync(filePath, "utf8");
   const updatedContent = readUpdatedContent(filePath, content, textEdits);
 
@@ -152,7 +152,7 @@ function applyFileTextEdits(filePath: string, textEdits: readonly ITextEdit[]): 
   }
 }
 
-export function applyTextEdits(textEdits: readonly ITextEdit[]): readonly string[] {
+export function applyTextEdits(textEdits: readonly TextEdit[]): readonly string[] {
   const changedFilePaths: string[] = [];
 
   for (const fileEditEntry of readFileEditEntries(textEdits)) {

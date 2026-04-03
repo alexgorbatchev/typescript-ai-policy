@@ -2,13 +2,13 @@ import { readFileSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 import ts from "typescript";
 import type {
-  IOxlintDiagnostic,
-  ISemanticFixOperation,
-  ISemanticFixProvider,
-  ISemanticFixProviderContext,
+  OxlintDiagnostic,
+  SemanticFixOperation,
+  SemanticFixProvider,
+  SemanticFixProviderContext,
 } from "../types.ts";
 
-function readAbsoluteDiagnosticFilePath(diagnostic: IOxlintDiagnostic, context: ISemanticFixProviderContext): string {
+function readAbsoluteDiagnosticFilePath(diagnostic: OxlintDiagnostic, context: SemanticFixProviderContext): string {
   if (isAbsolute(diagnostic.filename)) {
     return diagnostic.filename;
   }
@@ -52,7 +52,7 @@ function readOffsetFromLineAndColumn(sourceFile: ts.SourceFile, line: number, co
 
 function readInterfaceDeclarationFromLabel(
   sourceFile: ts.SourceFile,
-  label: IOxlintDiagnostic["labels"][number],
+  label: OxlintDiagnostic["labels"][number],
 ): ts.InterfaceDeclaration | null {
   const declarationAtReportedOffset = readInterfaceDeclarationAtOffset(sourceFile, label.span.offset);
   if (declarationAtReportedOffset) {
@@ -83,10 +83,7 @@ function readNormalizedInterfaceName(interfaceName: string): string | null {
   return normalizedInterfaceName;
 }
 
-function readOperation(
-  diagnostic: IOxlintDiagnostic,
-  context: ISemanticFixProviderContext,
-): ISemanticFixOperation | null {
+function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixProviderContext): SemanticFixOperation | null {
   const label = diagnostic.labels[0];
   if (!label) {
     return null;
@@ -122,9 +119,9 @@ function readOperation(
   };
 }
 
-export function createInterfaceNamingConventionSemanticFixProvider(): ISemanticFixProvider {
+export function createInterfaceNamingConventionSemanticFixProvider(): SemanticFixProvider {
   return {
-    createOperation(diagnostic, context): ISemanticFixOperation | null {
+    createOperation(diagnostic, context): SemanticFixOperation | null {
       return readOperation(diagnostic, context);
     },
     ruleCode: "@alexgorbatchev/interface-naming-convention",

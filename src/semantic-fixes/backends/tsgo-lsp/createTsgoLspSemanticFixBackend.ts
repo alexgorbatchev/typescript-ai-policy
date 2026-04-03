@@ -3,46 +3,46 @@ import { fileURLToPath } from "node:url";
 import { readMovedFileTextEdits } from "../../readMovedFileTextEdits.ts";
 import { TsgoLspClient } from "./TsgoLspClient.ts";
 import type {
-  IApplySemanticFixesOptions,
-  IFileMove,
-  IMoveFileOperation,
-  ISemanticFixBackend,
-  ISemanticFixBackendContext,
-  ISemanticFixOperation,
-  ISemanticFixPlan,
-  ISemanticFixPlanResult,
-  ISymbolRenameOperation,
-  ITextEdit,
+  ApplySemanticFixesOptions,
+  FileMove,
+  MoveFileOperation,
+  SemanticFixBackend,
+  SemanticFixBackendContext,
+  SemanticFixOperation,
+  SemanticFixPlan,
+  SemanticFixPlanResult,
+  SymbolRenameOperation,
+  TextEdit,
 } from "../../types.ts";
 
-type ILspPosition = {
+type LspPosition = {
   character: number;
   line: number;
 };
 
-type ILspRange = {
-  end: ILspPosition;
-  start: ILspPosition;
+type LspRange = {
+  end: LspPosition;
+  start: LspPosition;
 };
 
-type ILspTextEdit = {
+type LspTextEdit = {
   newText: string;
-  range: ILspRange;
+  range: LspRange;
 };
 
-type ILspWorkspaceChanges = Record<string, readonly ILspTextEdit[]>;
+type LspWorkspaceChanges = Record<string, readonly LspTextEdit[]>;
 
-type ILspWorkspaceEdit = {
-  changes: ILspWorkspaceChanges;
+type LspWorkspaceEdit = {
+  changes: LspWorkspaceChanges;
 };
 
-type IClientCache = Map<string, TsgoLspClient>;
+type ClientCache = Map<string, TsgoLspClient>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function isLspPosition(value: unknown): value is ILspPosition {
+function isLspPosition(value: unknown): value is LspPosition {
   if (!isRecord(value)) {
     return false;
   }
@@ -50,7 +50,7 @@ function isLspPosition(value: unknown): value is ILspPosition {
   return typeof value.line === "number" && typeof value.character === "number";
 }
 
-function isLspRange(value: unknown): value is ILspRange {
+function isLspRange(value: unknown): value is LspRange {
   if (!isRecord(value)) {
     return false;
   }
@@ -58,7 +58,7 @@ function isLspRange(value: unknown): value is ILspRange {
   return isLspPosition(value.start) && isLspPosition(value.end);
 }
 
-function isLspTextEdit(value: unknown): value is ILspTextEdit {
+function isLspTextEdit(value: unknown): value is LspTextEdit {
   if (!isRecord(value)) {
     return false;
   }
@@ -66,7 +66,7 @@ function isLspTextEdit(value: unknown): value is ILspTextEdit {
   return typeof value.newText === "string" && isLspRange(value.range);
 }
 
-function isLspWorkspaceEdit(value: unknown): value is ILspWorkspaceEdit {
+function isLspWorkspaceEdit(value: unknown): value is LspWorkspaceEdit {
   if (!isRecord(value) || !isRecord(value.changes)) {
     return false;
   }
@@ -86,7 +86,7 @@ function isLspWorkspaceEdit(value: unknown): value is ILspWorkspaceEdit {
   return true;
 }
 
-function compareTextEdit(left: ITextEdit, right: ITextEdit): number {
+function compareTextEdit(left: TextEdit, right: TextEdit): number {
   if (left.filePath !== right.filePath) {
     return left.filePath.localeCompare(right.filePath);
   }
@@ -102,7 +102,7 @@ function compareTextEdit(left: ITextEdit, right: ITextEdit): number {
   return left.newText.localeCompare(right.newText);
 }
 
-function readTextEdit(uri: string, textEdit: ILspTextEdit): ITextEdit {
+function readTextEdit(uri: string, textEdit: LspTextEdit): TextEdit {
   return {
     end: textEdit.range.end,
     filePath: fileURLToPath(uri),
@@ -111,8 +111,8 @@ function readTextEdit(uri: string, textEdit: ILspTextEdit): ITextEdit {
   };
 }
 
-function readTextEdits(workspaceEdit: ILspWorkspaceEdit): readonly ITextEdit[] {
-  const textEdits: ITextEdit[] = [];
+function readTextEdits(workspaceEdit: LspWorkspaceEdit): readonly TextEdit[] {
+  const textEdits: TextEdit[] = [];
 
   for (const [uri, edits] of Object.entries(workspaceEdit.changes)) {
     for (const textEdit of edits) {
@@ -132,9 +132,9 @@ function readFailureReason(error: unknown): string {
 }
 
 async function readClient(
-  clientCache: IClientCache,
-  context: ISemanticFixBackendContext,
-  options: Pick<IApplySemanticFixesOptions, "tsgoExecutablePath">,
+  clientCache: ClientCache,
+  context: SemanticFixBackendContext,
+  options: Pick<ApplySemanticFixesOptions, "tsgoExecutablePath">,
 ): Promise<TsgoLspClient> {
   const cachedClient = clientCache.get(context.targetDirectoryPath);
   if (cachedClient) {
@@ -150,19 +150,19 @@ async function readClient(
   return client;
 }
 
-function readRenameSymbolDescription(operation: ISymbolRenameOperation): string {
+function readRenameSymbolDescription(operation: SymbolRenameOperation): string {
   return `Rename ${operation.symbolName} to ${operation.newName}`;
 }
 
-function readMoveFileDescription(operation: IMoveFileOperation): string {
+function readMoveFileDescription(operation: MoveFileOperation): string {
   return `Move ${operation.filePath} to ${operation.newFilePath}`;
 }
 
 function readPlan(
-  operation: ISemanticFixOperation,
-  textEdits: readonly ITextEdit[],
-  fileMoves: readonly IFileMove[] = [],
-): ISemanticFixPlan {
+  operation: SemanticFixOperation,
+  textEdits: readonly TextEdit[],
+  fileMoves: readonly FileMove[] = [],
+): SemanticFixPlan {
   return {
     description:
       operation.kind === "rename-symbol" ? readRenameSymbolDescription(operation) : readMoveFileDescription(operation),
@@ -174,12 +174,12 @@ function readPlan(
 }
 
 export function createTsgoLspSemanticFixBackend(
-  options: Pick<IApplySemanticFixesOptions, "tsgoExecutablePath">,
-): ISemanticFixBackend {
-  const clientCache: IClientCache = new Map();
+  options: Pick<ApplySemanticFixesOptions, "tsgoExecutablePath">,
+): SemanticFixBackend {
+  const clientCache: ClientCache = new Map();
 
   return {
-    async createPlan(operation, context): Promise<ISemanticFixPlanResult> {
+    async createPlan(operation, context): Promise<SemanticFixPlanResult> {
       switch (operation.kind) {
         case "rename-symbol": {
           const client = await readClient(clientCache, context, options);

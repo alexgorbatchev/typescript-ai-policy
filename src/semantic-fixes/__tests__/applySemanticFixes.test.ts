@@ -3,14 +3,14 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { applySemanticFixes } from "../applySemanticFixes.ts";
-import type { IApplySemanticFixesProgressEvent } from "../types.ts";
+import type { ApplySemanticFixesProgressEvent } from "../types.ts";
 
-type IProjectFile = {
+type ProjectFile = {
   content: string;
   filePath: string;
 };
 
-async function writeProjectFiles(projectPath: string, projectFiles: readonly IProjectFile[]): Promise<void> {
+async function writeProjectFiles(projectPath: string, projectFiles: readonly ProjectFile[]): Promise<void> {
   for (const projectFile of projectFiles) {
     const absoluteFilePath = join(projectPath, projectFile.filePath);
     await mkdir(dirname(absoluteFilePath), { recursive: true });
@@ -18,7 +18,7 @@ async function writeProjectFiles(projectPath: string, projectFiles: readonly IPr
   }
 }
 
-async function createProject(projectFiles: readonly IProjectFile[]): Promise<string> {
+async function createProject(projectFiles: readonly ProjectFile[]): Promise<string> {
   const projectPath = await mkdtemp(join(tmpdir(), "semantic-fixes-test-"));
   await writeProjectFiles(projectPath, projectFiles);
   return projectPath;
@@ -139,7 +139,7 @@ export function formatProfile(profile: UserProfile): string {
   ]);
 
   try {
-    const progressEvents: IApplySemanticFixesProgressEvent[] = [];
+    const progressEvents: ApplySemanticFixesProgressEvent[] = [];
 
     await applySemanticFixes({
       ...readOptions(projectPath),

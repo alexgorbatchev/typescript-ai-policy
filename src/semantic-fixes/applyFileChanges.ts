@@ -1,10 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { applyTextEdits, readUpdatedContent } from "./applyTextEdits.ts";
-import type { IFileMove, ITextEdit } from "./types.ts";
+import type { FileMove, TextEdit } from "./types.ts";
 
-function readTextEditsByFilePath(textEdits: readonly ITextEdit[]): Map<string, readonly ITextEdit[]> {
-  const textEditsByFilePath = new Map<string, ITextEdit[]>();
+function readTextEditsByFilePath(textEdits: readonly TextEdit[]): Map<string, readonly TextEdit[]> {
+  const textEditsByFilePath = new Map<string, TextEdit[]>();
 
   for (const textEdit of textEdits) {
     const existingTextEdits = textEditsByFilePath.get(textEdit.filePath);
@@ -19,7 +19,7 @@ function readTextEditsByFilePath(textEdits: readonly ITextEdit[]): Map<string, r
   return new Map(textEditsByFilePath);
 }
 
-function assertMoveFileOperationsAreSafe(fileMoves: readonly IFileMove[]): void {
+function assertMoveFileOperationsAreSafe(fileMoves: readonly FileMove[]): void {
   const sourceFilePathSet = new Set<string>();
   const destinationFilePathSet = new Set<string>();
 
@@ -41,7 +41,7 @@ function assertMoveFileOperationsAreSafe(fileMoves: readonly IFileMove[]): void 
   }
 }
 
-function applyMovedFile(fileMove: IFileMove, textEdits: readonly ITextEdit[]): void {
+function applyMovedFile(fileMove: FileMove, textEdits: readonly TextEdit[]): void {
   if (!existsSync(fileMove.sourceFilePath)) {
     throw new Error(`Cannot move a missing file: ${fileMove.sourceFilePath}`);
   }
@@ -58,7 +58,7 @@ function applyMovedFile(fileMove: IFileMove, textEdits: readonly ITextEdit[]): v
   rmSync(fileMove.sourceFilePath);
 }
 
-export function applyFileChanges(textEdits: readonly ITextEdit[], fileMoves: readonly IFileMove[]): readonly string[] {
+export function applyFileChanges(textEdits: readonly TextEdit[], fileMoves: readonly FileMove[]): readonly string[] {
   assertMoveFileOperationsAreSafe(fileMoves);
 
   const changedFilePathSet = new Set<string>();

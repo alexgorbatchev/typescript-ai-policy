@@ -3,20 +3,20 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { spawn } from "node:child_process";
-import type { IOxlintDiagnostic } from "./types.ts";
+import type { OxlintDiagnostic } from "./types.ts";
 
-type IRunOxlintJsonOptions = {
+type RunOxlintJsonOptions = {
   oxlintConfigPath: string;
   oxlintExecutablePath: string;
   targetDirectoryPath: string;
 };
 
-type IOxlintProcessCompletion = {
+type OxlintProcessCompletion = {
   exitCode: number | null;
   signal: NodeJS.Signals | null;
 };
 
-type IOxlintProcessResult = IOxlintProcessCompletion & {
+type OxlintProcessResult = OxlintProcessCompletion & {
   stderr: string;
   stdout: string;
 };
@@ -25,7 +25,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function isOxlintDiagnostic(value: unknown): value is IOxlintDiagnostic {
+function isOxlintDiagnostic(value: unknown): value is OxlintDiagnostic {
   if (!isRecord(value)) {
     return false;
   }
@@ -49,7 +49,7 @@ function readNormalizedRuleCode(ruleCode: string): string {
   return `${pluginName}/${localRuleName}`;
 }
 
-function readDiagnostics(report: unknown): readonly IOxlintDiagnostic[] {
+function readDiagnostics(report: unknown): readonly OxlintDiagnostic[] {
   if (!isRecord(report) || !Array.isArray(report.diagnostics)) {
     throw new Error(`Unexpected Oxlint JSON output: ${JSON.stringify(report)}`);
   }
@@ -65,7 +65,7 @@ function readDiagnostics(report: unknown): readonly IOxlintDiagnostic[] {
   }));
 }
 
-async function runOxlintProcess(options: IRunOxlintJsonOptions): Promise<IOxlintProcessResult> {
+async function runOxlintProcess(options: RunOxlintJsonOptions): Promise<OxlintProcessResult> {
   const tempDirectoryPath = await mkdtemp(join(tmpdir(), "semantic-fixes-oxlint-"));
   const stdoutPath = join(tempDirectoryPath, "oxlint-report.json");
   const stdoutFileDescriptor = openSync(stdoutPath, "w");
@@ -96,7 +96,7 @@ async function runOxlintProcess(options: IRunOxlintJsonOptions): Promise<IOxlint
       stderrChunks.push(chunk.toString("utf8"));
     });
 
-    const processCompletion = await new Promise<IOxlintProcessCompletion>((resolve, reject) => {
+    const processCompletion = await new Promise<OxlintProcessCompletion>((resolve, reject) => {
       childProcess.once("error", (error: Error) => {
         reject(error);
       });
@@ -118,7 +118,7 @@ async function runOxlintProcess(options: IRunOxlintJsonOptions): Promise<IOxlint
   }
 }
 
-export async function runOxlintJson(options: IRunOxlintJsonOptions): Promise<readonly IOxlintDiagnostic[]> {
+export async function runOxlintJson(options: RunOxlintJsonOptions): Promise<readonly OxlintDiagnostic[]> {
   const runResult = await runOxlintProcess(options);
   const stdout = runResult.stdout.trim();
   if (stdout.length === 0) {

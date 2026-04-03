@@ -46,6 +46,7 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
 2. **TypeScript-wide naming, explicit-type, and template-literal rules** run on all `**/*.{ts,tsx,mts,cts}` files:
    - `@alexgorbatchev/interface-naming-convention`
+   - `@alexgorbatchev/no-i-prefixed-type-aliases`
    - `@alexgorbatchev/no-inline-type-expressions`
    - `@alexgorbatchev/require-template-indent`
 3. **React component ownership rules** run on all `**/*.tsx` files, with the component-file rules themselves
@@ -213,6 +214,37 @@ export interface IuserProfile {
 ```
 
 **Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can apply supported interface renames through the `tsgo` LSP backend. The fixer is intentionally conservative: it only applies mechanical renames when the current interface name can be normalized safely to `I[A-Z][A-Za-z0-9]*`.
+
+### `@alexgorbatchev/no-i-prefixed-type-aliases`
+
+**Policy:** Type aliases must not use the interface-style `I[A-Z]` prefix. This rule applies only to `type` aliases; it
+does not change the repository's separate interface naming contract.
+
+**Good**
+
+```ts
+export type UserProfile = {
+  id: string;
+};
+```
+
+```ts
+export type Id = string;
+```
+
+**Bad**
+
+```ts
+export type IUserProfile = {
+  id: string;
+};
+```
+
+```ts
+export type IURLConfig = {
+  href: string;
+};
+```
 
 ## Explicit type-expression policies
 

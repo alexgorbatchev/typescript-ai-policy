@@ -1,7 +1,7 @@
 import { dirname, relative, resolve } from "node:path";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
-import type { ITextEdit } from "./types.ts";
+import type { TextEdit } from "./types.ts";
 
 function isRelativeModuleSpecifier(moduleSpecifier: string): boolean {
   return (
@@ -21,7 +21,7 @@ function readRelativeModuleSpecifier(fromDirectoryPath: string, targetPath: stri
   return relativePath.startsWith(".") ? relativePath : `./${relativePath}`;
 }
 
-type IModuleSpecifierEntry = {
+type ModuleSpecifierEntry = {
   moduleSpecifier: string;
   node: ts.StringLiteralLike;
 };
@@ -34,7 +34,7 @@ function readImportTypeArgumentLiteral(node: ts.ImportTypeNode): ts.StringLitera
   return ts.isStringLiteralLike(node.argument.literal) ? node.argument.literal : null;
 }
 
-function readModuleSpecifierEntry(node: ts.Node): IModuleSpecifierEntry | null {
+function readModuleSpecifierEntry(node: ts.Node): ModuleSpecifierEntry | null {
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
     return node.moduleSpecifier && ts.isStringLiteralLike(node.moduleSpecifier)
       ? {
@@ -88,8 +88,8 @@ function readModuleSpecifierEntry(node: ts.Node): IModuleSpecifierEntry | null {
   return null;
 }
 
-function readModuleSpecifierEntries(sourceFile: ts.SourceFile): readonly IModuleSpecifierEntry[] {
-  const moduleSpecifierEntries: IModuleSpecifierEntry[] = [];
+function readModuleSpecifierEntries(sourceFile: ts.SourceFile): readonly ModuleSpecifierEntry[] {
+  const moduleSpecifierEntries: ModuleSpecifierEntry[] = [];
 
   function visitNode(node: ts.Node): void {
     const moduleSpecifierEntry = readModuleSpecifierEntry(node);
@@ -105,12 +105,12 @@ function readModuleSpecifierEntries(sourceFile: ts.SourceFile): readonly IModule
   return moduleSpecifierEntries;
 }
 
-export function readMovedFileTextEdits(sourceFilePath: string, destinationFilePath: string): readonly ITextEdit[] {
+export function readMovedFileTextEdits(sourceFilePath: string, destinationFilePath: string): readonly TextEdit[] {
   const content = readFileSync(sourceFilePath, "utf8");
   const sourceFile = ts.createSourceFile(sourceFilePath, content, ts.ScriptTarget.Latest, true);
   const sourceDirectoryPath = dirname(sourceFilePath);
   const destinationDirectoryPath = dirname(destinationFilePath);
-  const textEdits: ITextEdit[] = [];
+  const textEdits: TextEdit[] = [];
 
   for (const moduleSpecifierEntry of readModuleSpecifierEntries(sourceFile)) {
     if (!isRelativeModuleSpecifier(moduleSpecifierEntry.moduleSpecifier)) {

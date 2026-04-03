@@ -1,50 +1,50 @@
-export type IOxlintSpan = {
+export type OxlintSpan = {
   column: number;
   length: number;
   line: number;
   offset: number;
 };
 
-export type IOxlintLabel = {
+export type OxlintLabel = {
   label?: string;
-  span: IOxlintSpan;
+  span: OxlintSpan;
 };
 
-export type IOxlintDiagnostic = {
+export type OxlintDiagnostic = {
   code: string;
   filename: string;
-  labels: readonly IOxlintLabel[];
+  labels: readonly OxlintLabel[];
   message: string;
   severity: string;
 };
 
-export type IOxlintJsonReport = {
-  diagnostics: readonly IOxlintDiagnostic[];
+export type OxlintJsonReport = {
+  diagnostics: readonly OxlintDiagnostic[];
 };
 
-export type ILineAndCharacter = {
+export type LineAndCharacter = {
   character: number;
   line: number;
 };
 
-export type ITextEdit = {
-  end: ILineAndCharacter;
+export type TextEdit = {
+  end: LineAndCharacter;
   filePath: string;
   newText: string;
-  start: ILineAndCharacter;
+  start: LineAndCharacter;
 };
 
-export type ISymbolRenameOperation = {
+export type SymbolRenameOperation = {
   filePath: string;
   id: string;
   kind: "rename-symbol";
   newName: string;
-  position: ILineAndCharacter;
+  position: LineAndCharacter;
   ruleCode: string;
   symbolName: string;
 };
 
-export type IMoveFileOperation = {
+export type MoveFileOperation = {
   filePath: string;
   id: string;
   kind: "move-file";
@@ -52,59 +52,53 @@ export type IMoveFileOperation = {
   ruleCode: string;
 };
 
-export type ISemanticFixOperation = ISymbolRenameOperation | IMoveFileOperation;
+export type SemanticFixOperation = SymbolRenameOperation | MoveFileOperation;
 
-export type IFileMove = {
+export type FileMove = {
   destinationFilePath: string;
   sourceFilePath: string;
 };
 
-export type ISemanticFixPlan = {
+export type SemanticFixPlan = {
   description: string;
-  fileMoves: readonly IFileMove[];
+  fileMoves: readonly FileMove[];
   operationId: string;
   ruleCode: string;
-  textEdits: readonly ITextEdit[];
+  textEdits: readonly TextEdit[];
 };
 
-export type ISemanticFixPlanSuccess = {
+export type SemanticFixPlanSuccess = {
   kind: "plan";
-  plan: ISemanticFixPlan;
+  plan: SemanticFixPlan;
 };
 
-export type ISemanticFixPlanSkip = {
+export type SemanticFixPlanSkip = {
   kind: "skip";
   reason: string;
 };
 
-export type ISemanticFixPlanResult = ISemanticFixPlanSkip | ISemanticFixPlanSuccess;
+export type SemanticFixPlanResult = SemanticFixPlanSkip | SemanticFixPlanSuccess;
 
-export type ISemanticFixProviderContext = {
+export type SemanticFixProviderContext = {
   targetDirectoryPath: string;
 };
 
-export type ISemanticFixProvider = {
-  createOperation: (
-    diagnostic: IOxlintDiagnostic,
-    context: ISemanticFixProviderContext,
-  ) => ISemanticFixOperation | null;
+export type SemanticFixProvider = {
+  createOperation: (diagnostic: OxlintDiagnostic, context: SemanticFixProviderContext) => SemanticFixOperation | null;
   ruleCode: string;
 };
 
-export type ISemanticFixBackendContext = {
+export type SemanticFixBackendContext = {
   targetDirectoryPath: string;
 };
 
-export type ISemanticFixBackend = {
-  createPlan: (
-    operation: ISemanticFixOperation,
-    context: ISemanticFixBackendContext,
-  ) => Promise<ISemanticFixPlanResult>;
+export type SemanticFixBackend = {
+  createPlan: (operation: SemanticFixOperation, context: SemanticFixBackendContext) => Promise<SemanticFixPlanResult>;
   dispose: () => Promise<void>;
   name: string;
 };
 
-export type IApplySemanticFixesProgressEvent =
+export type ApplySemanticFixesProgressEvent =
   | {
       kind: "running-oxlint";
       targetDirectoryPath: string;
@@ -139,25 +133,25 @@ export type IApplySemanticFixesProgressEvent =
       skippedDiagnosticCount: number;
     };
 
-export type IApplySemanticFixesOptions = {
+export type ApplySemanticFixesOptions = {
   dryRun?: boolean;
-  onProgress?: (event: IApplySemanticFixesProgressEvent) => void;
+  onProgress?: (event: ApplySemanticFixesProgressEvent) => void;
   oxlintConfigPath: string;
   oxlintExecutablePath: string;
   targetDirectoryPath: string;
   tsgoExecutablePath: string;
 };
 
-export type ISkippedDiagnostic = {
+export type SkippedDiagnostic = {
   filePath: string;
   reason: string;
   ruleCode: string;
 };
 
-export type IApplySemanticFixesResult = {
+export type ApplySemanticFixesResult = {
   appliedFileCount: number;
   backendName: string;
   changedFilePaths: readonly string[];
   plannedFixCount: number;
-  skippedDiagnostics: readonly ISkippedDiagnostic[];
+  skippedDiagnostics: readonly SkippedDiagnostic[];
 };

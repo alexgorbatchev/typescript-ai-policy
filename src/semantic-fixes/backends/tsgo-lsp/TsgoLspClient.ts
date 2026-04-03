@@ -1,95 +1,95 @@
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { pathToFileURL } from "node:url";
-import type { ILineAndCharacter } from "../../types.ts";
+import type { LineAndCharacter } from "../../types.ts";
 
-type IJsonRpcIdentifier = number | string | null;
+type JsonRpcIdentifier = number | string | null;
 
-type IJsonRpcError = {
+type JsonRpcError = {
   code: number;
   message: string;
 };
 
-type IJsonRpcErrorResponse = {
-  error: IJsonRpcError;
-  id: IJsonRpcIdentifier;
+type JsonRpcErrorResponse = {
+  error: JsonRpcError;
+  id: JsonRpcIdentifier;
   jsonrpc: string;
 };
 
-type IJsonRpcRequestMessage = {
-  id?: IJsonRpcIdentifier;
+type JsonRpcRequestMessage = {
+  id?: JsonRpcIdentifier;
   jsonrpc: string;
   method: string;
   params?: unknown;
 };
 
-type IJsonRpcSuccessResponse = {
-  id: IJsonRpcIdentifier;
+type JsonRpcSuccessResponse = {
+  id: JsonRpcIdentifier;
   jsonrpc: string;
   result?: unknown;
 };
 
-type IJsonRpcResponse = IJsonRpcErrorResponse | IJsonRpcSuccessResponse;
+type JsonRpcResponse = JsonRpcErrorResponse | JsonRpcSuccessResponse;
 
-type ILspTextDocumentIdentifier = {
+type LspTextDocumentIdentifier = {
   uri: string;
 };
 
-type ILspPosition = {
+type LspPosition = {
   character: number;
   line: number;
 };
 
-type ILspWorkspaceFolder = {
+type LspWorkspaceFolder = {
   name: string;
   uri: string;
 };
 
-type ILspWorkspaceEditCapabilities = {
+type LspWorkspaceEditCapabilities = {
   documentChanges: boolean;
 };
 
-type ILspWorkspaceCapabilities = {
-  workspaceEdit: ILspWorkspaceEditCapabilities;
+type LspWorkspaceCapabilities = {
+  workspaceEdit: LspWorkspaceEditCapabilities;
 };
 
-type ILspRenameCapabilities = {
+type LspRenameCapabilities = {
   prepareSupport: boolean;
 };
 
-type ILspTextDocumentCapabilities = {
-  rename: ILspRenameCapabilities;
+type LspTextDocumentCapabilities = {
+  rename: LspRenameCapabilities;
 };
 
-type ILspClientCapabilities = {
-  textDocument: ILspTextDocumentCapabilities;
-  workspace: ILspWorkspaceCapabilities;
+type LspClientCapabilities = {
+  textDocument: LspTextDocumentCapabilities;
+  workspace: LspWorkspaceCapabilities;
 };
 
-type ILspInitializeParams = {
-  capabilities: ILspClientCapabilities;
+type LspInitializeParams = {
+  capabilities: LspClientCapabilities;
   processId: number;
   rootUri: string;
-  workspaceFolders: readonly ILspWorkspaceFolder[];
+  workspaceFolders: readonly LspWorkspaceFolder[];
 };
 
-type ILspPrepareRenameParams = {
-  position: ILspPosition;
-  textDocument: ILspTextDocumentIdentifier;
+type LspPrepareRenameParams = {
+  position: LspPosition;
+  textDocument: LspTextDocumentIdentifier;
 };
 
-type ILspRenameParams = {
+type LspRenameParams = {
   newName: string;
-  position: ILspPosition;
-  textDocument: ILspTextDocumentIdentifier;
+  position: LspPosition;
+  textDocument: LspTextDocumentIdentifier;
 };
 
-type ITsgoLspClientOptions = {
+type TsgoLspClientOptions = {
   tsgoExecutablePath: string;
   workspacePath: string;
 };
 
-type IPendingRequest = {
+type PendingRequest = {
   reject: (error: Error) => void;
   resolve: (result: unknown) => void;
 };
@@ -98,7 +98,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function isJsonRpcError(value: unknown): value is IJsonRpcError {
+function isJsonRpcError(value: unknown): value is JsonRpcError {
   if (!isRecord(value)) {
     return false;
   }
@@ -106,7 +106,7 @@ function isJsonRpcError(value: unknown): value is IJsonRpcError {
   return typeof value.code === "number" && typeof value.message === "string";
 }
 
-function isJsonRpcRequestMessage(value: unknown): value is IJsonRpcRequestMessage {
+function isJsonRpcRequestMessage(value: unknown): value is JsonRpcRequestMessage {
   if (!isRecord(value)) {
     return false;
   }
@@ -114,7 +114,7 @@ function isJsonRpcRequestMessage(value: unknown): value is IJsonRpcRequestMessag
   return value.jsonrpc === "2.0" && typeof value.method === "string";
 }
 
-function isJsonRpcResponse(value: unknown): value is IJsonRpcResponse {
+function isJsonRpcResponse(value: unknown): value is JsonRpcResponse {
   if (!isRecord(value)) {
     return false;
   }
@@ -135,7 +135,7 @@ function isJsonRpcResponse(value: unknown): value is IJsonRpcResponse {
   return Reflect.has(value, "result");
 }
 
-function readLspPosition(position: ILineAndCharacter): ILspPosition {
+function readLspPosition(position: LineAndCharacter): LspPosition {
   return {
     character: position.character,
     line: position.line,
@@ -143,13 +143,13 @@ function readLspPosition(position: ILineAndCharacter): ILspPosition {
 }
 
 export class TsgoLspClient {
-  private readonly pendingRequests = new Map<number, IPendingRequest>();
+  private readonly pendingRequests = new Map<number, PendingRequest>();
   private readonly process: ReturnType<typeof spawn>;
   private readonly stderrChunks: string[] = [];
   private stdoutBuffer = Buffer.alloc(0);
   private requestId = 0;
 
-  public constructor(private readonly options: ITsgoLspClientOptions) {
+  public constructor(private readonly options: TsgoLspClientOptions) {
     this.process = spawn(this.options.tsgoExecutablePath, ["--lsp", "--stdio"], {
       cwd: this.options.workspacePath,
       stdio: ["pipe", "pipe", "pipe"],
@@ -187,7 +187,7 @@ export class TsgoLspClient {
 
   public async initialize(): Promise<void> {
     const rootUri = pathToFileURL(this.options.workspacePath).toString();
-    const initializeParams: ILspInitializeParams = {
+    const initializeParams: LspInitializeParams = {
       capabilities: {
         textDocument: {
           rename: {
@@ -214,8 +214,8 @@ export class TsgoLspClient {
     this.sendNotification("initialized");
   }
 
-  public prepareRename(filePath: string, position: ILineAndCharacter): Promise<unknown> {
-    const params: ILspPrepareRenameParams = {
+  public prepareRename(filePath: string, position: LineAndCharacter): Promise<unknown> {
+    const params: LspPrepareRenameParams = {
       position: readLspPosition(position),
       textDocument: {
         uri: pathToFileURL(filePath).toString(),
@@ -225,8 +225,8 @@ export class TsgoLspClient {
     return this.sendRequest("textDocument/prepareRename", params);
   }
 
-  public rename(filePath: string, position: ILineAndCharacter, newName: string): Promise<unknown> {
-    const params: ILspRenameParams = {
+  public rename(filePath: string, position: LineAndCharacter, newName: string): Promise<unknown> {
+    const params: LspRenameParams = {
       newName,
       position: readLspPosition(position),
       textDocument: {
@@ -289,7 +289,7 @@ export class TsgoLspClient {
     }
   }
 
-  private handleResponse(message: IJsonRpcResponse): void {
+  private handleResponse(message: JsonRpcResponse): void {
     if (typeof message.id !== "number") {
       return;
     }
@@ -309,7 +309,7 @@ export class TsgoLspClient {
     pendingRequest.resolve(message.result ?? null);
   }
 
-  private handleServerRequest(message: IJsonRpcRequestMessage): void {
+  private handleServerRequest(message: JsonRpcRequestMessage): void {
     if (message.id === undefined) {
       return;
     }
@@ -401,7 +401,7 @@ export class TsgoLspClient {
     clearTimeout(killTimer);
   }
 
-  private writeMessage(method: string, id?: IJsonRpcIdentifier, params?: unknown): void {
+  private writeMessage(method: string, id?: JsonRpcIdentifier, params?: unknown): void {
     const message: Record<string, unknown> = {
       jsonrpc: "2.0",
       method,
@@ -418,7 +418,7 @@ export class TsgoLspClient {
     this.writeSerializedMessage(message);
   }
 
-  private writeResponse(id: IJsonRpcIdentifier, result: unknown): void {
+  private writeResponse(id: JsonRpcIdentifier, result: unknown): void {
     this.writeSerializedMessage({
       id,
       jsonrpc: "2.0",

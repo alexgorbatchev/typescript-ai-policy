@@ -4,9 +4,9 @@ import { existsSync, statSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 import { applySemanticFixes } from "./applySemanticFixes.ts";
 import { readSemanticFixRuntimePaths } from "./readSemanticFixRuntimePaths.ts";
-import type { IApplySemanticFixesProgressEvent, ISkippedDiagnostic } from "./types.ts";
+import type { ApplySemanticFixesProgressEvent, SkippedDiagnostic } from "./types.ts";
 
-type ICliOptions = {
+type CliOptions = {
   dryRun: boolean;
   targetDirectoryPath: string;
 };
@@ -26,7 +26,7 @@ function readUsageText(): string {
   ].join("\n");
 }
 
-function readCliOptions(argv: readonly string[]): ICliOptions {
+function readCliOptions(argv: readonly string[]): CliOptions {
   const remainingArguments = argv.slice(2);
   const targetDirectoryArgument = remainingArguments.find((argument) => !argument.startsWith("-"));
   if (!targetDirectoryArgument) {
@@ -54,11 +54,11 @@ function readDisplayPath(targetDirectoryPath: string, filePath: string): string 
   return relativeFilePath.length > 0 ? relativeFilePath : ".";
 }
 
-function formatSkippedDiagnostic(targetDirectoryPath: string, skippedDiagnostic: ISkippedDiagnostic): string {
+function formatSkippedDiagnostic(targetDirectoryPath: string, skippedDiagnostic: SkippedDiagnostic): string {
   return `- [${skippedDiagnostic.ruleCode}] ${readDisplayPath(targetDirectoryPath, skippedDiagnostic.filePath)}: ${skippedDiagnostic.reason}`;
 }
 
-function formatProgressEvent(event: IApplySemanticFixesProgressEvent): string {
+function formatProgressEvent(event: ApplySemanticFixesProgressEvent): string {
   switch (event.kind) {
     case "running-oxlint": {
       return "running oxlint...";

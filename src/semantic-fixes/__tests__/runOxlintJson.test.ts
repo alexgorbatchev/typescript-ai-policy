@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { runOxlintJson } from "../runOxlintJson.ts";
 
-type IFakeDiagnostic = {
+type FakeDiagnostic = {
   code: string;
   filename: string;
   labels: readonly {
@@ -19,7 +19,7 @@ type IFakeDiagnostic = {
   severity: string;
 };
 
-async function createFakeOxlintExecutable(diagnostics: readonly IFakeDiagnostic[]): Promise<string> {
+async function createFakeOxlintExecutable(diagnostics: readonly FakeDiagnostic[]): Promise<string> {
   const tempDirectoryPath = await mkdtemp(join(tmpdir(), "run-oxlint-json-test-"));
   const executablePath = join(tempDirectoryPath, "fake-oxlint.sh");
   const reportPath = join(tempDirectoryPath, "report.json");
@@ -44,7 +44,7 @@ exit 1
   return executablePath;
 }
 
-function readFakeDiagnostic(index: number): IFakeDiagnostic {
+function readFakeDiagnostic(index: number): FakeDiagnostic {
   return {
     code: "@alexgorbatchev(interface-naming-convention)",
     filename: `file-${String(index)}.ts`,
