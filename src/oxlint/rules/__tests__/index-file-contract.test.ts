@@ -1,4 +1,5 @@
 import { afterAll, describe, it } from "bun:test";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
 import indexFileContractRuleModule from "../index-file-contract.ts";
@@ -52,6 +53,48 @@ indexFileContractRuleTester.run(
         errors: [
           {
             messageId: "unexpectedIndexStatement",
+            data: {
+              barrelBaseName: "index.ts",
+              renameSuffix: "",
+            },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+        const CURSOR_FALLBACK_MODEL_IDS = ["auto"];
+      `,
+        filename: "src/oxlint/index.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedIndexStatement",
+            type: AST_NODE_TYPES.Identifier,
+            data: {
+              barrelBaseName: "index.ts",
+              renameSuffix: "",
+            },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+        function createRule() {
+          return {};
+        }
+      `,
+        filename: "src/oxlint/index.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "unexpectedIndexStatement",
+            type: AST_NODE_TYPES.Identifier,
+            data: {
+              barrelBaseName: "index.ts",
+              renameSuffix: "",
+            },
           },
         ],
         output: null,
@@ -65,6 +108,11 @@ indexFileContractRuleTester.run(
         errors: [
           {
             messageId: "unexpectedIndexExport",
+            type: AST_NODE_TYPES.Identifier,
+            data: {
+              barrelBaseName: "index.ts",
+              renameSuffix: "",
+            },
           },
         ],
         output: null,
@@ -78,6 +126,11 @@ indexFileContractRuleTester.run(
         errors: [
           {
             messageId: "unexpectedIndexExport",
+            type: AST_NODE_TYPES.Identifier,
+            data: {
+              barrelBaseName: "index.ts",
+              renameSuffix: "",
+            },
           },
         ],
         output: null,
@@ -91,6 +144,11 @@ indexFileContractRuleTester.run(
         errors: [
           {
             messageId: "unexpectedIndexExport",
+            type: AST_NODE_TYPES.Identifier,
+            data: {
+              barrelBaseName: "index.ts",
+              renameSuffix: "",
+            },
           },
         ],
         output: null,
@@ -106,6 +164,11 @@ indexFileContractRuleTester.run(
         errors: [
           {
             messageId: "unexpectedIndexExport",
+            type: AST_NODE_TYPES.Identifier,
+            data: {
+              barrelBaseName: "index.ts",
+              renameSuffix: "",
+            },
           },
         ],
         output: null,
@@ -137,6 +200,11 @@ indexFileContractRuleTester.run(
           },
           {
             messageId: "unexpectedIndexExport",
+            type: AST_NODE_TYPES.Identifier,
+            data: {
+              barrelBaseName: "index.tsx",
+              renameSuffix: ' Then rename this file to "index.ts".',
+            },
           },
         ],
         output: null,
