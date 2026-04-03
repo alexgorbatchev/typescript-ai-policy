@@ -413,10 +413,7 @@ export function SignalPanel() {
 
 ### `@alexgorbatchev/require-component-root-testid`
 
-**Policy:** In non-story `.tsx` files, exported React components must render a DOM root whose `data-testid`/`testId`
-is exactly the component name, and every child test id must use `ComponentName--thing`. Fragment roots and other
-non-element roots are not allowed for exported components. Storybook files are exempt because story exports are not
-component ownership files.
+**Policy:** In non-story `.tsx` files, exported React components that render a direct DOM root must set that root's `data-testid`/`testId` to exactly the component name, and every child test id must use `ComponentName--thing`. Fragment roots and other non-JSX-expression roots are not allowed for exported components. Exported components may delegate their root rendering to another React component without adding a root test id at the call site. Storybook files are exempt because story exports are not component ownership files.
 
 **Good**
 
@@ -427,6 +424,12 @@ export function SurfacePanel() {
       <div data-testid="SurfacePanel--content">Ready</div>
     </section>
   );
+}
+```
+
+```tsx
+export function KitchenSinkTaskDetailView() {
+  return <CompactSurfaceSummary label="Task Detail View" entityType="issue" />;
 }
 ```
 

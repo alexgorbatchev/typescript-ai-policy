@@ -41,6 +41,7 @@ type RootBranch =
       testIdEntries: TestIdEntry[];
     }
   | {
+      isDomElement: boolean;
       kind: "jsx";
       node: TSESTree.JSXElement;
       testIdEntries: TestIdEntry[];
@@ -68,7 +69,7 @@ const requireComponentRootTestIdRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        "Enforce exported React component roots to use ComponentName and child test ids to use ComponentName--thing",
+        "Enforce direct exported DOM roots to use ComponentName and child test ids to use ComponentName--thing, while allowing exported components to delegate their root rendering to another component",
     },
     messages: {
       invalidChildTestId:
@@ -313,6 +314,11 @@ function readReturnExpressionsFromBlock(
   }
 }
 
+function isDomJsxRootElement(node: TSESTree.JSXElement): boolean {
+  const openingElementName = node.openingElement.name;
+  return openingElementName.type === "JSXIdentifier" && /^[a-z]/u.test(openingElementName.name);
+}
+
 function readRootBranches(expression: TSESTree.Expression): RootBranch[] {
   const unwrappedExpression = unwrapExpression(expression);
 
@@ -336,6 +342,7 @@ function readRootBranches(expression: TSESTree.Expression): RootBranch[] {
     return [
       {
         kind: "jsx",
+        isDomElement: isDomJsxRootElement(unwrappedExpression),
         node: unwrappedExpression,
         testIdEntries: readJsxAttributeTestIdEntries(unwrappedExpression.openingElement.attributes),
       },
@@ -486,6 +493,10 @@ function reportInvalidExportedRoot(context: RuleContext, componentName: string, 
     return;
   }
 
+  if (!rootBranch.isDomElement) {
+    return;
+  }
+
   const hasExactRootTestId = rootBranch.testIdEntries.some((testIdEntry) => {
     return testIdEntry.candidates.some((candidate) => candidate === componentName);
   });
@@ -495,7 +506,7 @@ function reportInvalidExportedRoot(context: RuleContext, componentName: string, 
   }
 
   context.report({
-    node: rootBranch.testIdEntries[0]?.node ?? rootBranch.node,
+    node: rootBranch.node.openingElement,
     messageId: "missingExportedRootTestId",
     data: {
       componentName,

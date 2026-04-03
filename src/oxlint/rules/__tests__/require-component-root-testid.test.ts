@@ -1,5 +1,6 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
 import requireComponentRootTestIdRuleModule from "../require-component-root-testid.ts";
 
@@ -91,6 +92,15 @@ requireComponentRootTestIdRuleTester.run(
         filename: "UntaggedHelperHost.tsx",
         languageOptions: languageOpts,
       },
+      {
+        code: `
+          export function KitchenSinkTaskDetailView() {
+            return <CompactSurfaceSummary label='Task Detail View' entityType='issue' />;
+          }
+        `,
+        filename: "KitchenSinkTaskDetailView.tsx",
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {
@@ -145,6 +155,7 @@ requireComponentRootTestIdRuleTester.run(
         errors: [
           {
             messageId: "missingExportedRootTestId",
+            type: AST_NODE_TYPES.JSXOpeningElement,
             data: {
               componentName: "RootlessPanel",
             },
