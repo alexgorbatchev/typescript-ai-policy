@@ -48,6 +48,7 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       rules: {
         "@alexgorbatchev/interface-naming-convention": "error",
         "@alexgorbatchev/no-inline-type-expressions": "error",
+        "@alexgorbatchev/require-template-indent": "error",
       },
     },
     {

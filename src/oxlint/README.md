@@ -44,9 +44,10 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/no-type-imports-from-constants`
    - `@alexgorbatchev/test-file-location-convention`
    - `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
-2. **TypeScript-wide naming and explicit-type rules** run on all `**/*.{ts,tsx,mts,cts}` files:
+2. **TypeScript-wide naming, explicit-type, and template-literal rules** run on all `**/*.{ts,tsx,mts,cts}` files:
    - `@alexgorbatchev/interface-naming-convention`
    - `@alexgorbatchev/no-inline-type-expressions`
+   - `@alexgorbatchev/require-template-indent`
 3. **React component ownership rules** run on all `**/*.tsx` files, with the component-file rules themselves
    exempting `stories/`, `__tests__/`, and support basenames:
    - `@alexgorbatchev/testid-naming-convention`
@@ -261,6 +262,32 @@ const pairs: Array<[string, number]> = Object.entries(counts);
 export function readUser(): User | Admin | null {
   return null;
 }
+```
+
+## Template literal readability policies
+
+### `@alexgorbatchev/require-template-indent`
+
+**Policy:** Multiline template literals that begin on their own line must keep their content indented with the surrounding code. Under-indented template content is hard to review, easy for agents to generate inconsistently, and obscures whether leading whitespace is intentional.
+
+**Good**
+
+```ts
+const configSource = `
+  export default {
+    mode: "strict",
+  };
+`;
+```
+
+**Bad**
+
+```ts
+const configSource = `
+export default {
+  mode: "strict",
+};
+`;
 ```
 
 ## Type/value boundary policies

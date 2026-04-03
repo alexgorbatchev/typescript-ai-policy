@@ -4,6 +4,7 @@ import requireComponentRootTestIdRule from "./rules/require-component-root-testi
 import noNonRunningTestsRule from "./rules/no-non-running-tests.ts";
 import noConditionalLogicInTestsRule from "./rules/no-conditional-logic-in-tests.ts";
 import noThrowInTestsRule from "./rules/no-throw-in-tests.ts";
+import requireTemplateIndentRule from "./rules/require-template-indent.ts";
 import noModuleMockingRule from "./rules/no-module-mocking.ts";
 import noTestFileExportsRule from "./rules/no-test-file-exports.ts";
 import noImportsFromTestsDirectoryRule from "./rules/no-imports-from-tests-directory.ts";
@@ -49,6 +50,7 @@ const plugin = {
     "no-non-running-tests": noNonRunningTestsRule,
     "no-conditional-logic-in-tests": noConditionalLogicInTestsRule,
     "no-throw-in-tests": noThrowInTestsRule,
+    "require-template-indent": requireTemplateIndentRule,
     "no-module-mocking": noModuleMockingRule,
     "no-test-file-exports": noTestFileExportsRule,
     "no-imports-from-tests-directory": noImportsFromTestsDirectoryRule,

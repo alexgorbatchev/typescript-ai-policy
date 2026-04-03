@@ -36,6 +36,15 @@ describe("createOxlintConfig", () => {
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/*.{ts,tsx,mts,cts}"],
+      rules: {
+        "@alexgorbatchev/interface-naming-convention": "error",
+        "@alexgorbatchev/no-inline-type-expressions": "error",
+        "@alexgorbatchev/require-template-indent": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
       files: ["**/__tests__/*.test.{ts,tsx}", "**/__tests__/**/*.test.{ts,tsx}"],
       rules: {
         "@alexgorbatchev/testid-naming-convention": "off",
