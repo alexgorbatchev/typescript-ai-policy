@@ -10,8 +10,11 @@ import type {
 import {
   getFilenameWithoutExtension,
   isExemptSupportBasename,
+  isInStoriesDirectory,
+  isInTestsDirectory,
   isPascalCase,
   readDeclarationIdentifierNames,
+  readMultipartComponentRootName,
 } from "./helpers.ts";
 
 function isTypeOnlyExportSpecifier(
@@ -29,20 +32,42 @@ function readExportedSpecifierName(specifier: AstExportSpecifier): string {
   return String(specifier.exported.value);
 }
 
-function readFirstRuntimeExportName(program: AstProgram): string | null {
-  for (const statement of program.body) {
-    const exportName = readStatementRuntimeExportName(statement);
-    if (exportName !== null) {
-      return exportName;
-    }
-  }
+type RuntimeExportNameEntry = {
+  name: string;
+  reportNode: TSESTree.Node;
+};
 
-  return null;
+function readRuntimeExportNameEntries(program: AstProgram): RuntimeExportNameEntry[] {
+  return program.body.flatMap((statement) => {
+    const exportEntry = readStatementRuntimeExportEntry(statement);
+    return exportEntry === null ? [] : [exportEntry];
+  });
 }
 
-function readStatementRuntimeExportName(statement: AstProgramStatement): string | null {
+function readCanonicalRuntimeExportEntry(program: AstProgram): RuntimeExportNameEntry | null {
+  const runtimeExportEntries = readRuntimeExportNameEntries(program);
+  if (runtimeExportEntries.length === 0) {
+    return null;
+  }
+
+  const multipartComponentRootName = readMultipartComponentRootName(
+    runtimeExportEntries.map((runtimeExportEntry) => runtimeExportEntry.name),
+  );
+
+  if (!multipartComponentRootName) {
+    return runtimeExportEntries[0] ?? null;
+  }
+
+  return (
+    runtimeExportEntries.find((runtimeExportEntry) => runtimeExportEntry.name === multipartComponentRootName) ??
+    runtimeExportEntries[0] ??
+    null
+  );
+}
+
+function readStatementRuntimeExportEntry(statement: AstProgramStatement): RuntimeExportNameEntry | null {
   if (statement.type === "ExportDefaultDeclaration") {
-    return readDefaultExportName(statement.declaration);
+    return readDefaultExportEntry(statement.declaration);
   }
 
   if (statement.type !== "ExportNamedDeclaration") {
@@ -54,7 +79,7 @@ function readStatementRuntimeExportName(statement: AstProgramStatement): string 
       return null;
     }
 
-    return readDeclarationRuntimeExportName(statement.declaration);
+    return readDeclarationRuntimeExportEntry(statement.declaration);
   }
 
   const runtimeSpecifier = statement.specifiers.find((specifier) => !isTypeOnlyExportSpecifier(specifier, statement));
@@ -62,12 +87,20 @@ function readStatementRuntimeExportName(statement: AstProgramStatement): string 
     return null;
   }
 
-  return readExportedSpecifierName(runtimeSpecifier);
+  return {
+    name: readExportedSpecifierName(runtimeSpecifier),
+    reportNode: runtimeSpecifier.exported.type === "Identifier" ? runtimeSpecifier.exported : runtimeSpecifier,
+  };
 }
 
-function readDefaultExportName(declaration: TSESTree.ExportDefaultDeclaration["declaration"]): string | null {
+function readDefaultExportEntry(
+  declaration: TSESTree.ExportDefaultDeclaration["declaration"],
+): RuntimeExportNameEntry | null {
   if (declaration.type === "Identifier") {
-    return declaration.name;
+    return {
+      name: declaration.name,
+      reportNode: declaration,
+    };
   }
 
   if (
@@ -77,17 +110,22 @@ function readDefaultExportName(declaration: TSESTree.ExportDefaultDeclaration["d
     declaration.type === "TSInterfaceDeclaration" ||
     declaration.type === "TSTypeAliasDeclaration"
   ) {
-    return declaration.id?.name ?? null;
+    return declaration.id
+      ? {
+          name: declaration.id.name,
+          reportNode: declaration.id,
+        }
+      : null;
   }
 
   if (declaration.type === "VariableDeclaration") {
-    return readVariableDeclarationExportName(declaration);
+    return readVariableDeclarationExportEntry(declaration);
   }
 
   return null;
 }
 
-function readDeclarationRuntimeExportName(declaration: AstDeclarationWithIdentifiers): string | null {
+function readDeclarationRuntimeExportEntry(declaration: AstDeclarationWithIdentifiers): RuntimeExportNameEntry | null {
   if (
     declaration.type === "TSTypeAliasDeclaration" ||
     declaration.type === "TSInterfaceDeclaration" ||
@@ -97,19 +135,40 @@ function readDeclarationRuntimeExportName(declaration: AstDeclarationWithIdentif
   }
 
   if (declaration.type === "VariableDeclaration") {
-    return readVariableDeclarationExportName(declaration);
+    return readVariableDeclarationExportEntry(declaration);
   }
 
-  return readDeclarationIdentifierNames(declaration)[0] ?? null;
+  const declarationName = readDeclarationIdentifierNames(declaration)[0];
+  if (!declarationName) {
+    return null;
+  }
+
+  if (
+    declaration.type === "FunctionDeclaration" ||
+    declaration.type === "ClassDeclaration" ||
+    declaration.type === "TSEnumDeclaration"
+  ) {
+    return declaration.id
+      ? {
+          name: declaration.id.name,
+          reportNode: declaration.id,
+        }
+      : null;
+  }
+
+  return null;
 }
 
-function readVariableDeclarationExportName(declaration: TSESTree.VariableDeclaration): string | null {
+function readVariableDeclarationExportEntry(declaration: TSESTree.VariableDeclaration): RuntimeExportNameEntry | null {
   const firstDeclarator = declaration.declarations[0];
   if (!firstDeclarator || firstDeclarator.id.type !== "Identifier") {
     return null;
   }
 
-  return firstDeclarator.id.name;
+  return {
+    name: firstDeclarator.id.name,
+    reportNode: firstDeclarator.id,
+  };
 }
 
 function readExpectedComponentNameFromFilename(filename: string): string | null {
@@ -133,7 +192,7 @@ const componentFileNamingConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        "Require component ownership filenames to match their exported PascalCase component name in either PascalCase or kebab-case form",
+        "Require component ownership filenames to match their exported PascalCase component name, or multipart family root name, in either PascalCase or kebab-case form",
     },
     schema: [],
     messages: {
@@ -146,17 +205,22 @@ const componentFileNamingConventionRule: RuleModule = {
     },
   },
   create(context) {
-    if (isExemptSupportBasename(context.filename)) {
+    if (
+      isExemptSupportBasename(context.filename) ||
+      isInStoriesDirectory(context.filename) ||
+      isInTestsDirectory(context.filename)
+    ) {
       return {};
     }
 
     return {
       Program(node) {
-        const exportedComponentName = readFirstRuntimeExportName(node);
-        if (!exportedComponentName) {
+        const exportedComponentEntry = readCanonicalRuntimeExportEntry(node);
+        if (!exportedComponentEntry) {
           return;
         }
 
+        const { name: exportedComponentName, reportNode } = exportedComponentEntry;
         const expectedComponentName = readExpectedComponentNameFromFilename(context.filename);
         if (!expectedComponentName) {
           context.report({
@@ -168,7 +232,7 @@ const componentFileNamingConventionRule: RuleModule = {
 
         if (!isPascalCase(exportedComponentName)) {
           context.report({
-            node,
+            node: reportNode,
             messageId: "invalidComponentExportName",
           });
         }
@@ -180,7 +244,7 @@ const componentFileNamingConventionRule: RuleModule = {
         const kebabFilename = `${exportedComponentName.replaceAll(/([a-z0-9])([A-Z])/gu, "$1-$2").toLowerCase()}.tsx`;
 
         context.report({
-          node,
+          node: reportNode,
           messageId: "mismatchedComponentFileName",
           data: {
             exportedName: exportedComponentName,

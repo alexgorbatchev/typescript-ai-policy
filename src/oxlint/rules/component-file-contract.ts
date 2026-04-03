@@ -11,8 +11,11 @@ import type {
 } from "./types.ts";
 import {
   isExemptSupportBasename,
+  isInStoriesDirectory,
+  isInTestsDirectory,
   isTypeDeclaration,
   readDeclarationIdentifierNames,
+  readMultipartComponentRootName,
   readPatternIdentifierNames,
   unwrapExpression,
 } from "./helpers.ts";
@@ -33,6 +36,7 @@ type ComponentRuntimeExportEntry = {
     | "variable-declaration";
   name: string;
   node: AstNode;
+  reportNode: AstNode;
 };
 
 function readExportedSpecifierName(specifier: AstExportSpecifier): string {
@@ -108,12 +112,13 @@ function readStatementRuntimeExportEntries(statement: AstProgramStatement): Comp
         kind: "default-export",
         name: readDefaultExportName(statement.declaration) ?? "default",
         node: statement,
+        reportNode: statement,
       },
     ];
   }
 
   if (statement.type === "TSExportAssignment") {
-    return [{ kind: "default-export", name: "default", node: statement }];
+    return [{ kind: "default-export", name: "default", node: statement, reportNode: statement }];
   }
 
   if (statement.type === "ExportAllDeclaration") {
@@ -121,7 +126,7 @@ function readStatementRuntimeExportEntries(statement: AstProgramStatement): Comp
       return [];
     }
 
-    return [{ kind: "export-all", name: "*", node: statement }];
+    return [{ kind: "export-all", name: "*", node: statement, reportNode: statement }];
   }
 
   if (statement.type !== "ExportNamedDeclaration") {
@@ -139,6 +144,7 @@ function readStatementRuntimeExportEntries(statement: AstProgramStatement): Comp
         kind: "indirect-export" as const,
         name: readExportedSpecifierName(specifier),
         node: specifier,
+        reportNode: specifier.exported.type === "Identifier" ? specifier.exported : specifier,
       }));
   }
 
@@ -172,15 +178,21 @@ function readDeclarationRuntimeExportEntries(
   declaration: AstDeclarationWithIdentifiers,
 ): ComponentRuntimeExportEntry[] {
   if (declaration.type === "FunctionDeclaration") {
-    return declaration.id ? [{ kind: "function-declaration", name: declaration.id.name, node: declaration }] : [];
+    return declaration.id
+      ? [{ kind: "function-declaration", name: declaration.id.name, node: declaration, reportNode: declaration.id }]
+      : [];
   }
 
   if (declaration.type === "ClassDeclaration") {
-    return declaration.id ? [{ kind: "class-declaration", name: declaration.id.name, node: declaration }] : [];
+    return declaration.id
+      ? [{ kind: "class-declaration", name: declaration.id.name, node: declaration, reportNode: declaration.id }]
+      : [];
   }
 
   if (declaration.type === "TSEnumDeclaration") {
-    return declaration.id ? [{ kind: "enum-declaration", name: declaration.id.name, node: declaration }] : [];
+    return declaration.id
+      ? [{ kind: "enum-declaration", name: declaration.id.name, node: declaration, reportNode: declaration.id }]
+      : [];
   }
 
   if (declaration.type !== "VariableDeclaration") {
@@ -196,6 +208,7 @@ function readDeclarationRuntimeExportEntries(
       kind: declaration.kind === "const" ? ("const-variable" as const) : ("variable-declaration" as const),
       name,
       node: declarator,
+      reportNode: declarator.id.type === "Identifier" ? declarator.id : declarator,
     }));
   });
 }
@@ -221,12 +234,31 @@ function isValidMainComponentRuntimeExport(entry: ComponentRuntimeExportEntry): 
   return entry.kind === "function-declaration" || isValidWrappedComponentExport(entry);
 }
 
+function isValidMultipartComponentRuntimeExportFamily(
+  runtimeExportEntries: readonly ComponentRuntimeExportEntry[],
+): boolean {
+  if (runtimeExportEntries.length < 2) {
+    return false;
+  }
+
+  const validComponentRuntimeExportEntries = runtimeExportEntries.filter(isValidMainComponentRuntimeExport);
+  if (validComponentRuntimeExportEntries.length !== runtimeExportEntries.length) {
+    return false;
+  }
+
+  const multipartComponentRootName = readMultipartComponentRootName(
+    validComponentRuntimeExportEntries.map((runtimeExportEntry) => runtimeExportEntry.name),
+  );
+
+  return multipartComponentRootName !== null;
+}
+
 const componentFileContractRule: RuleModule = {
   meta: {
     type: "problem" as const,
     docs: {
       description:
-        "Require direct-child component ownership files to export exactly one named runtime component and allow only type-only secondary exports",
+        "Require component ownership files to export exactly one named runtime component or one multipart component family and allow only type-only secondary exports",
     },
     schema: [],
     messages: {
@@ -234,12 +266,18 @@ const componentFileContractRule: RuleModule = {
         "Export exactly one main runtime component from this file. Component ownership files must use one direct named export plus optional type-only exports.",
       invalidMainComponentExport:
         "Replace this export with a valid component ownership export. Use `export function ComponentName() {}` for plain components, or `export const ComponentName = wrapper(function ComponentName() {})` for wrapped components.",
+      invalidIndirectComponentExport:
+        "Export this component directly from its declaration. Component ownership files must use `export function ComponentName() {}` or a direct named wrapped `export const` binding, not an `export { ComponentName }` list.",
       unexpectedAdditionalRuntimeExport:
-        "Remove this additional runtime export. Component ownership files may export only one main runtime component plus unrestricted type-only API.",
+        "Extract this runtime export to its own ownership file. Component ownership files may export only one main runtime component, or one multipart component family whose members share the base component name, plus unrestricted type-only API.",
     },
   },
   create(context) {
-    if (isExemptSupportBasename(context.filename)) {
+    if (
+      isExemptSupportBasename(context.filename) ||
+      isInStoriesDirectory(context.filename) ||
+      isInTestsDirectory(context.filename)
+    ) {
       return {};
     }
 
@@ -254,6 +292,10 @@ const componentFileContractRule: RuleModule = {
           return;
         }
 
+        if (isValidMultipartComponentRuntimeExportFamily(runtimeExportEntries)) {
+          return;
+        }
+
         const [mainRuntimeExportEntry, ...additionalRuntimeExportEntries] = runtimeExportEntries;
         if (!mainRuntimeExportEntry) {
           return;
@@ -261,15 +303,21 @@ const componentFileContractRule: RuleModule = {
 
         if (!isValidMainComponentRuntimeExport(mainRuntimeExportEntry)) {
           context.report({
-            node: mainRuntimeExportEntry.node,
-            messageId: "invalidMainComponentExport",
+            node: mainRuntimeExportEntry.reportNode,
+            messageId:
+              mainRuntimeExportEntry.kind === "indirect-export"
+                ? "invalidIndirectComponentExport"
+                : "invalidMainComponentExport",
           });
         }
 
         additionalRuntimeExportEntries.forEach((runtimeExportEntry) => {
           context.report({
-            node: runtimeExportEntry.node,
-            messageId: "unexpectedAdditionalRuntimeExport",
+            node: runtimeExportEntry.reportNode,
+            messageId:
+              runtimeExportEntry.kind === "indirect-export"
+                ? "invalidIndirectComponentExport"
+                : "unexpectedAdditionalRuntimeExport",
           });
         });
       },

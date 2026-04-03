@@ -1,4 +1,5 @@
 import { afterAll, describe, it } from "bun:test";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
 import componentFileNamingConventionRuleModule from "../component-file-naming-convention.ts";
@@ -30,6 +31,19 @@ ruleTester.run(
         filename: "src/ui/components/Button.tsx",
         languageOptions: languageOpts,
       },
+      {
+        code: `
+          export function SelectTrigger() {
+            return <button />;
+          }
+
+          export function Select() {
+            return <button />;
+          }
+        `,
+        filename: "src/ui/components/select.tsx",
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {
@@ -37,9 +51,13 @@ ruleTester.run(
         filename: "src/ui/components/Button.tsx",
         languageOptions: languageOpts,
         errors: [
-          { messageId: "invalidComponentExportName" },
+          {
+            messageId: "invalidComponentExportName",
+            type: AST_NODE_TYPES.Identifier,
+          },
           {
             messageId: "mismatchedComponentFileName",
+            type: AST_NODE_TYPES.Identifier,
             data: {
               exportedName: "button",
               pascalFilename: "button.tsx",
@@ -63,6 +81,7 @@ ruleTester.run(
         errors: [
           {
             messageId: "mismatchedComponentFileName",
+            type: AST_NODE_TYPES.Identifier,
             data: {
               exportedName: "AccountCard",
               pascalFilename: "AccountCard.tsx",
@@ -79,6 +98,7 @@ ruleTester.run(
         errors: [
           {
             messageId: "mismatchedComponentFileName",
+            type: AST_NODE_TYPES.Identifier,
             data: {
               exportedName: "AccountCard",
               pascalFilename: "AccountCard.tsx",

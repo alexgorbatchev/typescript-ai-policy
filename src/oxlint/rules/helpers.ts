@@ -411,3 +411,41 @@ export function isNullLiteral(node: TSESTree.Expression): node is TSESTree.Liter
 export function isPascalCase(value: string): boolean {
   return /^[A-Z][A-Za-z0-9]*$/u.test(value);
 }
+
+function compareNamesByShortestLength(leftName: string, rightName: string): number {
+  const lengthDifference = leftName.length - rightName.length;
+  if (lengthDifference !== 0) {
+    return lengthDifference;
+  }
+
+  return leftName.localeCompare(rightName);
+}
+
+export function isMultipartComponentPartName(componentName: string, rootComponentName: string): boolean {
+  if (componentName === rootComponentName) {
+    return true;
+  }
+
+  if (!componentName.startsWith(rootComponentName)) {
+    return false;
+  }
+
+  const componentPartSuffix = componentName.slice(rootComponentName.length);
+  return /^[A-Z]/u.test(componentPartSuffix);
+}
+
+export function readMultipartComponentRootName(componentNames: readonly string[]): string | null {
+  if (componentNames.length < 2) {
+    return null;
+  }
+
+  const sortedComponentNames = [...componentNames].sort(compareNamesByShortestLength);
+  const rootComponentName = sortedComponentNames[0];
+  if (!rootComponentName) {
+    return null;
+  }
+
+  return componentNames.every((componentName) => isMultipartComponentPartName(componentName, rootComponentName))
+    ? rootComponentName
+    : null;
+}

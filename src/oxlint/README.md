@@ -470,9 +470,7 @@ fixtures belong under `stories/`, not under `__tests__/`.
 
 ### `@alexgorbatchev/component-file-contract`
 
-**Policy:** A component ownership file may export exactly one main runtime component plus unrestricted type-only API.
-Plain components must use `export function ComponentName() {}`. Wrapped components must use a direct named `export const`
-binding whose innermost function expression is named and matches the exported symbol.
+**Policy:** A component ownership file may export exactly one main runtime component plus unrestricted type-only API, or one multipart component family plus unrestricted type-only API. Multipart families are allowed when every runtime export is a valid component export and all component names share the same shortest root name, such as `Select`, `SelectTrigger`, and `SelectValue`. Plain components must use `export function ComponentName() {}`. Wrapped components must use a direct named `export const` binding whose innermost function expression is named and matches the exported symbol.
 
 **Good**
 
@@ -488,6 +486,20 @@ export const Button = memo(function Button() {
 });
 ```
 
+```tsx
+export function SelectTrigger() {
+  return <button />;
+}
+
+export function Select() {
+  return <button />;
+}
+
+export function SelectValue() {
+  return <span />;
+}
+```
+
 **Bad**
 
 ```tsx
@@ -500,10 +512,17 @@ export const Button = memo(function RenderButton() {
 });
 ```
 
+```tsx
+function Avatar() {
+  return <div />;
+}
+
+export { Avatar };
+```
+
 ### `@alexgorbatchev/component-file-naming-convention`
 
-**Policy:** The exported component name must be PascalCase, and the filename must match it as either `ComponentName.tsx`
-or `component-name.tsx`.
+**Policy:** The exported component name must be PascalCase, and the filename must match it as either `ComponentName.tsx` or `component-name.tsx`. For allowed multipart component families, the filename must match the shared root component name.
 
 ### `@alexgorbatchev/component-story-file-convention`
 
