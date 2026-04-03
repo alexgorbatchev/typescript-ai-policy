@@ -94,8 +94,8 @@ matching story or test files once a file clearly has that role.
 ## Enabled rules
 
 This section covers the active error rules in the shared config. Some rules are global and some are activated only by
-file-pattern overrides. Two upstream rules are explicitly disabled and are not part of the policy surface:
-`no-console` and `jsx-a11y/no-autofocus`.
+file-pattern overrides. `no-console` is explicitly disabled, and the `jsx-a11y` plugin is not enabled, so no
+`jsx-a11y/*` rules are part of the policy surface.
 
 ### `eqeqeq`
 

@@ -5,7 +5,7 @@ describe("createOxlintConfig", () => {
   it("returns the shared lint defaults when no callback is provided", () => {
     const oxlintConfig = createOxlintConfig();
 
-    expect(oxlintConfig.plugins).toEqual(["unicorn", "typescript", "oxc", "react", "jsx-a11y", "jest"]);
+    expect(oxlintConfig.plugins).toEqual(["unicorn", "typescript", "oxc", "react", "jest"]);
     expect(oxlintConfig.jsPlugins).toEqual([
       {
         name: "@alexgorbatchev",

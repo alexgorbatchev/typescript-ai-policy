@@ -26,7 +26,7 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
     "**/.vitepress/cache",
     "**/.vitepress/dist",
   ],
-  plugins: ["unicorn", "typescript", "oxc", "react", "jsx-a11y", "jest"],
+  plugins: ["unicorn", "typescript", "oxc", "react", "jest"],
   jsPlugins: [
     {
       name: "@alexgorbatchev",
