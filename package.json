@@ -1,11 +1,30 @@
 {
   "name": "@alexgorbatchev/typescript-ai-policy",
+  "version": "0.1.0",
+  "description": "Shared TypeScript AI policy configs and Oxlint rules",
+  "homepage": "https://github.com/alexgorbatchev/typescript-ai-policy#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexgorbatchev/typescript-ai-policy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alexgorbatchev/typescript-ai-policy/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "files": [
-    "src/oxfmt",
-    "src/oxlint",
-    "src/semantic-fixes",
-    "src/shared"
+    "src/oxfmt/createOxfmtConfig.ts",
+    "src/oxlint/assertNoRuleCollisions.ts",
+    "src/oxlint/createOxlintConfig.ts",
+    "src/oxlint/oxlint.config.ts",
+    "src/oxlint/plugin.ts",
+    "src/oxlint/rules/*.ts",
+    "src/semantic-fixes/*.ts",
+    "src/semantic-fixes/backends/tsgo-lsp/*.ts",
+    "src/semantic-fixes/providers/*.ts",
+    "src/shared/mergeConfig.ts"
   ],
   "bin": {
     "typescript-ai-policy-fix-semantic": "./src/semantic-fixes/runApplySemanticFixes.ts"
