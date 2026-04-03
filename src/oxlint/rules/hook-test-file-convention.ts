@@ -1,10 +1,12 @@
 import type { AstProgram, RuleModule } from "./types.ts";
+import type { TSESTree } from "@typescript-eslint/types";
 import { dirname, join } from "node:path";
 import {
   findDescendantFilePath,
   getBaseName,
   getFilenameWithoutExtension,
   isExemptSupportBasename,
+  readAbbreviatedSiblingDirectoryPath,
 } from "./helpers.ts";
 
 function readRequiredTestsDirectoryPath(filename: string): string {
@@ -18,17 +20,21 @@ function readRequiredHookTestFileName(filename: string): string {
   return `${sourceBaseName}${testExtension}`;
 }
 
+function readReportNode(program: AstProgram): TSESTree.Node {
+  return program.body[0] ?? program;
+}
+
 const hookTestFileConventionRule: RuleModule = {
   meta: {
     type: "problem" as const,
     docs: {
       description:
-        'Require every hook ownership file to have a matching "basename.test.ts" or ".test.tsx" file somewhere under a sibling "__tests__/" directory',
+        'Require every hook ownership file to have a matching "basename.test.ts" or ".test.tsx" file under a sibling "__tests__/" directory',
     },
     schema: [],
     messages: {
       missingHookTestFile:
-        'Add a test file named "{{ requiredTestFileName }}" somewhere under "{{ requiredTestsDirectoryPath }}". Hook ownership files must keep their tests under a sibling "__tests__/" directory.',
+        'Create "{{ requiredTestFileName }}" under "{{ requiredTestsDirectoryPath }}". Hook ownership files must keep their tests under a sibling "__tests__/" directory.',
     },
   },
   create(context) {
@@ -39,17 +45,18 @@ const hookTestFileConventionRule: RuleModule = {
     return {
       Program(node: AstProgram) {
         const requiredTestsDirectoryPath = readRequiredTestsDirectoryPath(context.filename);
+        const displayedTestsDirectoryPath = readAbbreviatedSiblingDirectoryPath(context.filename, "__tests__");
         const requiredTestFileName = readRequiredHookTestFileName(context.filename);
         if (findDescendantFilePath(requiredTestsDirectoryPath, requiredTestFileName)) {
           return;
         }
 
         context.report({
-          node,
+          node: readReportNode(node),
           messageId: "missingHookTestFile",
           data: {
             requiredTestFileName,
-            requiredTestsDirectoryPath,
+            requiredTestsDirectoryPath: displayedTestsDirectoryPath,
           },
         });
       },

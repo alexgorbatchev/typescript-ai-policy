@@ -2,6 +2,7 @@ import { afterAll, describe, it } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
 import hookTestFileConventionRuleModule from "../hook-test-file-convention.ts";
@@ -58,15 +59,22 @@ ruleTester.run(
     ],
     invalid: [
       {
-        code: `export function useAccount() { return null; }`,
+        code: `
+          import { useMemo } from "preact/hooks";
+
+          export function useAccount() {
+            return useMemo(() => null, []);
+          }
+        `,
         filename: join(missingTestHooksDirectoryPath, "useAccount.ts"),
         languageOptions: languageOpts,
         errors: [
           {
             messageId: "missingHookTestFile",
+            type: AST_NODE_TYPES.ImportDeclaration,
             data: {
               requiredTestFileName: "useAccount.test.ts",
-              requiredTestsDirectoryPath: join(missingTestHooksDirectoryPath, "__tests__"),
+              requiredTestsDirectoryPath: ".../missing-test/hooks/__tests__",
             },
           },
         ],

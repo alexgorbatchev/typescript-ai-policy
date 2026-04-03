@@ -7,6 +7,7 @@ import {
   isExemptSupportBasename,
   isInStoriesDirectory,
   isInTestsDirectory,
+  readAbbreviatedSiblingDirectoryPath,
 } from "./helpers.ts";
 
 function readRequiredStoriesDirectoryPath(filename: string): string {
@@ -67,12 +68,12 @@ const componentStoryFileConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Require every component ownership file to have a matching "basename.stories.tsx" file somewhere under a sibling "stories/" directory',
+        'Require every component ownership file to have a matching "basename.stories.tsx" file under a sibling "stories/" directory',
     },
     schema: [],
     messages: {
       missingComponentStoryFile:
-        'Add a story file named "{{ requiredStoryFileName }}" somewhere under "{{ requiredStoriesDirectoryPath }}". Component ownership files must keep their Storybook coverage under a sibling "stories/" directory.',
+        'Create "{{ requiredStoryFileName }}" under "{{ requiredStoriesDirectoryPath }}". Component ownership files must keep their Storybook coverage under a sibling "stories/" directory.',
     },
   },
   create(context) {
@@ -87,6 +88,7 @@ const componentStoryFileConventionRule: RuleModule = {
     return {
       Program(node: AstProgram) {
         const requiredStoriesDirectoryPath = readRequiredStoriesDirectoryPath(context.filename);
+        const displayedStoriesDirectoryPath = readAbbreviatedSiblingDirectoryPath(context.filename, "stories");
         const requiredStoryFileName = readRequiredStoryFileName(context.filename);
         if (findDescendantFilePath(requiredStoriesDirectoryPath, requiredStoryFileName)) {
           return;
@@ -96,7 +98,7 @@ const componentStoryFileConventionRule: RuleModule = {
           node: readReportNode(node),
           messageId: "missingComponentStoryFile",
           data: {
-            requiredStoriesDirectoryPath,
+            requiredStoriesDirectoryPath: displayedStoriesDirectoryPath,
             requiredStoryFileName,
           },
         });

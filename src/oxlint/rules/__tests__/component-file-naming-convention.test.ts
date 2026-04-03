@@ -68,10 +68,21 @@ ruleTester.run(
         output: null,
       },
       {
-        code: `export function AccountPanel() { return <section />; }`,
+        code: `
+          import { render } from "preact";
+
+          export function AccountPanel() {
+            return <section />;
+          }
+        `,
         filename: "src/ui/components/accountPanel.tsx",
         languageOptions: languageOpts,
-        errors: [{ messageId: "invalidComponentFileName" }],
+        errors: [
+          {
+            messageId: "invalidComponentFileName",
+            type: AST_NODE_TYPES.ImportDeclaration,
+          },
+        ],
         output: null,
       },
       {

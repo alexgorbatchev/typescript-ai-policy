@@ -522,7 +522,7 @@ export { Avatar };
 
 ### `@alexgorbatchev/component-file-naming-convention`
 
-**Policy:** The exported component name must be PascalCase, and the filename must match it as either `ComponentName.tsx` or `component-name.tsx`. For allowed multipart component families, the filename must match the shared root component name.
+**Policy:** The exported component name must be PascalCase, and the filename must match it as either `ComponentName.tsx` or `component-name.tsx`. For allowed multipart component families, the filename must match the shared root component name. If a `.tsx` module is not actually a component ownership file, rename it to `.ts` instead of forcing it through the component-file contract.
 
 ### `@alexgorbatchev/component-story-file-convention`
 

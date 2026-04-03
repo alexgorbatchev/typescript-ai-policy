@@ -187,6 +187,10 @@ function readExpectedComponentNameFromFilename(filename: string): string | null 
     .join("");
 }
 
+function readInvalidFilenameReportNode(program: AstProgram): TSESTree.Node {
+  return program.body[0] ?? program;
+}
+
 const componentFileNamingConventionRule: RuleModule = {
   meta: {
     type: "problem" as const,
@@ -197,7 +201,7 @@ const componentFileNamingConventionRule: RuleModule = {
     schema: [],
     messages: {
       invalidComponentFileName:
-        'Rename this file to either "ComponentName.tsx" or "component-name.tsx" so its basename can map deterministically to the exported component name.',
+        'Rename this file so its basename can map deterministically to the exported component name. Use "ComponentName.tsx" or "component-name.tsx"; if this is not a component ownership file and does not need JSX syntax, rename it to a ".ts" file instead.',
       invalidComponentExportName:
         "Rename the exported component to PascalCase. Component ownership files must export a PascalCase component name.",
       mismatchedComponentFileName:
@@ -224,7 +228,7 @@ const componentFileNamingConventionRule: RuleModule = {
         const expectedComponentName = readExpectedComponentNameFromFilename(context.filename);
         if (!expectedComponentName) {
           context.report({
-            node,
+            node: readInvalidFilenameReportNode(node),
             messageId: "invalidComponentFileName",
           });
           return;

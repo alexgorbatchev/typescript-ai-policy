@@ -74,6 +74,16 @@ export function readPathFromDirectory(filename: string, expectedDirectoryName: s
   return pathSegments.slice(directoryIndex + 1).join("/");
 }
 
+export function readAbbreviatedPath(path: string, segmentCount = 3): string {
+  const displayedPathSegments = getPathSegments(path).slice(-segmentCount);
+
+  return `.../${displayedPathSegments.join("/")}`;
+}
+
+export function readAbbreviatedSiblingDirectoryPath(filename: string, siblingDirectoryName: string): string {
+  return readAbbreviatedPath(`${dirname(filename)}/${siblingDirectoryName}`);
+}
+
 export function readPathFromFirstMatchingDirectory(
   filename: string,
   expectedDirectoryNames: DirectoryNames,

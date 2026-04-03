@@ -2,6 +2,7 @@ import { afterAll, describe, it } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
 import storyFileLocationConventionRuleModule from "../story-file-location-convention.ts";
@@ -72,6 +73,7 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidStoryFileLocation",
+            type: AST_NODE_TYPES.ExportDefaultDeclaration,
           },
         ],
         output: null,
@@ -83,8 +85,9 @@ ruleTester.run(
         errors: [
           {
             messageId: "missingSiblingComponent",
+            type: AST_NODE_TYPES.ExportDefaultDeclaration,
             data: {
-              requiredComponentFilePath: join(missingSiblingComponentDirectoryPath, "Missing.tsx"),
+              requiredComponentFilePath: ".../missing-sibling-component/components/Missing.tsx",
             },
           },
         ],
