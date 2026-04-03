@@ -10,7 +10,7 @@ type ICliOptions = {
 
 function readUsageText(): string {
   return [
-    "Usage: bun scripts/semantic-fixes/runApplySemanticFixes.ts <target-directory> [--dry-run]",
+    "Usage: bun src/semantic-fixes/runApplySemanticFixes.ts <target-directory> [--dry-run]",
     "",
     "Examples:",
     "  bun run fix:semantic -- .",

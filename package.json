@@ -18,7 +18,7 @@
   "scripts": {
     "check": "./scripts/check.sh",
     "debug:tsgo-lsp-rename": "bun scripts/tsgo-lsp-rename-spike/runDebugTsgoLspSession.ts",
-    "fix:semantic": "bun scripts/semantic-fixes/runApplySemanticFixes.ts",
+    "fix:semantic": "bun src/semantic-fixes/runApplySemanticFixes.ts",
     "lint:target": "./scripts/lint-target.sh",
     "spike:tsgo-lsp-rename": "bun scripts/tsgo-lsp-rename-spike/runCompareRenameBackends.ts"
   },

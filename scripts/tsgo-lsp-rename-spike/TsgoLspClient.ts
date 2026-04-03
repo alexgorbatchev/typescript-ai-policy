@@ -1,1 +1,1 @@
-export { TsgoLspClient } from "../semantic-fixes/backends/tsgo-lsp/TsgoLspClient.ts";
+export { TsgoLspClient } from "../../src/semantic-fixes/backends/tsgo-lsp/TsgoLspClient.ts";

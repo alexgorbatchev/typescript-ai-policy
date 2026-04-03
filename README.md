@@ -149,7 +149,7 @@ This package also uses its own shared configs at the repository root:
 
 ## Local semantic-fix tooling
 
-The repository now includes a local semantic-fix command that uses `tsgo --lsp --stdio` as its first real backend.
+The repository now includes a local semantic-fix command under `src/semantic-fixes/` that uses `tsgo --lsp --stdio` as its first real backend.
 
 Useful commands:
 
