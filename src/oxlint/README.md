@@ -302,7 +302,7 @@ export function readUser(): User | Admin | null {
 
 ### `@alexgorbatchev/require-template-indent`
 
-**Policy:** Multiline template literals that begin on their own line must keep their content indented with the surrounding code. Under-indented template content is hard to review, easy for agents to generate inconsistently, and obscures whether leading whitespace is intentional.
+**Policy:** Multiline template literals that begin on their own line must keep their content indented with the surrounding code. Under-indented template content is hard to review, easy for agents to generate inconsistently, and obscures whether leading whitespace is intentional. If indentation is significant, normalize the string explicitly with `@alexgorbatchev/dedent-string` instead of relying on under-indented source text.
 
 **Good**
 

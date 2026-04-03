@@ -1,9 +1,13 @@
 import type { TSESTree } from "@typescript-eslint/types";
-import type { RuleModule } from "./types.ts";
+import type { RuleFixer, RuleModule } from "./types.ts";
+
+function readIndent(line: string): string {
+  const indentMatch = line.match(/^[ \t]*/u);
+  return indentMatch ? indentMatch[0] : "";
+}
 
 function readIndentSize(line: string): number {
-  const indentMatch = line.match(/^[ \t]*/u);
-  return indentMatch ? indentMatch[0].length : 0;
+  return readIndent(line).length;
 }
 
 function readMinimumContentIndent(content: string): number {
@@ -21,8 +25,8 @@ function readMinimumContentIndent(content: string): number {
   return Number.isFinite(minimumIndent) ? minimumIndent : 0;
 }
 
-function readTemplateContent(node: TSESTree.TemplateLiteral): string {
-  return node.quasis.map((quasi) => quasi.value.raw).join("${...}");
+function readTemplateContent(sourceText: string, node: TSESTree.TemplateLiteral): string {
+  return sourceText.slice(node.range[0] + 1, node.range[1] - 1);
 }
 
 function startsWithNewline(templateContent: string): boolean {
@@ -33,6 +37,32 @@ function hasNonEmptyContent(templateContent: string): boolean {
   return templateContent.replace(/^\n/u, "").trim().length > 0;
 }
 
+function readFixedTemplateContent(templateContent: string, indentPrefix: string): string {
+  const fixedContentLines = templateContent
+    .replace(/^\n/u, "")
+    .split("\n")
+    .map((contentLine) => {
+      if (contentLine.trim().length === 0) {
+        return contentLine;
+      }
+
+      return `${indentPrefix}${contentLine}`;
+    });
+
+  return `\n${fixedContentLines.join("\n")}`;
+}
+
+function readTemplateIndentFix(
+  fixer: RuleFixer,
+  node: TSESTree.TemplateLiteral,
+  templateContent: string,
+  indentPrefix: string,
+) {
+  const fixedTemplateContent = readFixedTemplateContent(templateContent, indentPrefix);
+
+  return fixer.replaceTextRange([node.range[0] + 1, node.range[1] - 1], fixedTemplateContent);
+}
+
 const requireTemplateIndentRule: RuleModule = {
   meta: {
     type: "problem" as const,
@@ -40,17 +70,19 @@ const requireTemplateIndentRule: RuleModule = {
       description: "Require multiline template literals to keep their content indented with the surrounding code",
     },
     schema: [],
+    fixable: "code" as const,
     messages: {
       badIndent:
-        "Indent this multiline template literal to match the surrounding code. If leading whitespace is part of the intended value, normalize the string explicitly instead of relying on under-indented source text.",
+        'Indent this multiline template literal to match the surrounding code. If indentation is significant, normalize the string explicitly with "@alexgorbatchev/dedent-string" instead of relying on under-indented source text.',
     },
   },
   create(context) {
-    const sourceLines = context.sourceCode.lines;
+    const sourceCode = context.getSourceCode?.() ?? context.sourceCode;
+    const sourceText = sourceCode.getText();
 
     return {
       TemplateLiteral(node) {
-        const templateContent = readTemplateContent(node);
+        const templateContent = readTemplateContent(sourceText, node);
         if (!startsWithNewline(templateContent) || !hasNonEmptyContent(templateContent)) {
           return;
         }
@@ -60,7 +92,7 @@ const requireTemplateIndentRule: RuleModule = {
           return;
         }
 
-        const sourceLine = sourceLines[startLine - 1];
+        const sourceLine = sourceCode.getLines()[startLine - 1];
         if (!sourceLine) {
           return;
         }
@@ -71,9 +103,14 @@ const requireTemplateIndentRule: RuleModule = {
           return;
         }
 
+        const indentPrefix = readIndent(sourceLine).slice(0, lineIndent - contentIndent);
+
         context.report({
           node,
           messageId: "badIndent",
+          fix(fixer) {
+            return readTemplateIndentFix(fixer, node, templateContent, indentPrefix);
+          },
         });
       },
     };

@@ -51,7 +51,7 @@ requireTemplateIndentRuleTester.run(
             messageId: "badIndent",
           },
         ],
-        output: null,
+        output: "  const content = `\n  export default {};\n`;",
       },
       {
         code: "function readContent(): string {\n  return `\n line one\n`;\n}",
@@ -62,7 +62,18 @@ requireTemplateIndentRuleTester.run(
             messageId: "badIndent",
           },
         ],
-        output: null,
+        output: "function readContent(): string {\n  return `\n  line one\n`;\n}",
+      },
+      {
+        code: "  const content = `\nexport ${name}\n  nested value\n`;",
+        filename: "src/widgets/content.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "badIndent",
+          },
+        ],
+        output: "  const content = `\n  export ${name}\n    nested value\n`;",
       },
     ],
   },
