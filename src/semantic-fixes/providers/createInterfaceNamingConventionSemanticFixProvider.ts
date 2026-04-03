@@ -38,6 +38,35 @@ function readInterfaceDeclarationAtOffset(node: ts.Node, offset: number): ts.Int
   return matchingDeclaration;
 }
 
+function readOffsetFromLineAndColumn(sourceFile: ts.SourceFile, line: number, column: number): number | null {
+  if (line < 1 || column < 1) {
+    return null;
+  }
+
+  try {
+    return ts.getPositionOfLineAndCharacter(sourceFile, line - 1, column - 1);
+  } catch {
+    return null;
+  }
+}
+
+function readInterfaceDeclarationFromLabel(
+  sourceFile: ts.SourceFile,
+  label: IOxlintDiagnostic["labels"][number],
+): ts.InterfaceDeclaration | null {
+  const declarationAtReportedOffset = readInterfaceDeclarationAtOffset(sourceFile, label.span.offset);
+  if (declarationAtReportedOffset) {
+    return declarationAtReportedOffset;
+  }
+
+  const offsetFromLineAndColumn = readOffsetFromLineAndColumn(sourceFile, label.span.line, label.span.column);
+  if (offsetFromLineAndColumn === null || offsetFromLineAndColumn === label.span.offset) {
+    return null;
+  }
+
+  return readInterfaceDeclarationAtOffset(sourceFile, offsetFromLineAndColumn);
+}
+
 function readNormalizedInterfaceName(interfaceName: string): string | null {
   const rawBaseName = /^[Ii]/.test(interfaceName) ? interfaceName.slice(1) : interfaceName;
   if (!/^[A-Za-z][A-Za-z0-9]*$/.test(rawBaseName)) {
@@ -66,7 +95,7 @@ function readOperation(
   const filePath = readAbsoluteDiagnosticFilePath(diagnostic, context);
   const content = readFileSync(filePath, "utf8");
   const sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true);
-  const interfaceDeclaration = readInterfaceDeclarationAtOffset(sourceFile, label.span.offset);
+  const interfaceDeclaration = readInterfaceDeclarationFromLabel(sourceFile, label);
   if (!interfaceDeclaration) {
     return null;
   }
