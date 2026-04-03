@@ -2,6 +2,7 @@ import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { applyFileChanges } from "./applyFileChanges.ts";
 import { createTsgoLspSemanticFixBackend } from "./backends/tsgo-lsp/createTsgoLspSemanticFixBackend.ts";
 import { createInterfaceNamingConventionSemanticFixProvider } from "./providers/createInterfaceNamingConventionSemanticFixProvider.ts";
+import { createNoIPrefixedTypeAliasesSemanticFixProvider } from "./providers/createNoIPrefixedTypeAliasesSemanticFixProvider.ts";
 import { createTestFileLocationConventionSemanticFixProvider } from "./providers/createTestFileLocationConventionSemanticFixProvider.ts";
 import { runOxlintJson } from "./runOxlintJson.ts";
 import type {
@@ -108,9 +109,11 @@ export async function applySemanticFixes(options: ApplySemanticFixesOptions): Pr
     options.onProgress?.(event);
   };
   const semanticFixProviders = new Map(
-    [createInterfaceNamingConventionSemanticFixProvider(), createTestFileLocationConventionSemanticFixProvider()].map(
-      (semanticFixProvider) => [semanticFixProvider.ruleCode, semanticFixProvider],
-    ),
+    [
+      createInterfaceNamingConventionSemanticFixProvider(),
+      createNoIPrefixedTypeAliasesSemanticFixProvider(),
+      createTestFileLocationConventionSemanticFixProvider(),
+    ].map((semanticFixProvider) => [semanticFixProvider.ruleCode, semanticFixProvider]),
   );
   const semanticFixBackend = createTsgoLspSemanticFixBackend({
     tsgoExecutablePath: options.tsgoExecutablePath,

@@ -100,6 +100,73 @@ export function formatProfile(profile: IUserProfile): string {
   }
 });
 
+it("applies type-alias prefix fixes through the tsgo LSP backend", async () => {
+  const projectPath = await createProject([
+    {
+      content: `{
+  "compilerOptions": {
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "strict": true,
+    "target": "ESNext",
+    "verbatimModuleSyntax": true
+  }
+}
+`,
+      filePath: "tsconfig.json",
+    },
+    {
+      content: `export type IUserProfile = {
+  id: string;
+};
+
+export function readProfileId(profile: IUserProfile): string {
+  return profile.id;
+}
+`,
+      filePath: "models.ts",
+    },
+    {
+      content: `import type { IUserProfile } from "./models";
+
+export function formatProfile(profile: IUserProfile): string {
+  return profile.id;
+}
+`,
+      filePath: "consumer.ts",
+    },
+  ]);
+
+  try {
+    const result = await applySemanticFixes(readOptions(projectPath));
+
+    expect(result).toEqual({
+      appliedFileCount: 2,
+      backendName: "tsgo-lsp+native",
+      changedFilePaths: [join(projectPath, "consumer.ts"), join(projectPath, "models.ts")],
+      plannedFixCount: 1,
+      skippedDiagnostics: [],
+    });
+    expect(await readFile(join(projectPath, "models.ts"), "utf8")).toBe(`export type UserProfile = {
+  id: string;
+};
+
+export function readProfileId(profile: UserProfile): string {
+  return profile.id;
+}
+`);
+    expect(await readFile(join(projectPath, "consumer.ts"), "utf8")).toBe(`import type { UserProfile } from "./models";
+
+export function formatProfile(profile: UserProfile): string {
+  return profile.id;
+}
+`);
+  } finally {
+    await rm(projectPath, { force: true, recursive: true });
+  }
+});
+
 it("reports progress while planning and applying semantic fixes", async () => {
   const projectPath = await createProject([
     {

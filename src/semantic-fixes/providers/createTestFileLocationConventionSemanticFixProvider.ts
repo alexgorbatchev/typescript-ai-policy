@@ -1,21 +1,14 @@
-import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+import { basename, dirname, join } from "node:path";
 import type {
   OxlintDiagnostic,
   SemanticFixOperation,
   SemanticFixProvider,
   SemanticFixProviderContext,
 } from "../types.ts";
+import { readAbsoluteDiagnosticFilePath } from "./helpers.ts";
 
 const REQUIRED_TEST_FILE_NAME_PATTERN = /\.test\.tsx?$/u;
 const TESTS_DIRECTORY_PATH_PATTERN = /(^|\/)__tests__(\/|$)/u;
-
-function readAbsoluteDiagnosticFilePath(diagnostic: OxlintDiagnostic, context: SemanticFixProviderContext): string {
-  if (isAbsolute(diagnostic.filename)) {
-    return diagnostic.filename;
-  }
-
-  return resolve(context.targetDirectoryPath, diagnostic.filename);
-}
 
 function isInTestsDirectory(filePath: string): boolean {
   return TESTS_DIRECTORY_PATH_PATTERN.test(filePath.replaceAll("\\", "/"));

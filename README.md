@@ -169,9 +169,10 @@ Repository-local development usage:
 
 - `bun run fix:semantic -- <target-directory>` — run the same semantic fixer from this repository checkout while developing the package itself.
 
-Today the framework applies two conservative semantic fixes:
+Today the framework applies three conservative semantic fixes:
 
 - `@alexgorbatchev/interface-naming-convention` — rename repository-owned interfaces to their required `I*` form when the existing name can be normalized safely.
+- `@alexgorbatchev/no-i-prefixed-type-aliases` — rename repository-owned type aliases to drop the interface-style `I*` prefix when the diagnostic resolves to a concrete type alias name safely.
 - `@alexgorbatchev/test-file-location-convention` — move misplaced `.test.ts` / `.test.tsx` files into a sibling `__tests__/` directory as `__tests__/basename.test.ts[x]` and rewrite the moved file's relative imports.
 
 The command and backend shape remain intentionally generic so more rule-backed semantic operations can be added later.

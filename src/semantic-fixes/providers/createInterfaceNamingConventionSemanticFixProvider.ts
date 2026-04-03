@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { isAbsolute, resolve } from "node:path";
 import ts from "typescript";
 import type {
   OxlintDiagnostic,
@@ -7,65 +5,11 @@ import type {
   SemanticFixProvider,
   SemanticFixProviderContext,
 } from "../types.ts";
-
-function readAbsoluteDiagnosticFilePath(diagnostic: OxlintDiagnostic, context: SemanticFixProviderContext): string {
-  if (isAbsolute(diagnostic.filename)) {
-    return diagnostic.filename;
-  }
-
-  return resolve(context.targetDirectoryPath, diagnostic.filename);
-}
-
-function readInterfaceDeclarationAtOffset(node: ts.Node, offset: number): ts.InterfaceDeclaration | null {
-  if (ts.isInterfaceDeclaration(node)) {
-    const start = node.name.getStart();
-    const end = node.name.getEnd();
-    if (offset >= start && offset <= end) {
-      return node;
-    }
-  }
-
-  let matchingDeclaration: ts.InterfaceDeclaration | null = null;
-
-  ts.forEachChild(node, (childNode) => {
-    if (matchingDeclaration) {
-      return;
-    }
-
-    matchingDeclaration = readInterfaceDeclarationAtOffset(childNode, offset);
-  });
-
-  return matchingDeclaration;
-}
-
-function readOffsetFromLineAndColumn(sourceFile: ts.SourceFile, line: number, column: number): number | null {
-  if (line < 1 || column < 1) {
-    return null;
-  }
-
-  try {
-    return ts.getPositionOfLineAndCharacter(sourceFile, line - 1, column - 1);
-  } catch {
-    return null;
-  }
-}
-
-function readInterfaceDeclarationFromLabel(
-  sourceFile: ts.SourceFile,
-  label: OxlintDiagnostic["labels"][number],
-): ts.InterfaceDeclaration | null {
-  const declarationAtReportedOffset = readInterfaceDeclarationAtOffset(sourceFile, label.span.offset);
-  if (declarationAtReportedOffset) {
-    return declarationAtReportedOffset;
-  }
-
-  const offsetFromLineAndColumn = readOffsetFromLineAndColumn(sourceFile, label.span.line, label.span.column);
-  if (offsetFromLineAndColumn === null || offsetFromLineAndColumn === label.span.offset) {
-    return null;
-  }
-
-  return readInterfaceDeclarationAtOffset(sourceFile, offsetFromLineAndColumn);
-}
+import {
+  readDiagnosticSourceFile,
+  readNamedDeclarationFromDiagnosticLabel,
+  readRenameSymbolOperation,
+} from "./helpers.ts";
 
 function readNormalizedInterfaceName(interfaceName: string): string | null {
   const rawBaseName = /^[Ii]/.test(interfaceName) ? interfaceName.slice(1) : interfaceName;
@@ -89,10 +33,8 @@ function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixProvide
     return null;
   }
 
-  const filePath = readAbsoluteDiagnosticFilePath(diagnostic, context);
-  const content = readFileSync(filePath, "utf8");
-  const sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true);
-  const interfaceDeclaration = readInterfaceDeclarationFromLabel(sourceFile, label);
+  const sourceFile = readDiagnosticSourceFile(diagnostic, context);
+  const interfaceDeclaration = readNamedDeclarationFromDiagnosticLabel(sourceFile, label, ts.isInterfaceDeclaration);
   if (!interfaceDeclaration) {
     return null;
   }
@@ -103,20 +45,7 @@ function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixProvide
     return null;
   }
 
-  const start = ts.getLineAndCharacterOfPosition(sourceFile, interfaceDeclaration.name.getStart());
-
-  return {
-    filePath,
-    id: `${diagnostic.code}:${filePath}:${start.line}:${start.character}:${newName}`,
-    kind: "rename-symbol",
-    newName,
-    position: {
-      character: start.character,
-      line: start.line,
-    },
-    ruleCode: diagnostic.code,
-    symbolName,
-  };
+  return readRenameSymbolOperation(diagnostic, sourceFile, interfaceDeclaration.name, newName);
 }
 
 export function createInterfaceNamingConventionSemanticFixProvider(): SemanticFixProvider {

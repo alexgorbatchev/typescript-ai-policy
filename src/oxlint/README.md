@@ -246,6 +246,8 @@ export type IURLConfig = {
 };
 ```
 
+**Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can apply supported type-alias renames through the `tsgo` LSP backend. The fixer is intentionally conservative: it only drops the leading `I` when the diagnostic resolves to a concrete `type` alias name that already matches the repository's banned `I[A-Z][A-Za-z0-9]*` shape.
+
 ## Explicit type-expression policies
 
 ### `@alexgorbatchev/no-inline-type-expressions`
