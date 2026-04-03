@@ -1,12 +1,17 @@
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { readMovedFileTextEdits } from "../../readMovedFileTextEdits.ts";
 import { TsgoLspClient } from "./TsgoLspClient.ts";
 import type {
   IApplySemanticFixesOptions,
+  IFileMove,
+  IMoveFileOperation,
   ISemanticFixBackend,
   ISemanticFixBackendContext,
   ISemanticFixOperation,
   ISemanticFixPlan,
   ISemanticFixPlanResult,
+  ISymbolRenameOperation,
   ITextEdit,
 } from "../../types.ts";
 
@@ -145,9 +150,23 @@ async function readClient(
   return client;
 }
 
-function readPlan(operation: ISemanticFixOperation, textEdits: readonly ITextEdit[]): ISemanticFixPlan {
+function readRenameSymbolDescription(operation: ISymbolRenameOperation): string {
+  return `Rename ${operation.symbolName} to ${operation.newName}`;
+}
+
+function readMoveFileDescription(operation: IMoveFileOperation): string {
+  return `Move ${operation.filePath} to ${operation.newFilePath}`;
+}
+
+function readPlan(
+  operation: ISemanticFixOperation,
+  textEdits: readonly ITextEdit[],
+  fileMoves: readonly IFileMove[] = [],
+): ISemanticFixPlan {
   return {
-    description: `Rename ${operation.symbolName} to ${operation.newName}`,
+    description:
+      operation.kind === "rename-symbol" ? readRenameSymbolDescription(operation) : readMoveFileDescription(operation),
+    fileMoves,
     operationId: operation.id,
     ruleCode: operation.ruleCode,
     textEdits,
@@ -200,6 +219,24 @@ export function createTsgoLspSemanticFixBackend(
             plan: readPlan(operation, readTextEdits(renameResult)),
           };
         }
+        case "move-file": {
+          if (existsSync(operation.newFilePath)) {
+            return {
+              kind: "skip",
+              reason: `Cannot move test file because the canonical destination already exists: ${operation.newFilePath}`,
+            };
+          }
+
+          return {
+            kind: "plan",
+            plan: readPlan(operation, readMovedFileTextEdits(operation.filePath, operation.newFilePath), [
+              {
+                destinationFilePath: operation.newFilePath,
+                sourceFilePath: operation.filePath,
+              },
+            ]),
+          };
+        }
       }
     },
     async dispose(): Promise<void> {
@@ -209,6 +246,6 @@ export function createTsgoLspSemanticFixBackend(
 
       clientCache.clear();
     },
-    name: "tsgo-lsp",
+    name: "tsgo-lsp+native",
   };
 }

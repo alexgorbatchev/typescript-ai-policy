@@ -123,8 +123,7 @@ function readNormalizedOffsetTextEdits(
   return normalizedOffsetTextEdits;
 }
 
-function applyFileTextEdits(filePath: string, textEdits: readonly ITextEdit[]): void {
-  const content = readFileSync(filePath, "utf8");
+export function readUpdatedContent(filePath: string, content: string, textEdits: readonly ITextEdit[]): string {
   const offsetTextEdits = [
     ...readNormalizedOffsetTextEdits(
       filePath,
@@ -140,6 +139,13 @@ function applyFileTextEdits(filePath: string, textEdits: readonly ITextEdit[]): 
       offsetTextEdit.newText +
       updatedContent.slice(offsetTextEdit.endOffset);
   }
+
+  return updatedContent;
+}
+
+function applyFileTextEdits(filePath: string, textEdits: readonly ITextEdit[]): void {
+  const content = readFileSync(filePath, "utf8");
+  const updatedContent = readUpdatedContent(filePath, content, textEdits);
 
   if (updatedContent !== content) {
     writeFileSync(filePath, updatedContent, "utf8");

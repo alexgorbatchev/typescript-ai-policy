@@ -4,7 +4,7 @@ import { getBaseName, isInTestsDirectory } from "./helpers.ts";
 const TEST_FRAMEWORK_MODULES = new Set(["@jest/globals", "bun:test", "node:test", "vitest"]);
 const TEST_IMPORT_NAMES = new Set(["describe", "it", "test"]);
 const REQUIRED_TEST_FILE_NAME_PATTERN = /\.test\.tsx?$/u;
-const TEST_LIKE_FILE_NAME_PATTERN = /\.(spec|test)\.tsx?$/u;
+const SPEC_TEST_FILE_NAME_PATTERN = /\.spec\.tsx?$/u;
 
 type ProgramReportNode = AstProgram | AstProgramStatement;
 
@@ -34,12 +34,13 @@ const testFileLocationConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Require test files to live somewhere under a "__tests__/" directory and use the .test.ts/.test.tsx suffix',
+        'Require non-.spec test files to live under a sibling "__tests__/" directory and use the .test.ts/.test.tsx suffix',
     },
     schema: [],
     messages: {
       invalidTestFileName: 'Rename this file to match the "*.test.ts" or "*.test.tsx" pattern.',
-      missingTestsDirectory: 'Move this test file under a "__tests__/" directory.',
+      missingTestsDirectory:
+        'Move this test file into a sibling "__tests__/" directory. Misplaced tests belong at "__tests__/basename.test.ts[x]" next to the source they cover.',
     },
   },
   create(context) {
@@ -82,7 +83,11 @@ const testFileLocationConventionRule: RuleModule = {
       },
       "Program:exit"(node) {
         const baseName = getBaseName(context.filename);
-        const looksLikeTestFile = hasTestDefinitionCall || TEST_LIKE_FILE_NAME_PATTERN.test(baseName);
+        if (SPEC_TEST_FILE_NAME_PATTERN.test(baseName)) {
+          return;
+        }
+
+        const looksLikeTestFile = hasTestDefinitionCall || REQUIRED_TEST_FILE_NAME_PATTERN.test(baseName);
         if (!looksLikeTestFile) {
           return;
         }

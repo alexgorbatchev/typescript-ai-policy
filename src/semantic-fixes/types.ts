@@ -44,10 +44,24 @@ export type ISymbolRenameOperation = {
   symbolName: string;
 };
 
-export type ISemanticFixOperation = ISymbolRenameOperation;
+export type IMoveFileOperation = {
+  filePath: string;
+  id: string;
+  kind: "move-file";
+  newFilePath: string;
+  ruleCode: string;
+};
+
+export type ISemanticFixOperation = ISymbolRenameOperation | IMoveFileOperation;
+
+export type IFileMove = {
+  destinationFilePath: string;
+  sourceFilePath: string;
+};
 
 export type ISemanticFixPlan = {
   description: string;
+  fileMoves: readonly IFileMove[];
   operationId: string;
   ruleCode: string;
   textEdits: readonly ITextEdit[];
@@ -113,7 +127,8 @@ export type IApplySemanticFixesProgressEvent =
   | {
       dryRun: boolean;
       fileCount: number;
-      kind: "applying-text-edits";
+      kind: "applying-file-changes";
+      moveCount: number;
       textEditCount: number;
     }
   | {

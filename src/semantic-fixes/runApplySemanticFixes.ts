@@ -64,9 +64,9 @@ function formatProgressEvent(event: IApplySemanticFixesProgressEvent): string {
     case "planning-operation": {
       return `planning semantic fix ${String(event.operationIndex)}/${String(event.operationCount)}: ${event.description}`;
     }
-    case "applying-text-edits": {
-      const modeLabel = event.dryRun ? "dry run" : "applying edits";
-      return `${modeLabel}: ${String(event.textEditCount)} text edit(s) across ${String(event.fileCount)} file(s)`;
+    case "applying-file-changes": {
+      const modeLabel = event.dryRun ? "dry run" : "applying changes";
+      return `${modeLabel}: ${String(event.textEditCount)} text edit(s) and ${String(event.moveCount)} file move(s) across ${String(event.fileCount)} file(s)`;
     }
     case "complete": {
       return `semantic fix complete: ${String(event.plannedFixCount)} plan(s), ${String(event.changedFileCount)} changed file(s), ${String(event.skippedDiagnosticCount)} skipped diagnostic(s)`;

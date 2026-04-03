@@ -43,6 +43,24 @@ testFileLocationConventionRuleTester.run(
         filename: "src/widgets/__tests__/SignalPanel.test.ts",
         languageOptions: languageOpts,
       },
+      {
+        code: `
+          import { test } from 'bun:test';
+
+          test('runs smoke coverage', () => {});
+        `,
+        filename: "tests/e2e/onboarding.spec.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+          import { describe } from 'bun:test';
+
+          describe('legacy spec suite', () => {});
+        `,
+        filename: "src/widgets/__tests__/SignalPanel.spec.ts",
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {
@@ -93,18 +111,6 @@ testFileLocationConventionRuleTester.run(
           {
             messageId: "invalidTestFileName",
             type: AST_NODE_TYPES.ImportDeclaration,
-          },
-        ],
-        output: null,
-      },
-      {
-        code: `export const fixture = true;`,
-        filename: "src/widgets/__tests__/SignalPanel.spec.ts",
-        languageOptions: languageOpts,
-        errors: [
-          {
-            messageId: "invalidTestFileName",
-            type: AST_NODE_TYPES.ExportNamedDeclaration,
           },
         ],
         output: null,

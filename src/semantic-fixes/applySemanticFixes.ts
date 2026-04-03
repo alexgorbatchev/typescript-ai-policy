@@ -1,7 +1,8 @@
-import { isAbsolute, resolve } from "node:path";
-import { applyTextEdits } from "./applyTextEdits.ts";
+import { dirname, isAbsolute, relative, resolve } from "node:path";
+import { applyFileChanges } from "./applyFileChanges.ts";
 import { createTsgoLspSemanticFixBackend } from "./backends/tsgo-lsp/createTsgoLspSemanticFixBackend.ts";
 import { createInterfaceNamingConventionSemanticFixProvider } from "./providers/createInterfaceNamingConventionSemanticFixProvider.ts";
+import { createTestFileLocationConventionSemanticFixProvider } from "./providers/createTestFileLocationConventionSemanticFixProvider.ts";
 import { runOxlintJson } from "./runOxlintJson.ts";
 import type {
   IApplySemanticFixesOptions,
@@ -34,19 +35,52 @@ function readSkippedDiagnostic(
 }
 
 function readPlanSignature(plan: ISemanticFixPlan): string {
-  return JSON.stringify(plan.textEdits);
+  return JSON.stringify({
+    fileMoves: plan.fileMoves,
+    textEdits: plan.textEdits,
+  });
 }
 
 function readChangedFilePaths(plans: readonly ISemanticFixPlan[]): readonly string[] {
   const changedFilePathSet = new Set<string>();
+  const movedFilePathMap = new Map<string, string>();
+
+  for (const plan of plans) {
+    for (const fileMove of plan.fileMoves) {
+      movedFilePathMap.set(fileMove.sourceFilePath, fileMove.destinationFilePath);
+      changedFilePathSet.add(fileMove.destinationFilePath);
+    }
+  }
 
   for (const plan of plans) {
     for (const textEdit of plan.textEdits) {
-      changedFilePathSet.add(textEdit.filePath);
+      changedFilePathSet.add(movedFilePathMap.get(textEdit.filePath) ?? textEdit.filePath);
     }
   }
 
   return [...changedFilePathSet].sort((left, right) => left.localeCompare(right));
+}
+
+function readOperationDescription(operation: ISemanticFixOperation): string {
+  switch (operation.kind) {
+    case "rename-symbol": {
+      return `Rename ${operation.symbolName} to ${operation.newName}`;
+    }
+    case "move-file": {
+      return `Move ${relative(dirname(operation.filePath), operation.filePath)} to ${relative(dirname(operation.filePath), operation.newFilePath)}`;
+    }
+  }
+}
+
+function readOperationEmptyPlanReason(operation: ISemanticFixOperation): string {
+  switch (operation.kind) {
+    case "rename-symbol": {
+      return `No text edits were produced for ${operation.symbolName}.`;
+    }
+    case "move-file": {
+      return `No file changes were produced for ${relative(dirname(operation.filePath), operation.filePath)}.`;
+    }
+  }
 }
 
 function readUniqueOperations(operations: readonly ISemanticFixOperation[]): readonly ISemanticFixOperation[] {
@@ -73,8 +107,11 @@ export async function applySemanticFixes(options: IApplySemanticFixesOptions): P
   const reportProgress = (event: IApplySemanticFixesProgressEvent): void => {
     options.onProgress?.(event);
   };
-  const semanticFixProvider = createInterfaceNamingConventionSemanticFixProvider();
-  const semanticFixProviders = new Map([[semanticFixProvider.ruleCode, semanticFixProvider]]);
+  const semanticFixProviders = new Map(
+    [createInterfaceNamingConventionSemanticFixProvider(), createTestFileLocationConventionSemanticFixProvider()].map(
+      (semanticFixProvider) => [semanticFixProvider.ruleCode, semanticFixProvider],
+    ),
+  );
   const semanticFixBackend = createTsgoLspSemanticFixBackend({
     tsgoExecutablePath: options.tsgoExecutablePath,
   });
@@ -132,7 +169,7 @@ export async function applySemanticFixes(options: IApplySemanticFixesOptions): P
 
     for (const [operationIndex, operation] of uniqueOperations.entries()) {
       reportProgress({
-        description: `Rename ${operation.symbolName} to ${operation.newName}`,
+        description: readOperationDescription(operation),
         kind: "planning-operation",
         operationCount: uniqueOperations.length,
         operationId: operation.id,
@@ -152,10 +189,10 @@ export async function applySemanticFixes(options: IApplySemanticFixesOptions): P
         continue;
       }
 
-      if (planResult.plan.textEdits.length === 0) {
+      if (planResult.plan.textEdits.length === 0 && planResult.plan.fileMoves.length === 0) {
         skippedDiagnostics.push({
           filePath: operation.filePath,
-          reason: `No text edits were produced for ${operation.symbolName}.`,
+          reason: readOperationEmptyPlanReason(operation),
           ruleCode: operation.ruleCode,
         });
         continue;
@@ -168,14 +205,17 @@ export async function applySemanticFixes(options: IApplySemanticFixesOptions): P
     const allTextEdits = uniquePlans.flatMap((plan) => plan.textEdits);
     const plannedChangedFilePaths = readChangedFilePaths(uniquePlans);
 
+    const fileMoves = uniquePlans.flatMap((plan) => plan.fileMoves);
+
     reportProgress({
       dryRun: options.dryRun ?? false,
       fileCount: plannedChangedFilePaths.length,
-      kind: "applying-text-edits",
+      kind: "applying-file-changes",
+      moveCount: fileMoves.length,
       textEditCount: allTextEdits.length,
     });
 
-    const changedFilePaths = options.dryRun ? plannedChangedFilePaths : applyTextEdits(allTextEdits);
+    const changedFilePaths = options.dryRun ? plannedChangedFilePaths : applyFileChanges(allTextEdits, fileMoves);
     const result = {
       appliedFileCount: options.dryRun ? 0 : changedFilePaths.length,
       backendName: semanticFixBackend.name,

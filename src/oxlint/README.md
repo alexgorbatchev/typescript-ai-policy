@@ -709,9 +709,14 @@ import { renderSignalPanel } from "./__tests__/helpers";
 
 ### `@alexgorbatchev/test-file-location-convention`
 
-**Policy:** Real test files must live somewhere under a `__tests__/` directory and must end in `.test.ts` or
-`.test.tsx`. This is a global ingress rule: it intentionally runs outside `__tests__/` so misplaced or misnamed test
-files are told where to move.
+**Policy:** `.test.ts` and `.test.tsx` files that represent repository-owned tests must live under a `__tests__/` directory.
+This is a global ingress rule: it intentionally runs outside `__tests__/` so misplaced `.test.ts[x]` files are told
+where to move. `.spec.ts` and `.spec.tsx` files are out of scope for this rule and are ignored.
+
+**Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can move misplaced
+`.test.ts` / `.test.tsx` files into a sibling `__tests__/` directory as `__tests__/basename.test.ts[x]`. The fixer is
+intentionally conservative: it only handles already-canonical `.test.ts[x]` basenames, rewrites the moved file's
+relative imports, and skips the move if the canonical destination already exists.
 
 **Good**
 
@@ -727,7 +732,7 @@ src/widgets/
 ```text
 src/widgets/
 ├── SignalPanel.tsx
-└── SignalPanel.spec.tsx
+└── SignalPanel.test.tsx
 ```
 
 ## Fixture system policies
