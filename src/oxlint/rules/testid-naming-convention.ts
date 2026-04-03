@@ -9,7 +9,7 @@ const testIdNamingConventionRule: RuleModule = {
     },
     messages: {
       invalidTestId:
-        'Rename {{ attributeName }} to "{{ componentName }}" on the component root, or to "{{ componentName }}--thing" on child elements. Received "{{ candidate }}".',
+        'Rename {{ attributeName }} "{{ candidate }}" to "{{ componentName }}" on the component root, or to "{{ componentName }}--thing" on child elements.',
     },
     schema: [],
     fixable: "code" as const,
