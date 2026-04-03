@@ -4,16 +4,26 @@
   "files": [
     "src/oxfmt",
     "src/oxlint",
+    "src/semantic-fixes",
     "src/shared"
   ],
+  "bin": {
+    "typescript-ai-policy-fix-semantic": "./src/semantic-fixes/runApplySemanticFixes.ts"
+  },
   "exports": {
     "./oxfmt-config": "./src/oxfmt/createOxfmtConfig.ts",
     "./oxlint-config": "./src/oxlint/createOxlintConfig.ts",
     "./oxlint-plugin": "./src/oxlint/plugin.ts"
   },
   "peerDependencies": {
+    "@typescript/native-preview": "^7.0.0-dev.20260330.1",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.57.0"
+  },
+  "peerDependenciesMeta": {
+    "@typescript/native-preview": {
+      "optional": true
+    }
   },
   "scripts": {
     "check": "./scripts/check.sh",

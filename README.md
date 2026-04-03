@@ -108,6 +108,12 @@ For the rule-by-rule rationale and examples behind this contract, see [`src/oxli
 bun add -d @alexgorbatchev/typescript-ai-policy oxfmt oxlint
 ```
 
+If you want the semantic-fix CLI, install its tsgo backend too:
+
+```bash
+bun add -d @typescript/native-preview
+```
+
 ## Use
 
 `oxfmt.config.ts`
@@ -155,6 +161,7 @@ Useful commands:
 
 - `bun run fix:semantic -- <target-directory>` — run Oxlint with this repository's policy config, collect supported diagnostics, and apply semantic fixes to the target directory.
 - `bun run fix:semantic -- <target-directory> --dry-run` — print the planned semantic-fix scope without mutating files.
+- `typescript-ai-policy-fix-semantic <target-directory>` — run the same semantic fixer through the package-installed bin after installing this package and `@typescript/native-preview`.
 
 Today the framework applies two conservative semantic fixes:
 

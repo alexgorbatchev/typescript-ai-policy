@@ -1,6 +1,9 @@
+#!/usr/bin/env bun
+
 import { existsSync, statSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 import { applySemanticFixes } from "./applySemanticFixes.ts";
+import { readSemanticFixRuntimePaths } from "./readSemanticFixRuntimePaths.ts";
 import type { IApplySemanticFixesProgressEvent, ISkippedDiagnostic } from "./types.ts";
 
 type ICliOptions = {
@@ -8,13 +11,18 @@ type ICliOptions = {
   targetDirectoryPath: string;
 };
 
+const SEMANTIC_FIX_BIN_NAME = "typescript-ai-policy-fix-semantic";
+
 function readUsageText(): string {
   return [
-    "Usage: bun src/semantic-fixes/runApplySemanticFixes.ts <target-directory> [--dry-run]",
+    "Usage:",
+    `  ${SEMANTIC_FIX_BIN_NAME} <target-directory> [--dry-run]`,
+    "  bun run fix:semantic -- <target-directory> [--dry-run]",
     "",
     "Examples:",
+    `  ${SEMANTIC_FIX_BIN_NAME} .`,
+    `  ${SEMANTIC_FIX_BIN_NAME} /path/to/project --dry-run`,
     "  bun run fix:semantic -- .",
-    "  bun run fix:semantic -- /path/to/project --dry-run",
   ].join("\n");
 }
 
@@ -76,15 +84,16 @@ function formatProgressEvent(event: IApplySemanticFixesProgressEvent): string {
 
 try {
   const cliOptions = readCliOptions(process.argv);
+  const runtimePaths = readSemanticFixRuntimePaths();
   const result = await applySemanticFixes({
     dryRun: cliOptions.dryRun,
     onProgress(event) {
       console.log(formatProgressEvent(event));
     },
-    oxlintConfigPath: resolve(process.cwd(), "src/oxlint/oxlint.config.ts"),
-    oxlintExecutablePath: resolve(process.cwd(), "node_modules/.bin/oxlint"),
+    oxlintConfigPath: runtimePaths.oxlintConfigPath,
+    oxlintExecutablePath: runtimePaths.oxlintExecutablePath,
     targetDirectoryPath: cliOptions.targetDirectoryPath,
-    tsgoExecutablePath: resolve(process.cwd(), "node_modules/.bin/tsgo"),
+    tsgoExecutablePath: runtimePaths.tsgoExecutablePath,
   });
 
   console.log(`backend: ${result.backendName}`);
