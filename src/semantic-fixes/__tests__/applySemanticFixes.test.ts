@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { applySemanticFixes } from "../applySemanticFixes.ts";
+import type { IApplySemanticFixesProgressEvent } from "../types.ts";
 
 type IProjectFile = {
   content: string;
@@ -94,6 +95,93 @@ export function formatProfile(profile: IUserProfile): string {
   return profile.id;
 }
 `);
+  } finally {
+    await rm(projectPath, { force: true, recursive: true });
+  }
+});
+
+it("reports progress while planning and applying semantic fixes", async () => {
+  const projectPath = await createProject([
+    {
+      content: `{
+  "compilerOptions": {
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "strict": true,
+    "target": "ESNext",
+    "verbatimModuleSyntax": true
+  }
+}
+`,
+      filePath: "tsconfig.json",
+    },
+    {
+      content: `export interface UserProfile {
+  id: string;
+}
+
+export function readProfileId(profile: UserProfile): string {
+  return profile.id;
+}
+`,
+      filePath: "models.ts",
+    },
+    {
+      content: `import type { UserProfile } from "./models";
+
+export function formatProfile(profile: UserProfile): string {
+  return profile.id;
+}
+`,
+      filePath: "consumer.ts",
+    },
+  ]);
+
+  try {
+    const progressEvents: IApplySemanticFixesProgressEvent[] = [];
+
+    await applySemanticFixes({
+      ...readOptions(projectPath),
+      onProgress(event) {
+        progressEvents.push(event);
+      },
+    });
+
+    expect(progressEvents).toEqual([
+      {
+        kind: "running-oxlint",
+        targetDirectoryPath: projectPath,
+      },
+      {
+        diagnosticCount: 1,
+        kind: "collected-diagnostics",
+      },
+      {
+        kind: "planning-start",
+        operationCount: 1,
+      },
+      {
+        description: "Rename UserProfile to IUserProfile",
+        kind: "planning-operation",
+        operationCount: 1,
+        operationId: `@alexgorbatchev/interface-naming-convention:${join(projectPath, "models.ts")}:0:17:IUserProfile`,
+        operationIndex: 1,
+      },
+      {
+        dryRun: false,
+        fileCount: 2,
+        kind: "applying-text-edits",
+        textEditCount: 4,
+      },
+      {
+        appliedFileCount: 2,
+        changedFileCount: 2,
+        kind: "complete",
+        plannedFixCount: 1,
+        skippedDiagnosticCount: 0,
+      },
+    ]);
   } finally {
     await rm(projectPath, { force: true, recursive: true });
   }

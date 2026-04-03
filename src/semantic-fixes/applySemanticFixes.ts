@@ -5,6 +5,7 @@ import { createInterfaceNamingConventionSemanticFixProvider } from "./providers/
 import { runOxlintJson } from "./runOxlintJson.ts";
 import type {
   IApplySemanticFixesOptions,
+  IApplySemanticFixesProgressEvent,
   IApplySemanticFixesResult,
   IOxlintDiagnostic,
   ISemanticFixOperation,
@@ -69,6 +70,9 @@ function readUniquePlans(plans: readonly ISemanticFixPlan[]): readonly ISemantic
 }
 
 export async function applySemanticFixes(options: IApplySemanticFixesOptions): Promise<IApplySemanticFixesResult> {
+  const reportProgress = (event: IApplySemanticFixesProgressEvent): void => {
+    options.onProgress?.(event);
+  };
   const semanticFixProvider = createInterfaceNamingConventionSemanticFixProvider();
   const semanticFixProviders = new Map([[semanticFixProvider.ruleCode, semanticFixProvider]]);
   const semanticFixBackend = createTsgoLspSemanticFixBackend({
@@ -76,10 +80,20 @@ export async function applySemanticFixes(options: IApplySemanticFixesOptions): P
   });
 
   try {
+    reportProgress({
+      kind: "running-oxlint",
+      targetDirectoryPath: options.targetDirectoryPath,
+    });
+
     const diagnostics = await runOxlintJson({
       oxlintConfigPath: options.oxlintConfigPath,
       oxlintExecutablePath: options.oxlintExecutablePath,
       targetDirectoryPath: options.targetDirectoryPath,
+    });
+
+    reportProgress({
+      diagnosticCount: diagnostics.length,
+      kind: "collected-diagnostics",
     });
 
     const skippedDiagnostics: ISkippedDiagnostic[] = [];
@@ -111,7 +125,20 @@ export async function applySemanticFixes(options: IApplySemanticFixesOptions): P
     const uniqueOperations = readUniqueOperations(operations);
     const plans: ISemanticFixPlan[] = [];
 
-    for (const operation of uniqueOperations) {
+    reportProgress({
+      kind: "planning-start",
+      operationCount: uniqueOperations.length,
+    });
+
+    for (const [operationIndex, operation] of uniqueOperations.entries()) {
+      reportProgress({
+        description: `Rename ${operation.symbolName} to ${operation.newName}`,
+        kind: "planning-operation",
+        operationCount: uniqueOperations.length,
+        operationId: operation.id,
+        operationIndex: operationIndex + 1,
+      });
+
       const planResult = await semanticFixBackend.createPlan(operation, {
         targetDirectoryPath: options.targetDirectoryPath,
       });
@@ -139,15 +166,33 @@ export async function applySemanticFixes(options: IApplySemanticFixesOptions): P
 
     const uniquePlans = readUniquePlans(plans);
     const allTextEdits = uniquePlans.flatMap((plan) => plan.textEdits);
-    const changedFilePaths = options.dryRun ? readChangedFilePaths(uniquePlans) : applyTextEdits(allTextEdits);
+    const plannedChangedFilePaths = readChangedFilePaths(uniquePlans);
 
-    return {
+    reportProgress({
+      dryRun: options.dryRun ?? false,
+      fileCount: plannedChangedFilePaths.length,
+      kind: "applying-text-edits",
+      textEditCount: allTextEdits.length,
+    });
+
+    const changedFilePaths = options.dryRun ? plannedChangedFilePaths : applyTextEdits(allTextEdits);
+    const result = {
       appliedFileCount: options.dryRun ? 0 : changedFilePaths.length,
       backendName: semanticFixBackend.name,
       changedFilePaths,
       plannedFixCount: uniquePlans.length,
       skippedDiagnostics,
     };
+
+    reportProgress({
+      appliedFileCount: result.appliedFileCount,
+      changedFileCount: result.changedFilePaths.length,
+      kind: "complete",
+      plannedFixCount: result.plannedFixCount,
+      skippedDiagnosticCount: result.skippedDiagnostics.length,
+    });
+
+    return result;
   } finally {
     await semanticFixBackend.dispose();
   }

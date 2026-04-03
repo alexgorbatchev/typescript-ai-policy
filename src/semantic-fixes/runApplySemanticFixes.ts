@@ -1,7 +1,7 @@
 import { existsSync, statSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 import { applySemanticFixes } from "./applySemanticFixes.ts";
-import type { ISkippedDiagnostic } from "./types.ts";
+import type { IApplySemanticFixesProgressEvent, ISkippedDiagnostic } from "./types.ts";
 
 type ICliOptions = {
   dryRun: boolean;
@@ -50,10 +50,37 @@ function formatSkippedDiagnostic(targetDirectoryPath: string, skippedDiagnostic:
   return `- [${skippedDiagnostic.ruleCode}] ${readDisplayPath(targetDirectoryPath, skippedDiagnostic.filePath)}: ${skippedDiagnostic.reason}`;
 }
 
+function formatProgressEvent(event: IApplySemanticFixesProgressEvent): string {
+  switch (event.kind) {
+    case "running-oxlint": {
+      return "running oxlint...";
+    }
+    case "collected-diagnostics": {
+      return `semantic-fix diagnostics: ${String(event.diagnosticCount)}`;
+    }
+    case "planning-start": {
+      return `planning semantic fixes: ${String(event.operationCount)} candidate operation(s)`;
+    }
+    case "planning-operation": {
+      return `planning semantic fix ${String(event.operationIndex)}/${String(event.operationCount)}: ${event.description}`;
+    }
+    case "applying-text-edits": {
+      const modeLabel = event.dryRun ? "dry run" : "applying edits";
+      return `${modeLabel}: ${String(event.textEditCount)} text edit(s) across ${String(event.fileCount)} file(s)`;
+    }
+    case "complete": {
+      return `semantic fix complete: ${String(event.plannedFixCount)} plan(s), ${String(event.changedFileCount)} changed file(s), ${String(event.skippedDiagnosticCount)} skipped diagnostic(s)`;
+    }
+  }
+}
+
 try {
   const cliOptions = readCliOptions(process.argv);
   const result = await applySemanticFixes({
     dryRun: cliOptions.dryRun,
+    onProgress(event) {
+      console.log(formatProgressEvent(event));
+    },
     oxlintConfigPath: resolve(process.cwd(), "src/oxlint/oxlint.config.ts"),
     oxlintExecutablePath: resolve(process.cwd(), "node_modules/.bin/oxlint"),
     targetDirectoryPath: cliOptions.targetDirectoryPath,

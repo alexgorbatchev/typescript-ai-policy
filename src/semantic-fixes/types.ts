@@ -90,8 +90,43 @@ export type ISemanticFixBackend = {
   name: string;
 };
 
+export type IApplySemanticFixesProgressEvent =
+  | {
+      kind: "running-oxlint";
+      targetDirectoryPath: string;
+    }
+  | {
+      diagnosticCount: number;
+      kind: "collected-diagnostics";
+    }
+  | {
+      kind: "planning-start";
+      operationCount: number;
+    }
+  | {
+      description: string;
+      kind: "planning-operation";
+      operationCount: number;
+      operationId: string;
+      operationIndex: number;
+    }
+  | {
+      dryRun: boolean;
+      fileCount: number;
+      kind: "applying-text-edits";
+      textEditCount: number;
+    }
+  | {
+      appliedFileCount: number;
+      changedFileCount: number;
+      kind: "complete";
+      plannedFixCount: number;
+      skippedDiagnosticCount: number;
+    };
+
 export type IApplySemanticFixesOptions = {
   dryRun?: boolean;
+  onProgress?: (event: IApplySemanticFixesProgressEvent) => void;
   oxlintConfigPath: string;
   oxlintExecutablePath: string;
   targetDirectoryPath: string;
