@@ -209,6 +209,8 @@ export interface IuserProfile {
 }
 ```
 
+**Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can apply supported interface renames through the `tsgo` LSP backend. The fixer is intentionally conservative: it only applies mechanical renames when the current interface name can be normalized safely to `I[A-Z][A-Za-z0-9]*`.
+
 ## Explicit type-expression policies
 
 ### `@alexgorbatchev/no-inline-type-expressions`

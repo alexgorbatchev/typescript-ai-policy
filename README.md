@@ -147,6 +147,28 @@ This package also uses its own shared configs at the repository root:
 - `oxfmt.config.ts`
 - `oxlint.config.ts`
 
+## Local semantic-fix tooling
+
+The repository now includes a local semantic-fix command that uses `tsgo --lsp --stdio` as its first real backend.
+
+Useful commands:
+
+- `bun run fix:semantic -- <target-directory>` — run Oxlint with this repository's policy config, collect supported diagnostics, and apply semantic fixes to the target directory.
+- `bun run fix:semantic -- <target-directory> --dry-run` — print the planned semantic-fix scope without mutating files.
+
+Today the framework only applies `@alexgorbatchev/interface-naming-convention` renames, but the command and backend shape are intentionally generic so more rule-backed semantic operations can be added later.
+
+## Experimental semantic-rename spikes
+
+The retained `tsgo` LSP spike remains under `scripts/tsgo-lsp-rename-spike/` as a protocol and parity harness.
+
+Useful commands:
+
+- `bun run spike:tsgo-lsp-rename` — compare `tsgo --lsp --stdio` rename edits against the stable TypeScript language service on focused interface-rename fixtures.
+- `bun run debug:tsgo-lsp-rename` — print the raw `tsgo` LSP session for the same rename workflow so protocol issues can be debugged without ad-hoc shell one-liners.
+
+These scripts are experimental evaluation tools for semantic-fix architecture work. They are intentionally kept in-repo and are not part of the published runtime API.
+
 ## Enabled Oxlint error rules
 
 ### Built-in guardrails
