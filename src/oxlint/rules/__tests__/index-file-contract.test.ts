@@ -182,6 +182,36 @@ indexFileContractRuleTester.run(
         errors: [
           {
             messageId: "unexpectedIndexTsxFilename",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `import type { RuleConfig } from './types';
+export { createRule } from './createRule';`,
+        filename: "src/oxlint/index.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            column: 1,
+            endColumn: 43,
+            endLine: 1,
+            line: 1,
+            messageId: "unexpectedIndexTsxFilename",
+            type: AST_NODE_TYPES.ImportDeclaration,
+          },
+          {
+            column: 1,
+            endColumn: 43,
+            endLine: 1,
+            line: 1,
+            messageId: "unexpectedIndexStatement",
+            type: AST_NODE_TYPES.ImportDeclaration,
+            data: {
+              barrelBaseName: "index.tsx",
+              renameSuffix: ' Then rename this file to "index.ts".',
+            },
           },
         ],
         output: null,

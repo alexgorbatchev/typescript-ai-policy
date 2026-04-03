@@ -86,6 +86,10 @@ function readExportDefaultReportNode(node: TSESTree.ExportDefaultDeclaration): T
   return node;
 }
 
+function readProgramReportNode(node: TSESTree.Program): TSESTree.Node {
+  return node.body[0] ?? node;
+}
+
 function readIndexViolationReportNode(statement: AstProgramStatement): TSESTree.Node {
   if (statement.type === "ExportNamedDeclaration") {
     if (statement.declaration) {
@@ -144,7 +148,7 @@ const indexFileContractRule: RuleModule = {
       Program(node) {
         if (isIndexTsxFile(context.filename)) {
           context.report({
-            node,
+            node: readProgramReportNode(node),
             messageId: "unexpectedIndexTsxFilename",
           });
         }
