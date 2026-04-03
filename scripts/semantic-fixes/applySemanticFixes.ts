@@ -76,7 +76,7 @@ export async function applySemanticFixes(options: IApplySemanticFixesOptions): P
   });
 
   try {
-    const diagnostics = runOxlintJson({
+    const diagnostics = await runOxlintJson({
       oxlintConfigPath: options.oxlintConfigPath,
       oxlintExecutablePath: options.oxlintExecutablePath,
       targetDirectoryPath: options.targetDirectoryPath,

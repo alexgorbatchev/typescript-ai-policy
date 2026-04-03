@@ -1,10 +1,24 @@
-import { spawnSync } from "node:child_process";
+import { closeSync, openSync } from "node:fs";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { spawn } from "node:child_process";
 import type { IOxlintDiagnostic } from "./types.ts";
 
 type IRunOxlintJsonOptions = {
   oxlintConfigPath: string;
   oxlintExecutablePath: string;
   targetDirectoryPath: string;
+};
+
+type IOxlintProcessCompletion = {
+  exitCode: number | null;
+  signal: NodeJS.Signals | null;
+};
+
+type IOxlintProcessResult = IOxlintProcessCompletion & {
+  stderr: string;
+  stdout: string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -51,31 +65,74 @@ function readDiagnostics(report: unknown): readonly IOxlintDiagnostic[] {
   }));
 }
 
-export function runOxlintJson(options: IRunOxlintJsonOptions): readonly IOxlintDiagnostic[] {
-  const runResult = spawnSync(
-    options.oxlintExecutablePath,
-    ["--config", options.oxlintConfigPath, "--disable-nested-config", "--format", "json", "."],
-    {
-      cwd: options.targetDirectoryPath,
-      encoding: "utf8",
-    },
-  );
+async function runOxlintProcess(options: IRunOxlintJsonOptions): Promise<IOxlintProcessResult> {
+  const tempDirectoryPath = await mkdtemp(join(tmpdir(), "semantic-fixes-oxlint-"));
+  const stdoutPath = join(tempDirectoryPath, "oxlint-report.json");
+  const stdoutFileDescriptor = openSync(stdoutPath, "w");
 
-  if (runResult.error) {
-    throw runResult.error;
+  try {
+    let childProcess: ReturnType<typeof spawn>;
+
+    try {
+      childProcess = spawn(
+        options.oxlintExecutablePath,
+        ["--config", options.oxlintConfigPath, "--disable-nested-config", "--format", "json", "."],
+        {
+          cwd: options.targetDirectoryPath,
+          stdio: ["ignore", stdoutFileDescriptor, "pipe"],
+        },
+      );
+    } finally {
+      closeSync(stdoutFileDescriptor);
+    }
+
+    const stderrChunks: string[] = [];
+    const stderrStream = childProcess.stderr;
+    if (!stderrStream) {
+      throw new Error("Oxlint stderr stream is unavailable.");
+    }
+
+    stderrStream.on("data", (chunk: Buffer) => {
+      stderrChunks.push(chunk.toString("utf8"));
+    });
+
+    const processCompletion = await new Promise<IOxlintProcessCompletion>((resolve, reject) => {
+      childProcess.once("error", (error: Error) => {
+        reject(error);
+      });
+      childProcess.once("close", (exitCode: number | null, signal: NodeJS.Signals | null) => {
+        resolve({ exitCode, signal });
+      });
+    });
+
+    const stdout = await readFile(stdoutPath, "utf8");
+
+    return {
+      exitCode: processCompletion.exitCode,
+      signal: processCompletion.signal,
+      stderr: stderrChunks.join("").trim(),
+      stdout,
+    };
+  } finally {
+    await rm(tempDirectoryPath, { force: true, recursive: true });
   }
+}
 
+export async function runOxlintJson(options: IRunOxlintJsonOptions): Promise<readonly IOxlintDiagnostic[]> {
+  const runResult = await runOxlintProcess(options);
   const stdout = runResult.stdout.trim();
-  const stderr = runResult.stderr.trim();
   if (stdout.length === 0) {
-    throw new Error(`Oxlint returned no JSON output.\n\nStderr:\n${stderr}`);
+    throw new Error(`Oxlint returned no JSON output.\n\nStderr:\n${runResult.stderr}`);
   }
 
   const parsedOutput: unknown = JSON.parse(stdout);
   const diagnostics = readDiagnostics(parsedOutput);
 
-  if (runResult.status !== 0 && runResult.status !== 1) {
-    throw new Error(`Oxlint failed with exit code ${String(runResult.status)}.\n\nStderr:\n${stderr}`);
+  if (runResult.exitCode !== 0 && runResult.exitCode !== 1) {
+    const signalSuffix = runResult.signal ? `, signal=${runResult.signal}` : "";
+    throw new Error(
+      `Oxlint failed with exit code ${String(runResult.exitCode)}${signalSuffix}.\n\nStderr:\n${runResult.stderr}`,
+    );
   }
 
   return diagnostics;
