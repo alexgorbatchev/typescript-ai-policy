@@ -114,6 +114,9 @@ If you want the semantic-fix CLI, install its tsgo backend too:
 bun add -d @typescript/native-preview
 ```
 
+The semantic-fix CLI requires Bun at runtime because the installed bin uses a Bun shebang. That means Bun must be
+installed and available on `PATH` when you run the command.
+
 ## Use
 
 `oxfmt.config.ts`
@@ -153,15 +156,18 @@ This package also uses its own shared configs at the repository root:
 - `oxfmt.config.ts`
 - `oxlint.config.ts`
 
-## Local semantic-fix tooling
+## Semantic-fix tooling
 
-The repository now includes a local semantic-fix command under `src/semantic-fixes/` that uses `tsgo --lsp --stdio` as its first real backend.
+The package includes a semantic-fix CLI backed by `tsgo --lsp --stdio`.
 
-Useful commands:
+Package-installed usage:
 
-- `bun run fix:semantic -- <target-directory>` — run Oxlint with this repository's policy config, collect supported diagnostics, and apply semantic fixes to the target directory.
-- `bun run fix:semantic -- <target-directory> --dry-run` — print the planned semantic-fix scope without mutating files.
-- `typescript-ai-policy-fix-semantic <target-directory>` — run the same semantic fixer through the package-installed bin after installing this package and `@typescript/native-preview`.
+- `bun run typescript-ai-policy-fix-semantic -- <target-directory>` — run Oxlint with this package's policy config, collect supported diagnostics, and apply semantic fixes to the target directory.
+- `bun run typescript-ai-policy-fix-semantic -- <target-directory> --dry-run` — print the planned semantic-fix scope without mutating files.
+
+Repository-local development usage:
+
+- `bun run fix:semantic -- <target-directory>` — run the same semantic fixer from this repository checkout while developing the package itself.
 
 Today the framework applies two conservative semantic fixes:
 
