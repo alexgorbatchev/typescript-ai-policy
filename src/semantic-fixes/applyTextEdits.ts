@@ -32,16 +32,20 @@ function readFileEditEntries(textEdits: readonly ITextEdit[]): readonly IFileEdi
   }));
 }
 
-function compareOffsetTextEditsDescending(left: IOffsetTextEdit, right: IOffsetTextEdit): number {
+function compareOffsetTextEditsAscending(left: IOffsetTextEdit, right: IOffsetTextEdit): number {
   if (left.startOffset !== right.startOffset) {
-    return right.startOffset - left.startOffset;
+    return left.startOffset - right.startOffset;
   }
 
   if (left.endOffset !== right.endOffset) {
-    return right.endOffset - left.endOffset;
+    return left.endOffset - right.endOffset;
   }
 
-  return right.newText.localeCompare(left.newText);
+  return left.newText.localeCompare(right.newText);
+}
+
+function compareOffsetTextEditsDescending(left: IOffsetTextEdit, right: IOffsetTextEdit): number {
+  return compareOffsetTextEditsAscending(right, left);
 }
 
 function readOffset(positionContent: string, line: number, character: number): number {
@@ -57,25 +61,84 @@ function readOffsetTextEdit(content: string, textEdit: ITextEdit): IOffsetTextEd
   };
 }
 
+function haveSameRange(left: IOffsetTextEdit, right: IOffsetTextEdit): boolean {
+  return left.startOffset === right.startOffset && left.endOffset === right.endOffset;
+}
+
+function isInsertion(edit: IOffsetTextEdit): boolean {
+  return edit.startOffset === edit.endOffset;
+}
+
+function haveSameInsertionPoint(left: IOffsetTextEdit, right: IOffsetTextEdit): boolean {
+  return isInsertion(left) && isInsertion(right) && left.startOffset === right.startOffset;
+}
+
+function rangesOverlap(left: IOffsetTextEdit, right: IOffsetTextEdit): boolean {
+  return left.startOffset < right.endOffset && right.startOffset < left.endOffset;
+}
+
+function containsRange(container: IOffsetTextEdit, candidate: IOffsetTextEdit): boolean {
+  return container.startOffset <= candidate.startOffset && container.endOffset >= candidate.endOffset;
+}
+
+function readNormalizedOffsetTextEdits(
+  filePath: string,
+  offsetTextEdits: readonly IOffsetTextEdit[],
+): readonly IOffsetTextEdit[] {
+  const normalizedOffsetTextEdits: IOffsetTextEdit[] = [];
+
+  for (const offsetTextEdit of [...offsetTextEdits].sort(compareOffsetTextEditsAscending)) {
+    const previousOffsetTextEdit = normalizedOffsetTextEdits.at(-1);
+    if (!previousOffsetTextEdit) {
+      normalizedOffsetTextEdits.push(offsetTextEdit);
+      continue;
+    }
+
+    const sharesRange = haveSameRange(previousOffsetTextEdit, offsetTextEdit);
+    const sharesInsertionPoint = haveSameInsertionPoint(previousOffsetTextEdit, offsetTextEdit);
+    const overlapsPreviousRange = rangesOverlap(previousOffsetTextEdit, offsetTextEdit);
+    const hasSameReplacement = previousOffsetTextEdit.newText === offsetTextEdit.newText;
+
+    if (!sharesRange && !sharesInsertionPoint && !overlapsPreviousRange) {
+      normalizedOffsetTextEdits.push(offsetTextEdit);
+      continue;
+    }
+
+    if (hasSameReplacement && (sharesRange || sharesInsertionPoint)) {
+      continue;
+    }
+
+    if (hasSameReplacement && containsRange(offsetTextEdit, previousOffsetTextEdit)) {
+      continue;
+    }
+
+    if (hasSameReplacement && containsRange(previousOffsetTextEdit, offsetTextEdit)) {
+      normalizedOffsetTextEdits[normalizedOffsetTextEdits.length - 1] = offsetTextEdit;
+      continue;
+    }
+
+    throw new Error(`Overlapping semantic fix edits detected in ${filePath}`);
+  }
+
+  return normalizedOffsetTextEdits;
+}
+
 function applyFileTextEdits(filePath: string, textEdits: readonly ITextEdit[]): void {
   const content = readFileSync(filePath, "utf8");
-  const offsetTextEdits = textEdits
-    .map((textEdit) => readOffsetTextEdit(content, textEdit))
-    .sort(compareOffsetTextEditsDescending);
+  const offsetTextEdits = [
+    ...readNormalizedOffsetTextEdits(
+      filePath,
+      textEdits.map((textEdit) => readOffsetTextEdit(content, textEdit)),
+    ),
+  ].sort(compareOffsetTextEditsDescending);
 
-  let nextBlockedStartOffset = content.length + 1;
   let updatedContent = content;
 
   for (const offsetTextEdit of offsetTextEdits) {
-    if (offsetTextEdit.endOffset > nextBlockedStartOffset) {
-      throw new Error(`Overlapping semantic fix edits detected in ${filePath}`);
-    }
-
     updatedContent =
       updatedContent.slice(0, offsetTextEdit.startOffset) +
       offsetTextEdit.newText +
       updatedContent.slice(offsetTextEdit.endOffset);
-    nextBlockedStartOffset = offsetTextEdit.startOffset;
   }
 
   if (updatedContent !== content) {
