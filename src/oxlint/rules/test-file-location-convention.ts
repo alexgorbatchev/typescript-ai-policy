@@ -1,10 +1,12 @@
-import type { AstExpression, RuleModule } from "./types.ts";
+import type { AstExpression, AstProgram, AstProgramStatement, RuleModule } from "./types.ts";
 import { getBaseName, isInTestsDirectory } from "./helpers.ts";
 
 const TEST_FRAMEWORK_MODULES = new Set(["@jest/globals", "bun:test", "node:test", "vitest"]);
 const TEST_IMPORT_NAMES = new Set(["describe", "it", "test"]);
 const REQUIRED_TEST_FILE_NAME_PATTERN = /\.test\.tsx?$/u;
 const TEST_LIKE_FILE_NAME_PATTERN = /\.(spec|test)\.tsx?$/u;
+
+type ProgramReportNode = AstProgram | AstProgramStatement;
 
 function readCallTargetName(node: AstExpression): string | null {
   if (node.type === "Identifier") {
@@ -23,16 +25,21 @@ function readCallTargetName(node: AstExpression): string | null {
   return null;
 }
 
+function readProgramReportNode(node: AstProgram): ProgramReportNode {
+  return node.body[0] ?? node;
+}
+
 const testFileLocationConventionRule: RuleModule = {
   meta: {
     type: "problem" as const,
     docs: {
-      description: "Require test files to live in __tests__ and use the .test.ts/.test.tsx suffix",
+      description:
+        'Require test files to live somewhere under a "__tests__/" directory and use the .test.ts/.test.tsx suffix',
     },
     schema: [],
     messages: {
       invalidTestFileName: 'Rename this file to match the "*.test.ts" or "*.test.tsx" pattern.',
-      missingTestsDirectory: 'Move this test file into a sibling "__tests__" directory.',
+      missingTestsDirectory: 'Move this test file under a "__tests__/" directory.',
     },
   },
   create(context) {
@@ -80,16 +87,18 @@ const testFileLocationConventionRule: RuleModule = {
           return;
         }
 
+        const reportNode = readProgramReportNode(node);
+
         if (!isInTestsDirectory(context.filename)) {
           context.report({
-            node,
+            node: reportNode,
             messageId: "missingTestsDirectory",
           });
         }
 
         if (!REQUIRED_TEST_FILE_NAME_PATTERN.test(baseName)) {
           context.report({
-            node,
+            node: reportNode,
             messageId: "invalidTestFileName",
           });
         }

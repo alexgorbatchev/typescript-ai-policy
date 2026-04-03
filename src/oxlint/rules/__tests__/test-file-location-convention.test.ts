@@ -1,4 +1,5 @@
 import { afterAll, describe, it } from "bun:test";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
 import testFileLocationConventionRuleModule from "../test-file-location-convention.ts";
@@ -55,6 +56,7 @@ testFileLocationConventionRuleTester.run(
         errors: [
           {
             messageId: "missingTestsDirectory",
+            type: AST_NODE_TYPES.ImportDeclaration,
           },
         ],
         output: null,
@@ -70,6 +72,7 @@ testFileLocationConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestFileName",
+            type: AST_NODE_TYPES.ImportDeclaration,
           },
         ],
         output: null,
@@ -85,9 +88,11 @@ testFileLocationConventionRuleTester.run(
         errors: [
           {
             messageId: "missingTestsDirectory",
+            type: AST_NODE_TYPES.ImportDeclaration,
           },
           {
             messageId: "invalidTestFileName",
+            type: AST_NODE_TYPES.ImportDeclaration,
           },
         ],
         output: null,
@@ -99,6 +104,7 @@ testFileLocationConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestFileName",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
           },
         ],
         output: null,
