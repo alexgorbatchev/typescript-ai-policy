@@ -2,6 +2,8 @@ import testIdNamingConventionRule from "./rules/testid-naming-convention.ts";
 import noReactCreateElementRule from "./rules/no-react-create-element.ts";
 import requireComponentRootTestIdRule from "./rules/require-component-root-testid.ts";
 import noNonRunningTestsRule from "./rules/no-non-running-tests.ts";
+import noConditionalLogicInTestsRule from "./rules/no-conditional-logic-in-tests.ts";
+import noThrowInTestsRule from "./rules/no-throw-in-tests.ts";
 import noModuleMockingRule from "./rules/no-module-mocking.ts";
 import noTestFileExportsRule from "./rules/no-test-file-exports.ts";
 import noImportsFromTestsDirectoryRule from "./rules/no-imports-from-tests-directory.ts";
@@ -45,6 +47,8 @@ const plugin = {
     "no-react-create-element": noReactCreateElementRule,
     "require-component-root-testid": requireComponentRootTestIdRule,
     "no-non-running-tests": noNonRunningTestsRule,
+    "no-conditional-logic-in-tests": noConditionalLogicInTestsRule,
+    "no-throw-in-tests": noThrowInTestsRule,
     "no-module-mocking": noModuleMockingRule,
     "no-test-file-exports": noTestFileExportsRule,
     "no-imports-from-tests-directory": noImportsFromTestsDirectoryRule,

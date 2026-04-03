@@ -36,6 +36,22 @@ describe("createOxlintConfig", () => {
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/__tests__/*.test.{ts,tsx}", "**/__tests__/**/*.test.{ts,tsx}"],
+      rules: {
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/no-non-running-tests": "error",
+        "@alexgorbatchev/no-conditional-logic-in-tests": "error",
+        "@alexgorbatchev/no-throw-in-tests": "error",
+        "@alexgorbatchev/no-test-file-exports": "error",
+        "@alexgorbatchev/no-inline-fixture-bindings-in-tests": "error",
+        "@alexgorbatchev/fixture-import-path-convention": "error",
+        "jest/no-disabled-tests": "error",
+        "jest/no-focused-tests": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
       files: ["**/*.tsx"],
       rules: {
         "@alexgorbatchev/testid-naming-convention": "error",

@@ -74,6 +74,8 @@ on files that cannot meaningfully violate them.
 8. **Test-file rules** run on `__tests__/**/*.test.ts` and `__tests__/**/*.test.tsx`:
    - test files explicitly turn off `@alexgorbatchev/testid-naming-convention` and `@alexgorbatchev/require-component-root-testid` because test harnesses are not ownership components
    - `@alexgorbatchev/no-non-running-tests`
+   - `@alexgorbatchev/no-conditional-logic-in-tests`
+   - `@alexgorbatchev/no-throw-in-tests`
    - `@alexgorbatchev/no-test-file-exports`
    - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
    - `@alexgorbatchev/fixture-import-path-convention`
@@ -643,6 +645,57 @@ describe("SignalPanel", () => {
 
 ```ts
 test.skipIf(process.env.CI === "true")("renders", () => {});
+```
+
+### `@alexgorbatchev/no-conditional-logic-in-tests`
+
+**Policy:** Committed `*.test.ts` and `*.test.tsx` files must not branch with `if`, `switch`, or ternary control flow. Branching test logic can skip assertions or hide which path a test truly exercises. Use `assert(...)` for narrowing or failure instead of conditional control flow.
+
+**Good**
+
+```ts
+import assert from "node:assert";
+
+test("reads the failure path", () => {
+  const result = { error: "failed", success: false };
+
+  assert(!result.success);
+  expect(result.error).toBe("failed");
+});
+```
+
+**Bad**
+
+```ts
+test("reads the failure path", () => {
+  const result = { error: "failed", success: false };
+
+  if (!result.success) {
+    expect(result.error).toBe("failed");
+  }
+});
+```
+
+### `@alexgorbatchev/no-throw-in-tests`
+
+**Policy:** Committed `*.test.ts` and `*.test.tsx` files must not use `throw new Error(...)` as an ad-hoc failure path. Throwing inside the test body obscures intent and bypasses the explicit assertion contract. Use `assert(...)` or `assert.fail(...)` from `node:assert` instead.
+
+**Good**
+
+```ts
+import assert from "node:assert";
+
+test("fails explicitly", () => {
+  assert.fail("unexpected state");
+});
+```
+
+**Bad**
+
+```ts
+test("fails explicitly", () => {
+  throw new Error("unexpected state");
+});
 ```
 
 ### `@alexgorbatchev/no-module-mocking`
