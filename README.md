@@ -149,6 +149,15 @@ conflicting keys.
 For Oxlint specifically, consumer configs are extension-only: if the callback tries to redefine any shared rule name,
 the factory throws with guidance to change the shared package instead of overriding that rule downstream.
 
+When you run Oxlint manually, use Bun to launch the CLI:
+
+```bash
+bun --bun oxlint .
+```
+
+Treat `bun --bun oxlint ...` as the canonical invocation form for this package and for consumer repositories using
+these TypeScript config entrypoints.
+
 ## Local package setup
 
 This package also uses its own shared configs at the repository root:
