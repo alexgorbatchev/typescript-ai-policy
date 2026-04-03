@@ -1,3 +1,5 @@
+import { existsSync, readdirSync, statSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import type { NodeWithParent, TSESTree } from "@typescript-eslint/types";
 import type {
   AstClassLike,
@@ -193,10 +195,59 @@ export function readPathFromStoriesDirectory(filename: string): string | null {
   return normalizedFilename.slice(storiesDirectoryIndex + storiesDirectoryMarker.length);
 }
 
+export function readRootPathBeforeDirectory(filename: string, expectedDirectoryName: string): string | null {
+  const normalizedFilename = normalizeFilename(filename);
+  const directoryPrefix = `${expectedDirectoryName}/`;
+  const rootedDirectoryPrefix = `/${expectedDirectoryName}/`;
+
+  if (normalizedFilename.startsWith(directoryPrefix)) {
+    return "";
+  }
+
+  if (normalizedFilename.startsWith(rootedDirectoryPrefix)) {
+    return "/";
+  }
+
+  const directoryMarker = `/${expectedDirectoryName}/`;
+  const directoryIndex = normalizedFilename.indexOf(directoryMarker);
+  if (directoryIndex === -1) {
+    return null;
+  }
+
+  return normalizedFilename.slice(0, directoryIndex);
+}
+
+export function findDescendantFilePath(rootDirectoryPath: string, expectedBaseName: string): string | null {
+  if (!existsSync(rootDirectoryPath) || !statSync(rootDirectoryPath).isDirectory()) {
+    return null;
+  }
+
+  const directoryEntries = readdirSync(rootDirectoryPath, { withFileTypes: true });
+
+  for (const directoryEntry of directoryEntries) {
+    const entryPath = `${normalizeFilename(rootDirectoryPath)}/${directoryEntry.name}`;
+
+    if (directoryEntry.isDirectory()) {
+      const descendantFilePath = findDescendantFilePath(entryPath, expectedBaseName);
+      if (descendantFilePath) {
+        return descendantFilePath;
+      }
+
+      continue;
+    }
+
+    if (directoryEntry.isFile() && directoryEntry.name === expectedBaseName) {
+      return entryPath;
+    }
+  }
+
+  return null;
+}
+
 export function isStoryFile(filename: string): boolean {
   const relativePath = readPathFromStoriesDirectory(filename);
 
-  return relativePath !== null && /^[^/]+\.stories\.tsx$/u.test(relativePath);
+  return relativePath !== null && /(^|\/)[^/]+\.stories\.tsx$/u.test(relativePath);
 }
 
 export function getStorySourceBaseName(filename: string): string | null {
@@ -217,21 +268,19 @@ export function readPathFromFixtureSupportDirectory(filename: string): string | 
 export function isFixturesFile(filename: string): boolean {
   const relativePath = readPathFromFixtureSupportDirectory(filename);
 
-  return relativePath === "fixtures.ts" || relativePath === "fixtures.tsx";
+  return relativePath !== null && /(^|\/)fixtures\.tsx?$/u.test(relativePath);
 }
 
 export function isInFixturesArea(filename: string): boolean {
   const relativePath = readPathFromFixtureSupportDirectory(filename);
 
-  return (
-    relativePath === "fixtures.ts" || relativePath === "fixtures.tsx" || relativePath?.startsWith("fixtures/") === true
-  );
+  return relativePath !== null && /(^|\/)fixtures(?:\/|\.tsx?$)/u.test(relativePath);
 }
 
 export function isTestFile(filename: string): boolean {
   const relativePath = readPathFromTestsDirectory(filename);
 
-  return relativePath !== null && /^[^/]+\.test\.tsx?$/u.test(relativePath);
+  return relativePath !== null && /(^|\/)[^/]+\.test\.tsx?$/u.test(relativePath);
 }
 
 export function isFixtureConsumerFile(filename: string): boolean {
@@ -250,8 +299,52 @@ export function isFixtureLikeName(name: string): boolean {
   return name.startsWith("fixture_") || name.startsWith("factory_");
 }
 
-export function isAllowedFixturesImportPath(importPath: string): boolean {
-  return importPath === "./fixtures";
+type FixtureSupportRoot = {
+  directoryName: "__tests__" | "stories";
+  rootPath: string;
+};
+
+function readFixtureSupportRoot(filename: string): FixtureSupportRoot | null {
+  const testsRelativePath = readPathFromTestsDirectory(filename);
+  if (testsRelativePath !== null) {
+    return {
+      directoryName: "__tests__",
+      rootPath: readRootPathBeforeDirectory(filename, "__tests__") ?? "",
+    };
+  }
+
+  const storiesRelativePath = readPathFromStoriesDirectory(filename);
+  if (storiesRelativePath !== null) {
+    return {
+      directoryName: "stories",
+      rootPath: readRootPathBeforeDirectory(filename, "stories") ?? "",
+    };
+  }
+
+  return null;
+}
+
+export function isAllowedFixturesImportPath(importPath: string, consumerFilename: string): boolean {
+  if (!/^\.\.?(?:\/|$)/u.test(importPath)) {
+    return false;
+  }
+
+  const resolvedConsumerFilename = normalizeFilename(resolve(consumerFilename));
+  const resolvedImportPath = normalizeFilename(resolve(dirname(resolvedConsumerFilename), importPath));
+  if (getBaseName(resolvedImportPath) !== "fixtures") {
+    return false;
+  }
+
+  const consumerFixtureSupportRoot = readFixtureSupportRoot(resolvedConsumerFilename);
+  const importedFixtureSupportRoot = readFixtureSupportRoot(resolvedImportPath);
+  if (!consumerFixtureSupportRoot || !importedFixtureSupportRoot) {
+    return false;
+  }
+
+  return (
+    consumerFixtureSupportRoot.directoryName === importedFixtureSupportRoot.directoryName &&
+    consumerFixtureSupportRoot.rootPath === importedFixtureSupportRoot.rootPath
+  );
 }
 
 export function readPatternIdentifierNames(pattern: AstDestructuringPattern): string[] {

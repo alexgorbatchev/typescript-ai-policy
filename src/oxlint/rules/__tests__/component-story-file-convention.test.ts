@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { RuleTester } from "@typescript-eslint/rule-tester";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
 import componentStoryFileConventionRuleModule from "../component-story-file-convention.ts";
 
@@ -23,86 +24,68 @@ function createComponentDirectoryPath(name: string): string {
   return directoryPath;
 }
 
-const validPascalComponentDirectoryPath = createComponentDirectoryPath("valid-pascal");
-mkdirSync(join(validPascalComponentDirectoryPath, "stories"), { recursive: true });
-writeFileSync(join(validPascalComponentDirectoryPath, "stories", "Button.stories.tsx"), "export {}\n");
+const validDirectStoryComponentDirectoryPath = createComponentDirectoryPath("valid-direct-story");
+mkdirSync(join(validDirectStoryComponentDirectoryPath, "stories"), { recursive: true });
+writeFileSync(join(validDirectStoryComponentDirectoryPath, "stories", "Button.stories.tsx"), "export {}\n");
 
-const validKebabComponentDirectoryPath = createComponentDirectoryPath("valid-kebab");
-mkdirSync(join(validKebabComponentDirectoryPath, "stories"), { recursive: true });
-writeFileSync(join(validKebabComponentDirectoryPath, "stories", "account-panel.stories.tsx"), "export {}\n");
+const validNestedStoryComponentDirectoryPath = createComponentDirectoryPath("valid-nested-story");
+mkdirSync(join(validNestedStoryComponentDirectoryPath, "stories", "catalog"), { recursive: true });
+writeFileSync(
+  join(validNestedStoryComponentDirectoryPath, "stories", "catalog", "account-panel.stories.tsx"),
+  "export {}\n",
+);
+
+const validComponentTestsDirectoryPath = createComponentDirectoryPath("valid-component-tests");
+mkdirSync(join(validComponentTestsDirectoryPath, "stories"), { recursive: true });
+mkdirSync(join(validComponentTestsDirectoryPath, "__tests__"), { recursive: true });
+writeFileSync(join(validComponentTestsDirectoryPath, "stories", "Badge.stories.tsx"), "export {}\n");
+writeFileSync(join(validComponentTestsDirectoryPath, "__tests__", "Badge.test.tsx"), "export {}\n");
 
 const missingStoryComponentDirectoryPath = createComponentDirectoryPath("missing-story");
-mkdirSync(join(missingStoryComponentDirectoryPath, "stories"), { recursive: true });
-writeFileSync(join(missingStoryComponentDirectoryPath, "stories", "Other.stories.tsx"), "export {}\n");
-
-const legacyTsxTestComponentDirectoryPath = createComponentDirectoryPath("legacy-tsx-test");
-mkdirSync(join(legacyTsxTestComponentDirectoryPath, "stories"), { recursive: true });
-mkdirSync(join(legacyTsxTestComponentDirectoryPath, "__tests__"), { recursive: true });
-writeFileSync(join(legacyTsxTestComponentDirectoryPath, "stories", "Button.stories.tsx"), "export {}\n");
-writeFileSync(join(legacyTsxTestComponentDirectoryPath, "__tests__", "Button.test.tsx"), "export {}\n");
-
-const legacyTsTestComponentDirectoryPath = createComponentDirectoryPath("legacy-ts-test");
-mkdirSync(join(legacyTsTestComponentDirectoryPath, "stories"), { recursive: true });
-mkdirSync(join(legacyTsTestComponentDirectoryPath, "__tests__"), { recursive: true });
-writeFileSync(join(legacyTsTestComponentDirectoryPath, "stories", "Button.stories.tsx"), "export {}\n");
-writeFileSync(join(legacyTsTestComponentDirectoryPath, "__tests__", "Button.test.ts"), "export {}\n");
+mkdirSync(join(missingStoryComponentDirectoryPath, "stories", "variants"), { recursive: true });
+writeFileSync(join(missingStoryComponentDirectoryPath, "stories", "variants", "Other.stories.tsx"), "export {}\n");
 
 const ruleTester = new RuleTester();
 
 ruleTester.run(
-  "component-story-file-convention requires colocated component stories and bans basename-matched component tests",
+  "component-story-file-convention requires component stories under a sibling stories directory",
   componentStoryFileConventionRuleModule,
   {
     valid: [
       {
         code: `export function Button() { return <button />; }`,
-        filename: join(validPascalComponentDirectoryPath, "Button.tsx"),
+        filename: join(validDirectStoryComponentDirectoryPath, "Button.tsx"),
         languageOptions: languageOpts,
       },
       {
         code: `export function AccountPanel() { return <section />; }`,
-        filename: join(validKebabComponentDirectoryPath, "account-panel.tsx"),
+        filename: join(validNestedStoryComponentDirectoryPath, "account-panel.tsx"),
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export function Badge() { return <div />; }`,
+        filename: join(validComponentTestsDirectoryPath, "Badge.tsx"),
         languageOptions: languageOpts,
       },
     ],
     invalid: [
       {
-        code: `export function Button() { return <button />; }`,
+        code: `
+          import { memo } from "react";
+
+          export const Button = memo(function Button() {
+            return <button />;
+          });
+        `,
         filename: join(missingStoryComponentDirectoryPath, "Button.tsx"),
         languageOptions: languageOpts,
         errors: [
           {
             messageId: "missingComponentStoryFile",
+            type: AST_NODE_TYPES.Identifier,
             data: {
-              requiredStoryFilePath: join(missingStoryComponentDirectoryPath, "stories", "Button.stories.tsx"),
-            },
-          },
-        ],
-        output: null,
-      },
-      {
-        code: `export function Button() { return <button />; }`,
-        filename: join(legacyTsxTestComponentDirectoryPath, "Button.tsx"),
-        languageOptions: languageOpts,
-        errors: [
-          {
-            messageId: "unexpectedComponentTestFile",
-            data: {
-              forbiddenTestFilePath: join(legacyTsxTestComponentDirectoryPath, "__tests__", "Button.test.tsx"),
-            },
-          },
-        ],
-        output: null,
-      },
-      {
-        code: `export function Button() { return <button />; }`,
-        filename: join(legacyTsTestComponentDirectoryPath, "Button.tsx"),
-        languageOptions: languageOpts,
-        errors: [
-          {
-            messageId: "unexpectedComponentTestFile",
-            data: {
-              forbiddenTestFilePath: join(legacyTsTestComponentDirectoryPath, "__tests__", "Button.test.ts"),
+              requiredStoriesDirectoryPath: join(missingStoryComponentDirectoryPath, "stories"),
+              requiredStoryFileName: "Button.stories.tsx",
             },
           },
         ],

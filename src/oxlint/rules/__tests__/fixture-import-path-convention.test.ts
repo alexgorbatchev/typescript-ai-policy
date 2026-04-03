@@ -11,7 +11,7 @@ RuleTester.itOnly = it.only;
 const fixtureImportPathConventionRuleTester = new RuleTester();
 
 fixtureImportPathConventionRuleTester.run(
-  "fixture-import-path-convention restricts tests to named fixture_ and factory_ imports from the colocated fixtures module",
+  "fixture-import-path-convention restricts tests to named fixture_ and factory_ imports from fixtures modules in the same support tree",
   fixtureImportPathConventionRuleModule,
   {
     valid: [
@@ -42,6 +42,20 @@ fixtureImportPathConventionRuleTester.run(
           import { fixture_userAccountRows } from "./fixtures";
         `,
         filename: "src/accounts/components/stories/AccountPanel.stories.tsx",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+          import { fixture_userAccountRows } from "../fixtures";
+        `,
+        filename: "src/accounts/__tests__/integration/rows.test.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+          import { fixture_accountPanel } from "../fixtures";
+        `,
+        filename: "src/accounts/components/stories/catalog/AccountPanel.stories.tsx",
         languageOptions: languageOpts,
       },
     ],
@@ -154,6 +168,22 @@ fixtureImportPathConventionRuleTester.run(
           import { fixture_userAccountRows } from "../shared/fixtures.ts";
         `,
         filename: "src/accounts/__tests__/rows.test.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "invalidFixturesImportPath",
+            data: {
+              name: "fixture_userAccountRows",
+            },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          import { fixture_userAccountRows } from "../../other-feature/__tests__/fixtures";
+        `,
+        filename: "src/accounts/__tests__/integration/rows.test.ts",
         languageOptions: languageOpts,
         errors: [
           {

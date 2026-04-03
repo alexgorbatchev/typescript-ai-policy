@@ -12,7 +12,7 @@ const noLocalTypeDeclarationsInFixtureFilesRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        "Disallow local type aliases, interfaces, and enums anywhere in __tests__/fixtures or stories/fixtures files",
+        'Disallow local type aliases, interfaces, and enums anywhere in nested fixture files under "__tests__/" or "stories/"',
     },
     schema: [],
     messages: {

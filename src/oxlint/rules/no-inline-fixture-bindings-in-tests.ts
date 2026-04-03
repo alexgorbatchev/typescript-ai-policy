@@ -10,7 +10,7 @@ const noInlineFixtureBindingsInTestsRule: RuleModule = {
     schema: [],
     messages: {
       unexpectedInlineFixtureBinding:
-        'Delete the inline "{{ name }}" declaration from this file and import it from the colocated "./fixtures" module instead.',
+        'Delete the inline "{{ name }}" declaration from this file and import it from a relative "fixtures" module under the same "__tests__/" or "stories/" tree instead.',
     },
   },
   create(context) {

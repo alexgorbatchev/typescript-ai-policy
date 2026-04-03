@@ -23,37 +23,36 @@ function createHooksDirectoryPath(name: string): string {
   return directoryPath;
 }
 
-const validTsHooksDirectoryPath = createHooksDirectoryPath("valid-ts");
-mkdirSync(join(validTsHooksDirectoryPath, "__tests__"), { recursive: true });
-writeFileSync(join(validTsHooksDirectoryPath, "__tests__", "useAccount.test.ts"), "export {};\n");
+const validDirectTestHooksDirectoryPath = createHooksDirectoryPath("valid-direct-test");
+mkdirSync(join(validDirectTestHooksDirectoryPath, "__tests__"), { recursive: true });
+writeFileSync(join(validDirectTestHooksDirectoryPath, "__tests__", "useAccount.test.ts"), "export {};\n");
 
-const validTsxHooksDirectoryPath = createHooksDirectoryPath("valid-tsx");
-mkdirSync(join(validTsxHooksDirectoryPath, "__tests__"), { recursive: true });
-writeFileSync(join(validTsxHooksDirectoryPath, "__tests__", "use-account.test.tsx"), "export {};\n");
+const validNestedTestHooksDirectoryPath = createHooksDirectoryPath("valid-nested-test");
+mkdirSync(join(validNestedTestHooksDirectoryPath, "__tests__", "integration"), { recursive: true });
+writeFileSync(
+  join(validNestedTestHooksDirectoryPath, "__tests__", "integration", "use-account.test.tsx"),
+  "export {};\n",
+);
 
 const missingTestHooksDirectoryPath = createHooksDirectoryPath("missing-test");
-mkdirSync(join(missingTestHooksDirectoryPath, "__tests__"), { recursive: true });
-writeFileSync(join(missingTestHooksDirectoryPath, "__tests__", "useOther.test.ts"), "export {};\n");
-
-const wrongExtensionHooksDirectoryPath = createHooksDirectoryPath("wrong-extension");
-mkdirSync(join(wrongExtensionHooksDirectoryPath, "__tests__"), { recursive: true });
-writeFileSync(join(wrongExtensionHooksDirectoryPath, "__tests__", "useAccount.test.tsx"), "export {};\n");
+mkdirSync(join(missingTestHooksDirectoryPath, "__tests__", "integration"), { recursive: true });
+writeFileSync(join(missingTestHooksDirectoryPath, "__tests__", "integration", "useOther.test.ts"), "export {};\n");
 
 const ruleTester = new RuleTester();
 
 ruleTester.run(
-  "hook-test-file-convention requires colocated hook tests with matching basenames and source extensions",
+  "hook-test-file-convention requires hook tests somewhere under a sibling __tests__ directory",
   hookTestFileConventionRuleModule,
   {
     valid: [
       {
         code: `export function useAccount() { return null; }`,
-        filename: join(validTsHooksDirectoryPath, "useAccount.ts"),
+        filename: join(validDirectTestHooksDirectoryPath, "useAccount.ts"),
         languageOptions: languageOpts,
       },
       {
         code: `export function useAccount() { return <div />; }`,
-        filename: join(validTsxHooksDirectoryPath, "use-account.tsx"),
+        filename: join(validNestedTestHooksDirectoryPath, "use-account.tsx"),
         languageOptions: languageOpts,
       },
     ],
@@ -66,21 +65,8 @@ ruleTester.run(
           {
             messageId: "missingHookTestFile",
             data: {
-              requiredTestFilePath: join(missingTestHooksDirectoryPath, "__tests__", "useAccount.test.ts"),
-            },
-          },
-        ],
-        output: null,
-      },
-      {
-        code: `export function useAccount() { return null; }`,
-        filename: join(wrongExtensionHooksDirectoryPath, "useAccount.ts"),
-        languageOptions: languageOpts,
-        errors: [
-          {
-            messageId: "missingHookTestFile",
-            data: {
-              requiredTestFilePath: join(wrongExtensionHooksDirectoryPath, "__tests__", "useAccount.test.ts"),
+              requiredTestFileName: "useAccount.test.ts",
+              requiredTestsDirectoryPath: join(missingTestHooksDirectoryPath, "__tests__"),
             },
           },
         ],

@@ -23,17 +23,17 @@ function createComponentDirectoryPath(name: string): string {
   return directoryPath;
 }
 
-const validPascalComponentDirectoryPath = createComponentDirectoryPath("valid-pascal");
-mkdirSync(join(validPascalComponentDirectoryPath, "stories"), { recursive: true });
+const validDirectStoryComponentDirectoryPath = createComponentDirectoryPath("valid-direct-story");
+mkdirSync(join(validDirectStoryComponentDirectoryPath, "stories"), { recursive: true });
 writeFileSync(
-  join(validPascalComponentDirectoryPath, "Button.tsx"),
+  join(validDirectStoryComponentDirectoryPath, "Button.tsx"),
   "export function Button() { return <button />; }\n",
 );
 
-const validKebabComponentDirectoryPath = createComponentDirectoryPath("valid-kebab");
-mkdirSync(join(validKebabComponentDirectoryPath, "stories"), { recursive: true });
+const validNestedStoryComponentDirectoryPath = createComponentDirectoryPath("valid-nested-story");
+mkdirSync(join(validNestedStoryComponentDirectoryPath, "stories", "catalog"), { recursive: true });
 writeFileSync(
-  join(validKebabComponentDirectoryPath, "account-panel.tsx"),
+  join(validNestedStoryComponentDirectoryPath, "account-panel.tsx"),
   "export function AccountPanel() { return <section />; }\n",
 );
 
@@ -43,31 +43,24 @@ writeFileSync(
   "export function Button() { return <button />; }\n",
 );
 
-const nestedStoriesDirectoryComponentDirectoryPath = createComponentDirectoryPath("nested-stories-directory");
-mkdirSync(join(nestedStoriesDirectoryComponentDirectoryPath, "stories", "internal"), { recursive: true });
-writeFileSync(
-  join(nestedStoriesDirectoryComponentDirectoryPath, "Button.tsx"),
-  "export function Button() { return <button />; }\n",
-);
-
 const missingSiblingComponentDirectoryPath = createComponentDirectoryPath("missing-sibling-component");
-mkdirSync(join(missingSiblingComponentDirectoryPath, "stories"), { recursive: true });
+mkdirSync(join(missingSiblingComponentDirectoryPath, "stories", "catalog"), { recursive: true });
 
 const ruleTester = new RuleTester();
 
 ruleTester.run(
-  "story-file-location-convention requires colocated stories directory files",
+  "story-file-location-convention requires story files under stories and mapped to a sibling component basename",
   storyFileLocationConventionRuleModule,
   {
     valid: [
       {
         code: `export default {};`,
-        filename: join(validPascalComponentDirectoryPath, "stories", "Button.stories.tsx"),
+        filename: join(validDirectStoryComponentDirectoryPath, "stories", "Button.stories.tsx"),
         languageOptions: languageOpts,
       },
       {
         code: `export default {};`,
-        filename: join(validKebabComponentDirectoryPath, "stories", "account-panel.stories.tsx"),
+        filename: join(validNestedStoryComponentDirectoryPath, "stories", "catalog", "account-panel.stories.tsx"),
         languageOptions: languageOpts,
       },
     ],
@@ -79,30 +72,13 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidStoryFileLocation",
-            data: {
-              expectedStoryFileName: "Button.stories.tsx",
-            },
           },
         ],
         output: null,
       },
       {
         code: `export default {};`,
-        filename: join(nestedStoriesDirectoryComponentDirectoryPath, "stories", "internal", "Button.stories.tsx"),
-        languageOptions: languageOpts,
-        errors: [
-          {
-            messageId: "invalidStoryFileLocation",
-            data: {
-              expectedStoryFileName: "Button.stories.tsx",
-            },
-          },
-        ],
-        output: null,
-      },
-      {
-        code: `export default {};`,
-        filename: join(missingSiblingComponentDirectoryPath, "stories", "Missing.stories.tsx"),
+        filename: join(missingSiblingComponentDirectoryPath, "stories", "catalog", "Missing.stories.tsx"),
         languageOptions: languageOpts,
         errors: [
           {

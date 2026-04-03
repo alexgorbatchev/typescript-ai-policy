@@ -133,7 +133,7 @@ const noInlineTypeExpressionsRule: RuleModule = {
     schema: [],
     messages: {
       unexpectedInlineTypeExpression:
-        "Do not define an inline {{ kind }} here. Extract this contract into a named type declaration and reference that declaration instead, or remove the annotation and let TypeScript infer the type.",
+        "Do not define an inline {{ kind }} here. First, reuse an existing named type declaration if one already models this contract. If no suitable named type exists, extract this contract into a named type declaration and reference that declaration. Only remove the annotation and let TypeScript infer the type when the type is already obvious from context.",
     },
   },
   create(context) {

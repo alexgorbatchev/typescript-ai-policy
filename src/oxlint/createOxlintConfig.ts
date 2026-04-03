@@ -8,8 +8,9 @@ export type OxlintConfigCallback = () => OxlintConfig;
 // The rules must be optimized for performance:
 // - global rules are reserved for true ingress/leak policies that must inspect
 //   arbitrary files
-// - filename-addressable roles such as index barrels, constants files, and
-//   types files belong in narrow overrides
+// - filename-addressable roles such as tests, stories, hooks, index barrels,
+//   constants files, and types files belong in narrow overrides when the path
+//   shape can identify them deterministically
 //
 const DEFAULT_OXLINT_CONFIG = defineConfig({
   ignorePatterns: [
@@ -37,8 +38,6 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
     "@alexgorbatchev/no-react-create-element": "error",
     "@alexgorbatchev/no-imports-from-tests-directory": "error",
     "@alexgorbatchev/no-type-imports-from-constants": "error",
-    "@alexgorbatchev/component-file-location-convention": "error",
-    "@alexgorbatchev/hook-export-location-convention": "error",
     "@alexgorbatchev/test-file-location-convention": "error",
     "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
     "typescript/no-explicit-any": "error",
@@ -56,12 +55,9 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       rules: {
         "@alexgorbatchev/testid-naming-convention": "error",
         "@alexgorbatchev/require-component-root-testid": "error",
-      },
-    },
-    {
-      files: ["**/stories/**"],
-      rules: {
-        "@alexgorbatchev/stories-directory-file-convention": "error",
+        "@alexgorbatchev/component-file-contract": "error",
+        "@alexgorbatchev/component-file-naming-convention": "error",
+        "@alexgorbatchev/component-story-file-convention": "error",
       },
     },
     {
@@ -77,27 +73,7 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       },
     },
     {
-      files: ["**/components/**/*.{ts,tsx}", "**/templates/**/*.{ts,tsx}", "**/layouts/**/*.{ts,tsx}"],
-      rules: {
-        "@alexgorbatchev/component-directory-file-convention": "error",
-      },
-    },
-    {
-      files: ["**/components/*.tsx", "**/templates/*.tsx", "**/layouts/*.tsx"],
-      rules: {
-        "@alexgorbatchev/component-file-contract": "error",
-        "@alexgorbatchev/component-file-naming-convention": "error",
-        "@alexgorbatchev/component-story-file-convention": "error",
-      },
-    },
-    {
-      files: ["**/hooks/**/*.{ts,tsx}"],
-      rules: {
-        "@alexgorbatchev/hooks-directory-file-convention": "error",
-      },
-    },
-    {
-      files: ["**/hooks/use*.ts", "**/hooks/use*.tsx"],
+      files: ["**/use[A-Z]*.ts", "**/use[A-Z]*.tsx", "**/use-*.ts", "**/use-*.tsx"],
       rules: {
         "@alexgorbatchev/hook-file-contract": "error",
         "@alexgorbatchev/hook-file-naming-convention": "error",
@@ -126,12 +102,13 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       files: ["**/__tests__/**"],
       rules: {
         "@alexgorbatchev/no-module-mocking": "error",
-        "@alexgorbatchev/tests-directory-file-convention": "error",
       },
     },
     {
-      files: ["**/__tests__/*.test.{ts,tsx}"],
+      files: ["**/__tests__/*.test.{ts,tsx}", "**/__tests__/**/*.test.{ts,tsx}"],
       rules: {
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
         "@alexgorbatchev/no-non-running-tests": "error",
         "@alexgorbatchev/no-test-file-exports": "error",
         "@alexgorbatchev/no-inline-fixture-bindings-in-tests": "error",
@@ -141,7 +118,12 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       },
     },
     {
-      files: ["**/__tests__/fixtures.{ts,tsx}", "**/stories/fixtures.{ts,tsx}"],
+      files: [
+        "**/__tests__/fixtures.{ts,tsx}",
+        "**/__tests__/**/fixtures.{ts,tsx}",
+        "**/stories/fixtures.{ts,tsx}",
+        "**/stories/**/fixtures.{ts,tsx}",
+      ],
       rules: {
         "@alexgorbatchev/fixture-file-contract": "error",
         "@alexgorbatchev/fixture-export-naming-convention": "error",
@@ -152,8 +134,12 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       files: [
         "**/__tests__/fixtures.{ts,tsx}",
         "**/__tests__/fixtures/**/*.{ts,tsx}",
+        "**/__tests__/**/fixtures.{ts,tsx}",
+        "**/__tests__/**/fixtures/**/*.{ts,tsx}",
         "**/stories/fixtures.{ts,tsx}",
         "**/stories/fixtures/**/*.{ts,tsx}",
+        "**/stories/**/fixtures.{ts,tsx}",
+        "**/stories/**/fixtures/**/*.{ts,tsx}",
       ],
       rules: {
         "@alexgorbatchev/no-local-type-declarations-in-fixture-files": "error",

@@ -1,7 +1,7 @@
 import type { RuleModule } from "./types.ts";
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { getBaseName, getStorySourceBaseName, readPathFromStoriesDirectory } from "./helpers.ts";
+import { join } from "node:path";
+import { getStorySourceBaseName, readPathFromStoriesDirectory, readRootPathBeforeDirectory } from "./helpers.ts";
 
 function readRequiredSiblingComponentFilePath(filename: string): string | null {
   const storySourceBaseName = getStorySourceBaseName(filename);
@@ -9,7 +9,12 @@ function readRequiredSiblingComponentFilePath(filename: string): string | null {
     return null;
   }
 
-  return join(dirname(dirname(filename)), `${storySourceBaseName}.tsx`);
+  const siblingDirectoryPath = readRootPathBeforeDirectory(filename, "stories");
+  if (siblingDirectoryPath === null) {
+    return null;
+  }
+
+  return join(siblingDirectoryPath, `${storySourceBaseName}.tsx`);
 }
 
 const storyFileLocationConventionRule: RuleModule = {
@@ -17,12 +22,12 @@ const storyFileLocationConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Require Storybook files to live as direct children of a sibling "stories/" directory and match a sibling component ownership file basename',
+        'Require Storybook files to live somewhere under a sibling "stories/" directory and match a sibling component ownership file basename',
     },
     schema: [],
     messages: {
       invalidStoryFileLocation:
-        'Move this story file into a direct-child sibling "stories/" directory as "stories/{{ expectedStoryFileName }}". Storybook files must not live outside that colocated directory or inside nested subdirectories.',
+        'Move this story file under a "stories/" directory. Storybook files must not live outside a sibling "stories/" tree.',
       missingSiblingComponent:
         'Rename or move this story so it matches an existing sibling component ownership file. Expected "{{ requiredComponentFilePath }}" to exist for this story file.',
     },
@@ -31,13 +36,10 @@ const storyFileLocationConventionRule: RuleModule = {
     return {
       Program(node) {
         const relativeStoryPath = readPathFromStoriesDirectory(context.filename);
-        if (relativeStoryPath === null || relativeStoryPath.includes("/")) {
+        if (relativeStoryPath === null) {
           context.report({
             node,
             messageId: "invalidStoryFileLocation",
-            data: {
-              expectedStoryFileName: getBaseName(context.filename),
-            },
           });
           return;
         }

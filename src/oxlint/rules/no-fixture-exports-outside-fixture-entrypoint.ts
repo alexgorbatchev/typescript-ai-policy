@@ -6,12 +6,12 @@ const noFixtureExportsOutsideFixtureEntrypointRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        "Disallow exporting fixture_ or factory_ bindings outside the __tests__/fixtures or stories/fixtures entrypoint",
+        'Disallow exporting fixture_ or factory_ bindings outside nested "fixtures.ts" or "fixtures.tsx" entrypoints under "__tests__/" or "stories/"',
     },
     schema: [],
     messages: {
       unexpectedFixtureExport:
-        'Move "{{ name }}" into a fixture entrypoint under "__tests__/fixtures" or "stories/fixtures" ("fixtures.ts" or "fixtures.tsx") and export it only from there.',
+        'Move "{{ name }}" into a nested "fixtures.ts" or "fixtures.tsx" entrypoint under "__tests__/" or "stories/" and export it only from there.',
     },
   },
   create(context) {

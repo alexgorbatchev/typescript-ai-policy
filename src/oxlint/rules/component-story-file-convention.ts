@@ -1,22 +1,65 @@
-import type { AstProgram, RuleModule } from "./types.ts";
-import { existsSync } from "node:fs";
+import type { TSESTree } from "@typescript-eslint/types";
+import type { AstProgram, AstProgramStatement, RuleModule } from "./types.ts";
 import { dirname, join } from "node:path";
-import { getFilenameWithoutExtension, isExemptSupportBasename } from "./helpers.ts";
+import {
+  findDescendantFilePath,
+  getFilenameWithoutExtension,
+  isExemptSupportBasename,
+  isInStoriesDirectory,
+  isInTestsDirectory,
+} from "./helpers.ts";
 
-function readRequiredComponentStoryFilePath(filename: string): string {
-  const sourceBaseName = getFilenameWithoutExtension(filename);
-
-  return join(dirname(filename), "stories", `${sourceBaseName}.stories.tsx`);
+function readRequiredStoriesDirectoryPath(filename: string): string {
+  return join(dirname(filename), "stories");
 }
 
-function readForbiddenComponentTestFilePaths(filename: string): string[] {
+function readRequiredStoryFileName(filename: string): string {
   const sourceBaseName = getFilenameWithoutExtension(filename);
-  const testsDirectoryPath = join(dirname(filename), "__tests__");
 
-  return [
-    join(testsDirectoryPath, `${sourceBaseName}.test.ts`),
-    join(testsDirectoryPath, `${sourceBaseName}.test.tsx`),
-  ];
+  return `${sourceBaseName}.stories.tsx`;
+}
+
+type ReportNode = AstProgramStatement | TSESTree.Node;
+
+function readReportNode(program: AstProgram): ReportNode {
+  for (const statement of program.body) {
+    if (statement.type === "ExportNamedDeclaration") {
+      if (statement.exportKind === "type") {
+        continue;
+      }
+
+      if (!statement.declaration) {
+        return statement.specifiers[0] ?? statement;
+      }
+
+      if (
+        statement.declaration.type === "FunctionDeclaration" ||
+        statement.declaration.type === "ClassDeclaration" ||
+        statement.declaration.type === "TSEnumDeclaration"
+      ) {
+        return statement.declaration.id ?? statement.declaration;
+      }
+
+      if (statement.declaration.type === "VariableDeclaration") {
+        const firstDeclarator = statement.declaration.declarations[0];
+        return firstDeclarator?.id.type === "Identifier"
+          ? firstDeclarator.id
+          : (firstDeclarator ?? statement.declaration);
+      }
+
+      return statement.declaration;
+    }
+
+    if (statement.type === "ExportDefaultDeclaration" || statement.type === "TSExportAssignment") {
+      return statement;
+    }
+
+    if (statement.type === "ExportAllDeclaration" && statement.exportKind !== "type") {
+      return statement;
+    }
+  }
+
+  return program.body[0] ?? program;
 }
 
 const componentStoryFileConventionRule: RuleModule = {
@@ -24,46 +67,38 @@ const componentStoryFileConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Require every component ownership file to have a sibling "stories/basename.stories.tsx" file and ban sibling basename-matched component test files',
+        'Require every component ownership file to have a matching "basename.stories.tsx" file somewhere under a sibling "stories/" directory',
     },
     schema: [],
     messages: {
       missingComponentStoryFile:
-        'Add the colocated component story file at "{{ requiredStoryFilePath }}". Component ownership files must be tested through a sibling "stories/basename.stories.tsx" file.',
-      unexpectedComponentTestFile:
-        'Remove the sibling component test file at "{{ forbiddenTestFilePath }}". Component ownership files must use the colocated Storybook story file and its play functions instead of basename-matched files under "__tests__/".',
+        'Add a story file named "{{ requiredStoryFileName }}" somewhere under "{{ requiredStoriesDirectoryPath }}". Component ownership files must keep their Storybook coverage under a sibling "stories/" directory.',
     },
   },
   create(context) {
-    if (isExemptSupportBasename(context.filename)) {
+    if (
+      isExemptSupportBasename(context.filename) ||
+      isInStoriesDirectory(context.filename) ||
+      isInTestsDirectory(context.filename)
+    ) {
       return {};
     }
 
     return {
       Program(node: AstProgram) {
-        const requiredStoryFilePath = readRequiredComponentStoryFilePath(context.filename);
-        if (!existsSync(requiredStoryFilePath)) {
-          context.report({
-            node,
-            messageId: "missingComponentStoryFile",
-            data: {
-              requiredStoryFilePath,
-            },
-          });
+        const requiredStoriesDirectoryPath = readRequiredStoriesDirectoryPath(context.filename);
+        const requiredStoryFileName = readRequiredStoryFileName(context.filename);
+        if (findDescendantFilePath(requiredStoriesDirectoryPath, requiredStoryFileName)) {
+          return;
         }
 
-        readForbiddenComponentTestFilePaths(context.filename).forEach((forbiddenTestFilePath) => {
-          if (!existsSync(forbiddenTestFilePath)) {
-            return;
-          }
-
-          context.report({
-            node,
-            messageId: "unexpectedComponentTestFile",
-            data: {
-              forbiddenTestFilePath,
-            },
-          });
+        context.report({
+          node: readReportNode(node),
+          messageId: "missingComponentStoryFile",
+          data: {
+            requiredStoriesDirectoryPath,
+            requiredStoryFileName,
+          },
         });
       },
     };

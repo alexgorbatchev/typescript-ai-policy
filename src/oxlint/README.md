@@ -38,63 +38,55 @@ workflow.
 The shared config intentionally applies the policy in stages so Oxlint does not waste time running file-specific rules
 on files that cannot meaningfully violate them.
 
-1. **Global ingress and leak guards** run everywhere because they must catch files that are not yet in the canonical
-   location:
+1. **Global ingress and leak guards** run everywhere because they must catch files that are not yet in the required
+   role directories:
    - `@alexgorbatchev/no-imports-from-tests-directory`
    - `@alexgorbatchev/no-type-imports-from-constants`
-   - `@alexgorbatchev/component-file-location-convention`
-   - `@alexgorbatchev/hook-export-location-convention`
    - `@alexgorbatchev/test-file-location-convention`
    - `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
 2. **TypeScript-wide naming and explicit-type rules** run on all `**/*.{ts,tsx,mts,cts}` files:
    - `@alexgorbatchev/interface-naming-convention`
    - `@alexgorbatchev/no-inline-type-expressions`
-3. **Non-story React JSX rules** run on all `**/*.tsx` files:
+3. **React component ownership rules** run on all `**/*.tsx` files, with the component-file rules themselves
+   exempting `stories/`, `__tests__/`, and support basenames:
    - `@alexgorbatchev/testid-naming-convention`
    - `@alexgorbatchev/require-component-root-testid`
-4. **Story support-directory rules** run only inside `**/stories/**`:
-   - `@alexgorbatchev/stories-directory-file-convention`
-5. **Storybook file rules** run only on `**/*.stories.tsx`:
+   - `@alexgorbatchev/component-file-contract`
+   - `@alexgorbatchev/component-file-naming-convention`
+   - `@alexgorbatchev/component-story-file-convention`
+4. **Storybook file rules** run only on `**/*.stories.tsx`:
    - story files explicitly turn off `@alexgorbatchev/testid-naming-convention` and `@alexgorbatchev/require-component-root-testid` because story harnesses are not ownership components
    - `@alexgorbatchev/story-file-location-convention`
    - `@alexgorbatchev/story-meta-type-annotation`
    - `@alexgorbatchev/story-export-contract`
    - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
    - `@alexgorbatchev/fixture-import-path-convention`
-6. **Component-area directory rules** run only inside `components/`, `templates/`, and `layouts/` trees:
-   - `@alexgorbatchev/component-directory-file-convention` on `**/components/**/*.{ts,tsx}`, `**/templates/**/*.{ts,tsx}`, and `**/layouts/**/*.{ts,tsx}` to allow only direct-child ownership files, direct-child `constants.ts` / `index.ts` / `types.ts` support files, and a sibling `stories/` tree
-   - `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-story-file-convention` on direct-child `**/components/*.tsx`, `**/templates/*.tsx`, and `**/layouts/*.tsx` ownership files
-7. **Hook-area directory rules** run only inside `hooks/` trees:
-   - `@alexgorbatchev/hooks-directory-file-convention` on `**/hooks/**/*.{ts,tsx}`
-   - `@alexgorbatchev/hook-file-contract`, `@alexgorbatchev/hook-file-naming-convention`, and `@alexgorbatchev/hook-test-file-convention` on direct-child `**/hooks/use*.ts` and `**/hooks/use*.tsx` ownership files
-8. **Filename-addressable file-role rules** run only on the exact file role they govern:
+5. **Hook ownership rules** run on any `use*.ts` or `use*.tsx` filename, regardless of parent directory:
+   - `@alexgorbatchev/hook-file-contract`
+   - `@alexgorbatchev/hook-file-naming-convention`
+   - `@alexgorbatchev/hook-test-file-convention`
+6. **Filename-addressable file-role rules** run only on the exact file role they govern:
    - `@alexgorbatchev/index-file-contract` on `**/index.ts` and `**/index.tsx`
    - `@alexgorbatchev/no-type-exports-from-constants` on `**/constants.{ts,tsx,mts,cts}` and `**/constants.d.{ts,tsx,mts,cts}`
    - `@alexgorbatchev/no-value-exports-from-types` on `**/types.{ts,tsx,mts,cts}` and `**/types.d.{ts,tsx,mts,cts}`
-9. **`__tests__/` directory rules** run only inside `__tests__/` because they govern that directory's allowed contents
-   and test helper behavior:
-   - `@alexgorbatchev/tests-directory-file-convention`
+7. **`__tests__/` area rules** run anywhere under `**/__tests__/**`:
    - `@alexgorbatchev/no-module-mocking`
-10. **Canonical test-file rules** run only on `__tests__/*.test.ts` and `__tests__/*.test.tsx`:
-    - `@alexgorbatchev/no-non-running-tests`
-    - `@alexgorbatchev/no-test-file-exports`
-    - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
-    - `@alexgorbatchev/fixture-import-path-convention`
-    - `jest/no-disabled-tests`
-    - `jest/no-focused-tests`
-11. **Fixture-entrypoint and fixture-area rules** run on `__tests__/fixtures.ts`, `__tests__/fixtures.tsx`,
-    `stories/fixtures.ts`, `stories/fixtures.tsx`, and files under those `fixtures/` directories, depending on the
-    rule.
+8. **Test-file rules** run on `__tests__/**/*.test.ts` and `__tests__/**/*.test.tsx`:
+   - test files explicitly turn off `@alexgorbatchev/testid-naming-convention` and `@alexgorbatchev/require-component-root-testid` because test harnesses are not ownership components
+   - `@alexgorbatchev/no-non-running-tests`
+   - `@alexgorbatchev/no-test-file-exports`
+   - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
+   - `@alexgorbatchev/fixture-import-path-convention`
+   - `jest/no-disabled-tests`
+   - `jest/no-focused-tests`
+9. **Fixture-entrypoint and fixture-area rules** run on nested `fixtures.ts`, `fixtures.tsx`, and `fixtures/`
+   directories anywhere under `__tests__/` or `stories/`, depending on the rule.
 
-This staged configuration is part of the contract. The global location/leak rules are the front door that push `.tsx`
-files, hook exports, and tests into canonical locations; the TypeScript-wide naming override keeps repository-owned
-interfaces consistent while exempting external declaration-merging contracts; the non-story React override applies
-ownership-component JSX policies only where that contract makes sense; the stories-directory override constrains the
-support area for component stories; the storybook override then swaps in the story file contract for `*.stories.tsx`;
-the component and hook area overrides enforce ownership, naming, and colocated story or test contracts only after a
-file is in the correct subsystem; basename-addressable file-role rules such as `index.ts`, `constants.ts`, and
-`types.ts` stay narrow; and the `__tests__/` overrides enforce test-specific contracts only after the file has the
-correct test role.
+This staged configuration is part of the contract. The global rules only protect the remaining hard placement
+requirements: tests must live under `__tests__/`, fixture exports must stay under `__tests__/` or `stories/`, and
+story files must live under `stories/`. Component and hook ownership rules no longer require canonical parent folder
+names such as `components/`, `templates/`, `layouts/`, or `hooks/`, but they still enforce ownership, naming, and
+matching story or test files once a file clearly has that role.
 
 ## Enabled rules
 
@@ -221,7 +213,7 @@ export interface IuserProfile {
 
 ### `@alexgorbatchev/no-inline-type-expressions`
 
-**Policy:** Outside type declarations, explicit type usage must rely on named declarations or inference. Do not define object, tuple, function, broad union, intersection, mapped, or conditional types inline at the usage site. Narrow nullable or undefinable wrappers such as `T | null`, `T | undefined`, and `T | null | undefined` stay allowed.
+**Policy:** Outside type declarations, explicit type usage must rely on named declarations or inference. Do not define object, tuple, function, broad union, intersection, mapped, or conditional types inline at the usage site. Repair order matters: first reuse an existing named type if one already models the contract, then extract a new owned named type only when necessary, and only fall back to inference when the type is already obvious from context. Narrow nullable or undefinable wrappers such as `T | null`, `T | undefined`, and `T | null | undefined` stay allowed.
 
 **Good**
 
@@ -445,32 +437,6 @@ export function SurfacePanel() {
 }
 ```
 
-### `@alexgorbatchev/component-file-location-convention`
-
-**Policy:** Every non-hook, non-test `.tsx` file must live under `components/`, `templates/`, or `layouts/`.
-
-**Good**
-
-```text
-src/accounts/components/AccountPanel.tsx
-src/accounts/templates/AccountEmail.tsx
-src/accounts/layouts/AccountLayout.tsx
-```
-
-**Bad**
-
-```text
-src/accounts/AccountPanel.tsx
-src/email/Welcome.tsx
-```
-
-### `@alexgorbatchev/component-directory-file-convention`
-
-**Policy:** `components/`, `templates/`, and `layouts/` directories may contain only direct-child component ownership
-files, direct-child `constants.ts` / `index.ts` / `types.ts` support files, and a direct-child `stories/` tree.
-Shared runtime helpers must live outside these strict ownership directories; component-story support helpers and
-fixtures belong under `stories/`, not under `__tests__/`.
-
 ### `@alexgorbatchev/component-file-contract`
 
 **Policy:** A component ownership file may export exactly one main runtime component plus unrestricted type-only API, or one multipart component family plus unrestricted type-only API. Multipart families are allowed when every runtime export is a valid component export and all component names share the same shortest root name, such as `Select`, `SelectTrigger`, and `SelectValue`. Plain components must use `export function ComponentName() {}`. Wrapped components must use a direct named `export const` binding whose innermost function expression is named and matches the exported symbol.
@@ -529,51 +495,29 @@ export { Avatar };
 
 ### `@alexgorbatchev/component-story-file-convention`
 
-**Policy:** Every component ownership file must have a sibling `stories/basename.stories.tsx` file whose basename
-exactly matches the source basename, and it must not keep legacy component support files under `__tests__/`.
-
-### `@alexgorbatchev/stories-directory-file-convention`
-
-**Policy:** A `stories/` directory may contain only direct-child `*.stories.tsx` files, `helpers.ts`, `helpers.tsx`,
-`fixtures.ts`, `fixtures.tsx`, or files under `fixtures/`.
-
-**Good**
-
-```text
-src/accounts/components/stories/
-├── AccountPanel.stories.tsx
-├── helpers.ts
-└── fixtures/
-    └── rows.ts
-```
-
-**Bad**
-
-```text
-src/accounts/components/stories/
-├── setup.ts
-└── internal/AccountPanel.stories.tsx
-```
+**Policy:** Every component ownership file must have a matching `basename.stories.tsx` file somewhere under a sibling
+`stories/` directory. The component may sit in any folder; the hard requirement is that its Storybook coverage lives
+under `stories/`.
 
 ### `@alexgorbatchev/story-file-location-convention`
 
-**Policy:** A story file must live as a direct child of a sibling `stories/` directory and must map back to a sibling
+**Policy:** A story file must live somewhere under a sibling `stories/` directory and must map back to a sibling
 component ownership file by basename.
 
 **Good**
 
 ```text
-src/accounts/components/AccountPanel.tsx
-src/accounts/components/stories/AccountPanel.stories.tsx
-src/accounts/components/account-panel.tsx
-src/accounts/components/stories/account-panel.stories.tsx
+src/accounts/AccountPanel.tsx
+src/accounts/stories/AccountPanel.stories.tsx
+src/accounts/account-panel.tsx
+src/accounts/stories/catalog/account-panel.stories.tsx
 ```
 
 **Bad**
 
 ```text
-src/accounts/components/AccountPanel.stories.tsx
-src/accounts/components/stories/internal/AccountPanel.stories.tsx
+src/accounts/AccountPanel.stories.tsx
+src/accounts/catalog/AccountPanel.stories.tsx
 ```
 
 ### `@alexgorbatchev/story-meta-type-annotation`
@@ -643,17 +587,6 @@ const Default = {} as Story;
 export { Default as AccountPanel };
 ```
 
-### `@alexgorbatchev/hook-export-location-convention`
-
-**Policy:** Any exported runtime binding named `use*` must live in a direct-child `hooks/use*.ts` or `hooks/use*.tsx`
-ownership file. Only `index.ts` barrels and `types.ts` type modules are exempt from this placement rule.
-
-### `@alexgorbatchev/hooks-directory-file-convention`
-
-**Policy:** A `hooks/` directory may contain only direct-child hook ownership files, direct-child `index.ts` /
-`types.ts` support files, and a direct-child `__tests__/` tree. Shared runtime constants and shared helpers must live
-outside the strict `hooks/` ownership directory.
-
 ### `@alexgorbatchev/hook-file-contract`
 
 **Policy:** A hook ownership file may export exactly one main runtime hook plus unrestricted type-only API. The main
@@ -686,8 +619,8 @@ name must match the filename's camelCase conversion exactly.
 
 ### `@alexgorbatchev/hook-test-file-convention`
 
-**Policy:** Every hook ownership file must have a sibling `__tests__/basename.test.ts` or `.test.tsx` file whose
-basename exactly matches the source basename and whose extension matches the source extension.
+**Policy:** Every hook ownership file must have a matching `basename.test.ts` or `.test.tsx` file somewhere under a
+sibling `__tests__/` directory, and the test extension must still match the source extension.
 
 ## Test execution and layout policies
 
@@ -774,9 +707,9 @@ import { renderSignalPanel } from "./__tests__/helpers";
 
 ### `@alexgorbatchev/test-file-location-convention`
 
-**Policy:** Real test files must live in a sibling `__tests__/` directory and must end in `.test.ts` or `.test.tsx`.
-This is a global ingress rule: it intentionally runs outside `__tests__/` so misplaced or misnamed test files are told
-where to move.
+**Policy:** Real test files must live somewhere under a `__tests__/` directory and must end in `.test.ts` or
+`.test.tsx`. This is a global ingress rule: it intentionally runs outside `__tests__/` so misplaced or misnamed test
+files are told where to move.
 
 **Good**
 
@@ -795,36 +728,13 @@ src/widgets/
 └── SignalPanel.spec.tsx
 ```
 
-### `@alexgorbatchev/tests-directory-file-convention`
-
-**Policy:** A `__tests__/` directory may contain only `*.test.ts`, `*.test.tsx`, `helpers.ts`, `helpers.tsx`,
-`fixtures.ts`, `fixtures.tsx`, or files under `fixtures/`.
-
-**Good**
-
-```text
-src/widgets/__tests__/
-├── SignalPanel.test.tsx
-├── helpers.ts
-└── fixtures/
-    └── snapshots/SignalPanel.json
-```
-
-**Bad**
-
-```text
-src/widgets/__tests__/
-├── setup.ts
-└── subdir/SignalPanel.test.ts
-```
-
 ## Fixture system policies
 
 ### `@alexgorbatchev/fixture-file-contract`
 
-**Policy:** The `__tests__/fixtures.ts` or `__tests__/fixtures.tsx` entrypoint may export only direct named `const`
-fixture bindings and direct named factory functions. No default exports, re-export lists, `let`, or destructured export
-patterns.
+**Policy:** Any nested `fixtures.ts` or `fixtures.tsx` entrypoint under `__tests__/` or `stories/` may export only
+direct named `const` fixture bindings and direct named factory functions. No default exports, re-export lists, `let`,
+or destructured export patterns.
 
 **Good**
 
@@ -898,9 +808,9 @@ export function factory_userAccountRows() {
 
 ### `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
 
-**Policy:** `fixture_*` and `factory_*` exports may exist only in the dedicated `__tests__/fixtures.ts` or
-`__tests__/fixtures.tsx` entrypoint. This is a global leak-prevention rule: it intentionally runs outside `__tests__/`
-so misplaced fixture exports are rejected at the point they escape.
+**Policy:** `fixture_*` and `factory_*` exports may exist only in nested `fixtures.ts` or `fixtures.tsx`
+entrypoints under `__tests__/` or `stories/`. This is a global leak-prevention rule: it intentionally runs outside
+those directories so misplaced fixture exports are rejected at the point they escape.
 
 **Good**
 
@@ -944,8 +854,9 @@ function factory_userAccountRows() {
 
 ### `@alexgorbatchev/fixture-import-path-convention`
 
-**Policy:** When a test imports `fixture_*` or `factory_*` bindings, the import must be a named import from the
-colocated `./fixtures` module, with no aliasing and no alternate path.
+**Policy:** When a test or story imports `fixture_*` or `factory_*` bindings, the import must be a named import
+from a relative `fixtures` module inside the same `__tests__/` or `stories/` tree, with no aliasing and no alternate
+filename.
 
 **Good**
 
@@ -962,8 +873,8 @@ import { factory_userAccountRows } from "./fixtures.ts";
 
 ### `@alexgorbatchev/no-local-type-declarations-in-fixture-files`
 
-**Policy:** Fixture files must import shared types instead of declaring local type aliases, interfaces, or enums in the
-fixture entrypoint or inside `fixtures/`.
+**Policy:** Fixture files must import shared types instead of declaring local type aliases, interfaces, or enums in a
+fixture entrypoint or anywhere inside a nested `fixtures/` directory.
 
 **Good**
 
@@ -983,8 +894,8 @@ export const fixture_userAccountRows: UserRow[] = [];
 
 ### `@alexgorbatchev/single-fixture-entrypoint`
 
-**Policy:** Each `__tests__/` directory must choose exactly one fixture entrypoint shape so `./fixtures` stays
-unambiguous: `fixtures.ts`, `fixtures.tsx`, or `fixtures/`.
+**Policy:** Each fixture-support directory under `__tests__/` or `stories/` must choose exactly one fixture
+entrypoint shape so `./fixtures` stays unambiguous: `fixtures.ts`, `fixtures.tsx`, or `fixtures/`.
 
 **Good**
 

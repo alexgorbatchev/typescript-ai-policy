@@ -17,18 +17,9 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-react-create-element": "error",
       "@alexgorbatchev/no-imports-from-tests-directory": "error",
       "@alexgorbatchev/no-type-imports-from-constants": "error",
-      "@alexgorbatchev/component-file-location-convention": "error",
-      "@alexgorbatchev/hook-export-location-convention": "error",
       "@alexgorbatchev/test-file-location-convention": "error",
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "typescript/no-explicit-any": "error",
-    });
-
-    expect(oxlintConfig.overrides).toContainEqual({
-      files: ["**/stories/**"],
-      rules: {
-        "@alexgorbatchev/stories-directory-file-convention": "error",
-      },
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
@@ -45,8 +36,10 @@ describe("createOxlintConfig", () => {
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
-      files: ["**/components/*.tsx", "**/templates/*.tsx", "**/layouts/*.tsx"],
+      files: ["**/*.tsx"],
       rules: {
+        "@alexgorbatchev/testid-naming-convention": "error",
+        "@alexgorbatchev/require-component-root-testid": "error",
         "@alexgorbatchev/component-file-contract": "error",
         "@alexgorbatchev/component-file-naming-convention": "error",
         "@alexgorbatchev/component-story-file-convention": "error",
@@ -54,7 +47,21 @@ describe("createOxlintConfig", () => {
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
-      files: ["**/__tests__/fixtures.{ts,tsx}", "**/stories/fixtures.{ts,tsx}"],
+      files: ["**/use[A-Z]*.ts", "**/use[A-Z]*.tsx", "**/use-*.ts", "**/use-*.tsx"],
+      rules: {
+        "@alexgorbatchev/hook-file-contract": "error",
+        "@alexgorbatchev/hook-file-naming-convention": "error",
+        "@alexgorbatchev/hook-test-file-convention": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: [
+        "**/__tests__/fixtures.{ts,tsx}",
+        "**/__tests__/**/fixtures.{ts,tsx}",
+        "**/stories/fixtures.{ts,tsx}",
+        "**/stories/**/fixtures.{ts,tsx}",
+      ],
       rules: {
         "@alexgorbatchev/fixture-file-contract": "error",
         "@alexgorbatchev/fixture-export-naming-convention": "error",
@@ -91,8 +98,6 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-react-create-element": "error",
       "@alexgorbatchev/no-imports-from-tests-directory": "error",
       "@alexgorbatchev/no-type-imports-from-constants": "error",
-      "@alexgorbatchev/component-file-location-convention": "error",
-      "@alexgorbatchev/hook-export-location-convention": "error",
       "@alexgorbatchev/test-file-location-convention": "error",
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "typescript/no-explicit-any": "error",

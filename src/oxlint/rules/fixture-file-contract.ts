@@ -6,20 +6,20 @@ const fixtureFileContractRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        "Only allow direct const fixture exports and function factory exports in the __tests__/fixtures or stories/fixtures entrypoint",
+        'Only allow direct const fixture exports and function factory exports in nested "fixtures.ts" or "fixtures.tsx" entrypoints under "__tests__/" or "stories/"',
     },
     schema: [],
     messages: {
       unexpectedDefaultExport:
-        'Remove the default export. The fixture entrypoint ("__tests__/fixtures" or "stories/fixtures") must use only named exports.',
+        'Remove the default export. A nested "fixtures.ts" or "fixtures.tsx" entrypoint under "__tests__/" or "stories/" must use only named exports.',
       unexpectedExportDeclaration:
-        'Replace this export with either "export const fixture_* = ..." or "export function factory_*() { ... }" in the fixture entrypoint ("__tests__/fixtures" or "stories/fixtures").',
+        'Replace this export with either "export const fixture_* = ..." or "export function factory_*() { ... }" in a nested "fixtures.ts" or "fixtures.tsx" entrypoint under "__tests__/" or "stories/".',
       unexpectedExportList:
-        'Inline the exported declaration in the fixture entrypoint ("__tests__/fixtures" or "stories/fixtures"). Do not use export lists or re-exports there.',
+        "Inline the exported declaration in this nested fixture entrypoint. Do not use export lists or re-exports here.",
       unexpectedExportPattern:
-        'Bind the exported const to a direct identifier, for example "export const fixture_user = ...". Do not export destructuring patterns from the fixture entrypoint ("__tests__/fixtures" or "stories/fixtures").',
+        'Bind the exported const to a direct identifier, for example "export const fixture_user = ...". Do not export destructuring patterns from a nested fixture entrypoint.',
       unexpectedVariableKind:
-        'Change this exported "{{ kind }}" declaration to "const". The fixture entrypoint ("__tests__/fixtures" or "stories/fixtures") allows only exported const declarations.',
+        'Change this exported "{{ kind }}" declaration to "const". Nested fixture entrypoints allow only exported const declarations.',
     },
   },
   create(context) {

@@ -29,17 +29,18 @@ const fixtureImportPathConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Require test and story files to import fixture_ and factory_ bindings only as named imports from the colocated "./fixtures" module',
+        'Require test and story files to import fixture_ and factory_ bindings only as named imports from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree',
     },
     schema: [],
     messages: {
       invalidFixturesImportAlias:
-        'Import "{{ name }}" from "./fixtures" without renaming it. The local binding must stay "{{ name }}".',
+        'Import "{{ name }}" from a relative "fixtures" module without renaming it. The local binding must stay "{{ name }}".',
       invalidFixturesImportName:
-        'Only named imports that start with "fixture_" or "factory_" are allowed from "./fixtures". Remove or rename "{{ name }}".',
-      invalidFixturesImportPath: 'Change this import so "{{ name }}" comes from "./fixtures".',
+        'Only named imports that start with "fixture_" or "factory_" are allowed from a relative "fixtures" module. Remove or rename "{{ name }}".',
+      invalidFixturesImportPath:
+        'Change this import so "{{ name }}" comes from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree.',
       invalidFixturesImportStyle:
-        'Rewrite this as a named import from "./fixtures", for example: import { fixture_name } from "./fixtures".',
+        'Rewrite this as a named import from a relative "fixtures" module, for example: import { fixture_name } from "./fixtures".',
     },
   },
   create(context) {
@@ -51,7 +52,7 @@ const fixtureImportPathConventionRule: RuleModule = {
       ImportDeclaration(node) {
         const importPath = typeof node.source.value === "string" ? node.source.value : "";
 
-        if (isAllowedFixturesImportPath(importPath)) {
+        if (isAllowedFixturesImportPath(importPath, context.filename)) {
           if (node.specifiers.length === 0) {
             context.report({
               node,

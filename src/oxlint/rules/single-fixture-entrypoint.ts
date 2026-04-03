@@ -36,11 +36,14 @@ function readFixtureEntrypointCandidateKey(filename: string): string | null {
     return null;
   }
 
-  if (fixtureDirectoryMatch.relativePath === "fixtures.ts" || fixtureDirectoryMatch.relativePath === "fixtures.tsx") {
-    return fixtureDirectoryMatch.relativePath;
+  const relativePathSegments = fixtureDirectoryMatch.relativePath.split("/").filter(Boolean);
+  const lastPathSegment = relativePathSegments.at(-1);
+
+  if (lastPathSegment === "fixtures.ts" || lastPathSegment === "fixtures.tsx") {
+    return lastPathSegment;
   }
 
-  if (fixtureDirectoryMatch.relativePath.startsWith("fixtures/")) {
+  if (relativePathSegments.includes("fixtures")) {
     return "fixtures/";
   }
 
@@ -53,7 +56,24 @@ function readFixtureSupportDirectoryPath(filename: string): string | null {
     return null;
   }
 
-  return fixtureDirectoryMatch.relativePath.split("/").reduce((currentPath) => dirname(currentPath), filename);
+  const relativePathSegments = fixtureDirectoryMatch.relativePath.split("/").filter(Boolean);
+  const fixtureFileIndex = relativePathSegments.findLastIndex(
+    (pathSegment) => pathSegment === "fixtures.ts" || pathSegment === "fixtures.tsx",
+  );
+  const fixtureDirectoryIndex = relativePathSegments.lastIndexOf("fixtures");
+  const fixtureSegmentIndex = fixtureFileIndex === -1 ? fixtureDirectoryIndex : fixtureFileIndex;
+  if (fixtureSegmentIndex === -1) {
+    return null;
+  }
+
+  const levelsToAscend = relativePathSegments.length - fixtureSegmentIndex;
+
+  let currentPath = filename;
+  for (let levelIndex = 0; levelIndex < levelsToAscend; levelIndex += 1) {
+    currentPath = dirname(currentPath);
+  }
+
+  return currentPath;
 }
 
 function readFixtureSupportDirectoryLabel(filename: string): string | null {
@@ -79,12 +99,12 @@ const singleFixtureEntrypointRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Allow only one fixture entrypoint shape per "__tests__" or "stories" directory so imports from "./fixtures" stay unambiguous',
+        'Allow only one fixture entrypoint shape per fixture-support directory under "__tests__" or "stories" so imports from "./fixtures" stay unambiguous',
     },
     schema: [],
     messages: {
       conflictingFixtureEntrypoints:
-        'Keep exactly one fixture entrypoint shape in this "{{ directoryLabel }}" directory so "./fixtures" resolves unambiguously. Remove all but one of: {{ entries }}.',
+        'Keep exactly one fixture entrypoint shape in this fixture-support directory under "{{ directoryLabel }}" so "./fixtures" resolves unambiguously. Remove all but one of: {{ entries }}.',
     },
   },
   create(context) {
