@@ -66,7 +66,7 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/story-export-contract`
    - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
    - `@alexgorbatchev/fixture-import-path-convention`
-5. **Hook ownership rules** run on any `use*.ts` or `use*.tsx` filename, regardless of parent directory:
+5. **Hook ownership rules** run on any `use*.ts` or `use*.tsx` ownership filename, with rule-level backstops that skip `__tests__/`, `stories/`, and exempt support basenames:
    - `@alexgorbatchev/hook-file-contract`
    - `@alexgorbatchev/hook-file-naming-convention`
    - `@alexgorbatchev/hook-test-file-convention`

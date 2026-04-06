@@ -7,7 +7,14 @@ import type {
   AstProgramStatement,
   RuleModule,
 } from "./types.ts";
-import { isExemptSupportBasename, isTypeDeclaration, readPatternIdentifierNames } from "./helpers.ts";
+import {
+  isExemptSupportBasename,
+  isInStoriesDirectory,
+  isInTestsDirectory,
+  isTypeDeclaration,
+  readPatternIdentifierNames,
+  readProgramReportNode,
+} from "./helpers.ts";
 
 type HookRuntimeExportEntry = {
   kind:
@@ -138,7 +145,11 @@ const hookFileContractRule: RuleModule = {
     },
   },
   create(context) {
-    if (isExemptSupportBasename(context.filename)) {
+    if (
+      isExemptSupportBasename(context.filename) ||
+      isInStoriesDirectory(context.filename) ||
+      isInTestsDirectory(context.filename)
+    ) {
       return {};
     }
 
@@ -147,7 +158,7 @@ const hookFileContractRule: RuleModule = {
         const runtimeExportEntries = readRuntimeExportEntries(node);
         if (runtimeExportEntries.length === 0) {
           context.report({
-            node,
+            node: readProgramReportNode(node),
             messageId: "missingMainHookExport",
           });
           return;

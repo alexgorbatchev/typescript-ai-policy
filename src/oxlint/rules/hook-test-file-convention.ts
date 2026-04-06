@@ -1,12 +1,14 @@
 import type { AstProgram, RuleModule } from "./types.ts";
-import type { TSESTree } from "@typescript-eslint/types";
 import { dirname, join } from "node:path";
 import {
   findDescendantFilePath,
   getBaseName,
   getFilenameWithoutExtension,
   isExemptSupportBasename,
+  isInStoriesDirectory,
+  isInTestsDirectory,
   readAbbreviatedSiblingDirectoryPath,
+  readProgramReportNode,
 } from "./helpers.ts";
 
 function readRequiredTestsDirectoryPath(filename: string): string {
@@ -18,10 +20,6 @@ function readRequiredHookTestFileName(filename: string): string {
   const testExtension = getBaseName(filename).endsWith(".tsx") ? ".test.tsx" : ".test.ts";
 
   return `${sourceBaseName}${testExtension}`;
-}
-
-function readReportNode(program: AstProgram): TSESTree.Node {
-  return program.body[0] ?? program;
 }
 
 const hookTestFileConventionRule: RuleModule = {
@@ -38,7 +36,11 @@ const hookTestFileConventionRule: RuleModule = {
     },
   },
   create(context) {
-    if (isExemptSupportBasename(context.filename)) {
+    if (
+      isExemptSupportBasename(context.filename) ||
+      isInStoriesDirectory(context.filename) ||
+      isInTestsDirectory(context.filename)
+    ) {
       return {};
     }
 
@@ -52,7 +54,7 @@ const hookTestFileConventionRule: RuleModule = {
         }
 
         context.report({
-          node: readReportNode(node),
+          node: readProgramReportNode(node),
           messageId: "missingHookTestFile",
           data: {
             requiredTestFileName,

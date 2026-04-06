@@ -1,11 +1,19 @@
 import type {
   AstExportNamedDeclaration,
   AstExportSpecifier,
+  AstNode,
   AstProgram,
   AstProgramStatement,
   RuleModule,
 } from "./types.ts";
-import { getFilenameWithoutExtension, isExemptSupportBasename, readDeclarationIdentifierNames } from "./helpers.ts";
+import {
+  getFilenameWithoutExtension,
+  isExemptSupportBasename,
+  isInStoriesDirectory,
+  isInTestsDirectory,
+  readDeclarationIdentifierNames,
+  readProgramReportNode,
+} from "./helpers.ts";
 
 function isTypeOnlyExportSpecifier(
   specifier: AstExportSpecifier,
@@ -22,18 +30,23 @@ function readExportedSpecifierName(specifier: AstExportSpecifier): string {
   return String(specifier.exported.value);
 }
 
-function readFirstRuntimeExportName(program: AstProgram): string | null {
+type HookRuntimeExportEntry = {
+  name: string;
+  reportNode: AstNode;
+};
+
+function readFirstRuntimeExportEntry(program: AstProgram): HookRuntimeExportEntry | null {
   for (const statement of program.body) {
-    const exportName = readStatementRuntimeExportName(statement);
-    if (exportName !== null) {
-      return exportName;
+    const exportEntry = readStatementRuntimeExportEntry(statement);
+    if (exportEntry !== null) {
+      return exportEntry;
     }
   }
 
   return null;
 }
 
-function readStatementRuntimeExportName(statement: AstProgramStatement): string | null {
+function readStatementRuntimeExportEntry(statement: AstProgramStatement): HookRuntimeExportEntry | null {
   if (statement.type !== "ExportNamedDeclaration") {
     return null;
   }
@@ -50,10 +63,28 @@ function readStatementRuntimeExportName(statement: AstProgramStatement): string 
 
     if (statement.declaration.type === "VariableDeclaration") {
       const firstDeclarator = statement.declaration.declarations[0];
-      return firstDeclarator?.id.type === "Identifier" ? firstDeclarator.id.name : null;
+      if (!firstDeclarator || firstDeclarator.id.type !== "Identifier") {
+        return null;
+      }
+
+      return {
+        name: firstDeclarator.id.name,
+        reportNode: firstDeclarator.id,
+      };
     }
 
-    return readDeclarationIdentifierNames(statement.declaration)[0] ?? null;
+    const declarationName = readDeclarationIdentifierNames(statement.declaration)[0];
+    if (!declarationName) {
+      return null;
+    }
+
+    const reportNode =
+      "id" in statement.declaration && statement.declaration.id ? statement.declaration.id : statement.declaration;
+
+    return {
+      name: declarationName,
+      reportNode,
+    };
   }
 
   const runtimeSpecifier = statement.specifiers.find((specifier) => !isTypeOnlyExportSpecifier(specifier, statement));
@@ -61,7 +92,10 @@ function readStatementRuntimeExportName(statement: AstProgramStatement): string 
     return null;
   }
 
-  return readExportedSpecifierName(runtimeSpecifier);
+  return {
+    name: readExportedSpecifierName(runtimeSpecifier),
+    reportNode: runtimeSpecifier.exported.type === "Identifier" ? runtimeSpecifier.exported : runtimeSpecifier,
+  };
 }
 
 function readExpectedHookNameFromFilename(filename: string): string | null {
@@ -101,21 +135,26 @@ const hookFileNamingConventionRule: RuleModule = {
     },
   },
   create(context) {
-    if (isExemptSupportBasename(context.filename)) {
+    if (
+      isExemptSupportBasename(context.filename) ||
+      isInStoriesDirectory(context.filename) ||
+      isInTestsDirectory(context.filename)
+    ) {
       return {};
     }
 
     return {
       Program(node) {
-        const exportedHookName = readFirstRuntimeExportName(node);
-        if (!exportedHookName) {
+        const exportedHookEntry = readFirstRuntimeExportEntry(node);
+        if (!exportedHookEntry) {
           return;
         }
 
+        const { name: exportedHookName, reportNode } = exportedHookEntry;
         const expectedHookName = readExpectedHookNameFromFilename(context.filename);
         if (!expectedHookName) {
           context.report({
-            node,
+            node: readProgramReportNode(node),
             messageId: "invalidHookFileName",
           });
           return;
@@ -123,7 +162,7 @@ const hookFileNamingConventionRule: RuleModule = {
 
         if (!/^use[A-Z][A-Za-z0-9]*$/u.test(exportedHookName)) {
           context.report({
-            node,
+            node: reportNode,
             messageId: "invalidHookExportName",
           });
         }
@@ -135,7 +174,7 @@ const hookFileNamingConventionRule: RuleModule = {
         const extension = context.filename.endsWith(".tsx") ? ".tsx" : ".ts";
 
         context.report({
-          node,
+          node: reportNode,
           messageId: "mismatchedHookFileName",
           data: {
             exportedName: exportedHookName,

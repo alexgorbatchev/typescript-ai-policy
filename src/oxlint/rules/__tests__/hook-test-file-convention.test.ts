@@ -56,6 +56,22 @@ ruleTester.run(
         filename: join(validNestedTestHooksDirectoryPath, "use-account.tsx"),
         languageOptions: languageOpts,
       },
+      {
+        code: `
+          import { describe, test } from "bun:test";
+
+          describe("useAccount", () => {
+            test("works", () => {});
+          });
+        `,
+        filename: join(validDirectTestHooksDirectoryPath, "__tests__", "useAccount.test.ts"),
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export function useAccountStoryHarness() { return <div />; }`,
+        filename: join(validDirectTestHooksDirectoryPath, "stories", "useAccount.tsx"),
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {

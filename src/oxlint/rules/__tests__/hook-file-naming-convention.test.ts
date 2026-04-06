@@ -1,5 +1,6 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
 import hookFileNamingConventionRuleModule from "../hook-file-naming-convention.ts";
 
@@ -30,6 +31,16 @@ ruleTester.run(
         filename: "src/accounts/hooks/useAccount.tsx",
         languageOptions: languageOpts,
       },
+      {
+        code: `export function useWrongName() { return null; }`,
+        filename: "src/accounts/hooks/__tests__/useAccount.test.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export function useWrongName() { return null; }`,
+        filename: "src/accounts/hooks/stories/useAccount.tsx",
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {
@@ -37,9 +48,13 @@ ruleTester.run(
         filename: "src/accounts/hooks/useAccount.ts",
         languageOptions: languageOpts,
         errors: [
-          { messageId: "invalidHookExportName" },
+          {
+            messageId: "invalidHookExportName",
+            type: AST_NODE_TYPES.Identifier,
+          },
           {
             messageId: "mismatchedHookFileName",
+            type: AST_NODE_TYPES.Identifier,
             data: {
               exportedName: "UseAccount",
               camelFilename: "UseAccount.ts",
@@ -53,7 +68,7 @@ ruleTester.run(
         code: `export function useAccount() { return null; }`,
         filename: "src/accounts/hooks/useaccount.ts",
         languageOptions: languageOpts,
-        errors: [{ messageId: "invalidHookFileName" }],
+        errors: [{ messageId: "invalidHookFileName", type: AST_NODE_TYPES.ExportNamedDeclaration }],
         output: null,
       },
       {

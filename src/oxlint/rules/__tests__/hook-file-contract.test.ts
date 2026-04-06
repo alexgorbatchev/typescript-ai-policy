@@ -1,5 +1,6 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
 import hookFileContractRuleModule from "../hook-file-contract.ts";
 
@@ -28,6 +29,17 @@ ruleTester.run(
           }
         `,
         filename: "src/accounts/hooks/useAccount.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+          import { describe, test } from "bun:test";
+
+          describe("useAccount", () => {
+            test("works", () => {});
+          });
+        `,
+        filename: "src/accounts/hooks/__tests__/useAccount.test.ts",
         languageOptions: languageOpts,
       },
     ],
@@ -73,7 +85,12 @@ ruleTester.run(
         code: `export type UseAccountResult = { isReady: boolean };`,
         filename: "src/accounts/hooks/useAccount.ts",
         languageOptions: languageOpts,
-        errors: [{ messageId: "missingMainHookExport" }],
+        errors: [
+          {
+            messageId: "missingMainHookExport",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
+          },
+        ],
         output: null,
       },
       {
