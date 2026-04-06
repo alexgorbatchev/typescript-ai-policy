@@ -15,6 +15,7 @@ import {
   isInTestsDirectory,
   isTypeDeclaration,
   readDeclarationIdentifierNames,
+  readProgramReportNode,
   readMultipartComponentRootName,
   readPatternIdentifierNames,
   unwrapExpression,
@@ -286,7 +287,7 @@ const componentFileContractRule: RuleModule = {
         const runtimeExportEntries = readRuntimeExportEntries(node);
         if (runtimeExportEntries.length === 0) {
           context.report({
-            node,
+            node: readProgramReportNode(node),
             messageId: "missingMainComponentExport",
           });
           return;

@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { RuleTester } from "@typescript-eslint/rule-tester";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
 import singleFixtureEntrypointRuleModule from "../single-fixture-entrypoint.ts";
 
@@ -88,6 +89,7 @@ ruleTester.run(
         errors: [
           {
             messageId: "conflictingFixtureEntrypoints",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
             data: {
               directoryLabel: "__tests__",
               entries: "fixtures.ts, fixtures.tsx",

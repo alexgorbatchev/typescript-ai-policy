@@ -1,12 +1,10 @@
-import type { AstExpression, AstProgram, AstProgramStatement, RuleModule } from "./types.ts";
-import { getBaseName, isInTestsDirectory } from "./helpers.ts";
+import type { AstExpression, RuleModule } from "./types.ts";
+import { getBaseName, isInTestsDirectory, readProgramReportNode } from "./helpers.ts";
 
 const TEST_FRAMEWORK_MODULES = new Set(["@jest/globals", "bun:test", "node:test", "vitest"]);
 const TEST_IMPORT_NAMES = new Set(["describe", "it", "test"]);
 const REQUIRED_TEST_FILE_NAME_PATTERN = /\.test\.tsx?$/u;
 const SPEC_TEST_FILE_NAME_PATTERN = /\.spec\.tsx?$/u;
-
-type ProgramReportNode = AstProgram | AstProgramStatement;
 
 function readCallTargetName(node: AstExpression): string | null {
   if (node.type === "Identifier") {
@@ -23,10 +21,6 @@ function readCallTargetName(node: AstExpression): string | null {
   }
 
   return null;
-}
-
-function readProgramReportNode(node: AstProgram): ProgramReportNode {
-  return node.body[0] ?? node;
 }
 
 const testFileLocationConventionRule: RuleModule = {

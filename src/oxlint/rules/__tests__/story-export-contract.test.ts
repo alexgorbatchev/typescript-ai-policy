@@ -1,5 +1,6 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
 import storyExportContractRuleModule from "../story-export-contract.ts";
 
@@ -199,6 +200,7 @@ ruleTester.run("story-export-contract enforces story export shapes and play func
       errors: [
         {
           messageId: "missingStoryExport",
+          type: AST_NODE_TYPES.ImportDeclaration,
         },
       ],
       output: null,

@@ -1,5 +1,5 @@
 import type { RuleModule } from "./types.ts";
-import { isInTestsDirectory, readPathFromTestsDirectory } from "./helpers.ts";
+import { isInTestsDirectory, readPathFromTestsDirectory, readProgramReportNode } from "./helpers.ts";
 
 const ALLOWED_ROOT_TEST_FILES_PATTERN = /^[^/]+\.test\.tsx?$/u;
 const ALLOWED_SUPPORT_FILES = new Set(["fixtures.ts", "fixtures.tsx", "helpers.ts", "helpers.tsx"]);
@@ -41,7 +41,7 @@ const testsDirectoryFileConventionRule: RuleModule = {
         }
 
         context.report({
-          node,
+          node: readProgramReportNode(node),
           messageId: "invalidTestsDirectoryFile",
           data: {
             relativePath,

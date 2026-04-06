@@ -197,7 +197,12 @@ ruleTester.run(
         code: `export type ButtonProps = { isReady: boolean };`,
         filename: "src/ui/components/Button.tsx",
         languageOptions: languageOpts,
-        errors: [{ messageId: "missingMainComponentExport" }],
+        errors: [
+          {
+            messageId: "missingMainComponentExport",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
+          },
+        ],
         output: null,
       },
     ],

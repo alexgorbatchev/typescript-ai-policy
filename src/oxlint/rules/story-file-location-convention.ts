@@ -1,4 +1,3 @@
-import type { TSESTree } from "@typescript-eslint/types";
 import type { AstProgram, RuleModule } from "./types.ts";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -6,6 +5,7 @@ import {
   getStorySourceBaseName,
   readAbbreviatedPath,
   readPathFromStoriesDirectory,
+  readProgramReportNode,
   readRootPathBeforeDirectory,
 } from "./helpers.ts";
 
@@ -21,10 +21,6 @@ function readRequiredSiblingComponentFilePath(filename: string): string | null {
   }
 
   return join(siblingDirectoryPath, `${storySourceBaseName}.tsx`);
-}
-
-function readReportNode(program: AstProgram): TSESTree.Node {
-  return program.body[0] ?? program;
 }
 
 const storyFileLocationConventionRule: RuleModule = {
@@ -45,7 +41,7 @@ const storyFileLocationConventionRule: RuleModule = {
   create(context) {
     return {
       Program(node: AstProgram) {
-        const reportNode = readReportNode(node);
+        const reportNode = readProgramReportNode(node);
         const relativeStoryPath = readPathFromStoriesDirectory(context.filename);
         if (relativeStoryPath === null) {
           context.report({

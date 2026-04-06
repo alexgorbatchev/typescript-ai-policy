@@ -1,5 +1,6 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
 import testsDirectoryFileConventionRuleModule from "../tests-directory-file-convention.ts";
 
@@ -48,6 +49,7 @@ testsDirectoryFileConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestsDirectoryFile",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
             data: {
               relativePath: "setup.ts",
             },

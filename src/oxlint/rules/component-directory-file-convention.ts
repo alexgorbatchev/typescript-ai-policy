@@ -1,5 +1,11 @@
 import type { RuleModule } from "./types.ts";
-import { getBaseName, getExtension, isExemptSupportBasename, readPathFromFirstMatchingDirectory } from "./helpers.ts";
+import {
+  getBaseName,
+  getExtension,
+  isExemptSupportBasename,
+  readPathFromFirstMatchingDirectory,
+  readProgramReportNode,
+} from "./helpers.ts";
 
 const COMPONENT_DIRECTORY_NAMES = new Set(["components", "templates", "layouts"]);
 const COMPONENT_ALLOWED_SUPPORT_FILES = new Set(["constants.ts", "index.ts", "types.ts"]);
@@ -50,7 +56,7 @@ const componentDirectoryFileConventionRule: RuleModule = {
         }
 
         context.report({
-          node,
+          node: readProgramReportNode(node),
           messageId: "invalidComponentDirectoryFile",
           data: {
             directoryName: componentDirectoryMatch.directoryName,

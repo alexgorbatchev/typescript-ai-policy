@@ -1,5 +1,5 @@
 import type { RuleModule } from "./types.ts";
-import { getExtension, hasPathSegment, isInTestsDirectory } from "./helpers.ts";
+import { getExtension, hasPathSegment, isInTestsDirectory, readProgramReportNode } from "./helpers.ts";
 
 const COMPONENT_DIRECTORY_NAMES = new Set(["components", "templates", "layouts"]);
 
@@ -32,7 +32,7 @@ const componentFileLocationConventionRule: RuleModule = {
         }
 
         context.report({
-          node,
+          node: readProgramReportNode(node),
           messageId: "unexpectedComponentFileLocation",
         });
       },

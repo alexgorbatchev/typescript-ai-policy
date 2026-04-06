@@ -4,6 +4,7 @@ import {
   getFilenameWithoutExtension,
   isStrictAreaAllowedSupportFile,
   readPathFromDirectory,
+  readProgramReportNode,
 } from "./helpers.ts";
 
 function isAllowedHookOwnershipBasename(filename: string): boolean {
@@ -61,7 +62,7 @@ const hooksDirectoryFileConventionRule: RuleModule = {
         }
 
         context.report({
-          node,
+          node: readProgramReportNode(node),
           messageId: "invalidHooksDirectoryFile",
           data: {
             relativePath: relativePath || ".",

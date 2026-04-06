@@ -1,5 +1,4 @@
-import type { TSESTree } from "@typescript-eslint/types";
-import type { AstProgram, AstProgramStatement, RuleModule } from "./types.ts";
+import type { AstNode, AstProgram, RuleModule } from "./types.ts";
 import { dirname, join } from "node:path";
 import {
   findDescendantFilePath,
@@ -8,6 +7,7 @@ import {
   isInStoriesDirectory,
   isInTestsDirectory,
   readAbbreviatedSiblingDirectoryPath,
+  readProgramReportNode,
 } from "./helpers.ts";
 
 function readRequiredStoriesDirectoryPath(filename: string): string {
@@ -20,9 +20,7 @@ function readRequiredStoryFileName(filename: string): string {
   return `${sourceBaseName}.stories.tsx`;
 }
 
-type ReportNode = AstProgramStatement | TSESTree.Node;
-
-function readReportNode(program: AstProgram): ReportNode {
+function readReportNode(program: AstProgram): AstNode {
   for (const statement of program.body) {
     if (statement.type === "ExportNamedDeclaration") {
       if (statement.exportKind === "type") {
@@ -60,7 +58,7 @@ function readReportNode(program: AstProgram): ReportNode {
     }
   }
 
-  return program.body[0] ?? program;
+  return readProgramReportNode(program);
 }
 
 const componentStoryFileConventionRule: RuleModule = {

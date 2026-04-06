@@ -1,7 +1,7 @@
 import type { RuleModule } from "./types.ts";
 import { existsSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { readPathFromStoriesDirectory, readPathFromTestsDirectory } from "./helpers.ts";
+import { readPathFromStoriesDirectory, readPathFromTestsDirectory, readProgramReportNode } from "./helpers.ts";
 
 const FIXTURE_ENTRYPOINT_CANDIDATE_KEYS = ["fixtures.ts", "fixtures.tsx", "fixtures/"];
 
@@ -127,7 +127,7 @@ const singleFixtureEntrypointRule: RuleModule = {
     return {
       Program(node) {
         context.report({
-          node,
+          node: readProgramReportNode(node),
           messageId: "conflictingFixtureEntrypoints",
           data: {
             directoryLabel,

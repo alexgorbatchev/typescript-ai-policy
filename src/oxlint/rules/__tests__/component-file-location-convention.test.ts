@@ -1,5 +1,6 @@
 import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
+import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
 import componentFileLocationConventionRuleModule from "../component-file-location-convention.ts";
 
@@ -46,7 +47,12 @@ ruleTester.run(
         code: `export function AccountPanel() { return <section />; }`,
         filename: "src/accounts/AccountPanel.tsx",
         languageOptions: languageOpts,
-        errors: [{ messageId: "unexpectedComponentFileLocation" }],
+        errors: [
+          {
+            messageId: "unexpectedComponentFileLocation",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
+          },
+        ],
         output: null,
       },
       {

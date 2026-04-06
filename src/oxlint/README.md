@@ -15,6 +15,9 @@ must change, where it must move, and which replacement shape is required.
 The config also enables a small set of upstream Oxlint/Jest/TypeScript rules as baseline guardrails for correctness and
 type safety.
 
+When a rule reports a file-level contract violation, it should anchor the diagnostic to the first top-level syntax node
+when possible instead of the `Program` node so editor UIs do not highlight the whole file.
+
 The rules are intended to operate as a **coordinated contract**, not as isolated toggles. Many of them reinforce one
 another across file layout, fixture entrypoints, naming, typing, and import paths. Disabling a single rule can have
 broader effects than the local violation it appears to cover, because it may break assumptions relied on by the rest of

@@ -15,6 +15,7 @@ import {
   isPascalCase,
   readDeclarationIdentifierNames,
   readMultipartComponentRootName,
+  readProgramReportNode,
 } from "./helpers.ts";
 
 function isTypeOnlyExportSpecifier(
@@ -187,10 +188,6 @@ function readExpectedComponentNameFromFilename(filename: string): string | null 
     .join("");
 }
 
-function readInvalidFilenameReportNode(program: AstProgram): TSESTree.Node {
-  return program.body[0] ?? program;
-}
-
 const componentFileNamingConventionRule: RuleModule = {
   meta: {
     type: "problem" as const,
@@ -228,7 +225,7 @@ const componentFileNamingConventionRule: RuleModule = {
         const expectedComponentName = readExpectedComponentNameFromFilename(context.filename);
         if (!expectedComponentName) {
           context.report({
-            node: readInvalidFilenameReportNode(node),
+            node: readProgramReportNode(node),
             messageId: "invalidComponentFileName",
           });
           return;

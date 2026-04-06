@@ -10,6 +10,9 @@ as direct repair instructions so an agent can make the required change instead o
 
 The shared Oxlint policy is implemented in TypeScript-authored custom rule modules under `src/oxlint/`.
 
+File-level diagnostics are anchored to the first top-level syntax node when possible so editors highlight a concrete
+repair location instead of painting the entire file.
+
 Upstream rules stay enabled as baseline correctness guardrails around that stricter policy layer.
 
 These rules are designed to work as a **full policy set**, not as a grab bag of independent preferences. Disabling one

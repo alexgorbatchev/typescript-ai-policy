@@ -1,6 +1,6 @@
 import type { TSESTree } from "@typescript-eslint/types";
 import type { AstProgramStatement, RuleModule } from "./types.ts";
-import { getBaseName } from "./helpers.ts";
+import { getBaseName, readProgramReportNode } from "./helpers.ts";
 
 type IndexMessageId = "unexpectedIndexExport" | "unexpectedIndexStatement";
 
@@ -84,10 +84,6 @@ function readExportDefaultReportNode(node: TSESTree.ExportDefaultDeclaration): T
   }
 
   return node;
-}
-
-function readProgramReportNode(node: TSESTree.Program): TSESTree.Node {
-  return node.body[0] ?? node;
 }
 
 function readIndexViolationReportNode(statement: AstProgramStatement): TSESTree.Node {

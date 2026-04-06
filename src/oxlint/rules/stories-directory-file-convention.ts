@@ -1,5 +1,5 @@
 import type { RuleModule } from "./types.ts";
-import { isInStoriesDirectory, readPathFromStoriesDirectory } from "./helpers.ts";
+import { isInStoriesDirectory, readPathFromStoriesDirectory, readProgramReportNode } from "./helpers.ts";
 
 const ALLOWED_ROOT_STORY_FILES_PATTERN = /^[^/]+\.stories\.tsx$/u;
 const ALLOWED_SUPPORT_FILES = new Set(["fixtures.ts", "fixtures.tsx", "helpers.ts", "helpers.tsx"]);
@@ -41,7 +41,7 @@ const storiesDirectoryFileConventionRule: RuleModule = {
         }
 
         context.report({
-          node,
+          node: readProgramReportNode(node),
           messageId: "invalidStoriesDirectoryFile",
           data: {
             relativePath,

@@ -1,6 +1,6 @@
 import type { TSESTree } from "@typescript-eslint/types";
 import type { AstProgram, RuleModule } from "./types.ts";
-import { unwrapExpression } from "./helpers.ts";
+import { readProgramReportNode, unwrapExpression } from "./helpers.ts";
 
 type MetaBinding = {
   declaration: TSESTree.VariableDeclaration;
@@ -79,7 +79,7 @@ const storyMetaTypeAnnotationRule: RuleModule = {
         const defaultExportDeclaration = readDefaultExportDeclaration(node);
         if (!defaultExportDeclaration || defaultExportDeclaration.declaration.type !== "Identifier") {
           context.report({
-            node: defaultExportDeclaration ?? node,
+            node: defaultExportDeclaration ?? readProgramReportNode(node),
             messageId: "invalidMetaBinding",
           });
           return;

@@ -7,6 +7,7 @@ import type {
   AstDestructuringPattern,
   AstFunctionLike,
   AstNode,
+  AstProgram,
   AstTypeDeclaration,
 } from "./types.ts";
 
@@ -82,6 +83,10 @@ export function readAbbreviatedPath(path: string, segmentCount = 3): string {
 
 export function readAbbreviatedSiblingDirectoryPath(filename: string, siblingDirectoryName: string): string {
   return readAbbreviatedPath(`${dirname(filename)}/${siblingDirectoryName}`);
+}
+
+export function readProgramReportNode(program: AstProgram): AstNode {
+  return program.body[0] ?? program;
 }
 
 export function readPathFromFirstMatchingDirectory(

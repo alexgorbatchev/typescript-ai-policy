@@ -1,6 +1,12 @@
 import type { TSESTree } from "@typescript-eslint/types";
 import type { AstProgram, RuleModule } from "./types.ts";
-import { getStorySourceBaseName, isPascalCase, unwrapExpression, unwrapTypeScriptExpression } from "./helpers.ts";
+import {
+  getStorySourceBaseName,
+  isPascalCase,
+  readProgramReportNode,
+  unwrapExpression,
+  unwrapTypeScriptExpression,
+} from "./helpers.ts";
 
 type StoryExportRecord = {
   exportedName: string;
@@ -245,7 +251,7 @@ const storyExportContractRule: RuleModule = {
 
         if (storyEntries.length === 0) {
           context.report({
-            node,
+            node: readProgramReportNode(node),
             messageId: "missingStoryExport",
           });
           return;
@@ -285,7 +291,7 @@ const storyExportContractRule: RuleModule = {
         const exportedStoryEntries = storyEntries.filter((storyEntry) => storyEntry.exports.length > 0);
         if (exportedStoryEntries.length === 0) {
           context.report({
-            node,
+            node: readProgramReportNode(node),
             messageId: "missingStoryExport",
           });
           return;
