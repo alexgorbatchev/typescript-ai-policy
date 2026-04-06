@@ -6,7 +6,7 @@ on:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -36,8 +36,14 @@ jobs:
           fi
           echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
 
-      - name: Sync package version from the release tag
-        run: npm pkg set version="$RELEASE_VERSION"
+      - name: Validate package version matches the release tag
+        run: |
+          set -euo pipefail
+          package_version="$(node -p "require('./package.json').version")"
+          if [[ "$package_version" != "$RELEASE_VERSION" ]]; then
+            echo "package.json version ($package_version) must match release tag version ($RELEASE_VERSION)." >&2
+            exit 1
+          fi
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -51,3 +57,18 @@ jobs:
 
       - name: Publish package
         run: npm publish --provenance --access public
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "GitHub Release already exists for $GITHUB_REF_NAME; skipping creation."
+            exit 0
+          fi
+
+          gh release create "$GITHUB_REF_NAME" \
+            --verify-tag \
+            --generate-notes \
+            --latest
