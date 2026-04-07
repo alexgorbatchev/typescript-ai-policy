@@ -167,3 +167,14 @@ bun run lint:target -- /Users/alex/development/projects/date-maker
 - disabling nested target configs via `--disable-nested-config` so results are not mixed with the target project's own Oxlint config
 - changing into the target directory first, which avoids an Oxlint crash when linting a path outside the current working root
 - forwarding any extra Oxlint CLI flags after the target path
+
+## Release workflow
+
+Releases are tag-driven and the committed package version is the source of truth.
+
+- bump `package.json` to the target version in git first
+- create and push a matching annotated tag such as `v1.0.6`
+- the release workflow validates that `package.json` matches the tag version
+- after validation, the workflow runs `bun run check`, publishes to npm, and creates the matching GitHub Release with generated notes
+
+Do not rely on CI to rewrite `package.json` during release; a tag and the committed package version must already agree.

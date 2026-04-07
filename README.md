@@ -168,17 +168,6 @@ This package also uses its own shared configs at the repository root:
 - `oxfmt.config.ts`
 - `oxlint.config.ts`
 
-## Releases
-
-Releases are tag-driven and the committed package version is the source of truth.
-
-- bump `package.json` to the target version in git first
-- create and push a matching annotated tag such as `v1.0.6`
-- the release workflow validates that `package.json` matches the tag version
-- after validation, the workflow runs `bun run check`, publishes to npm, and creates the matching GitHub Release with generated notes
-
-Do not rely on CI to rewrite `package.json` during release; a tag and the committed package version must already agree.
-
 ## Semantic-fix tooling
 
 The package includes a semantic-fix CLI backed by `tsgo --lsp --stdio`.
