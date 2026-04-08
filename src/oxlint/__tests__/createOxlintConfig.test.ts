@@ -82,6 +82,13 @@ describe("createOxlintConfig", () => {
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/oxlint.config.ts", "**/oxfmt.config.ts"],
+      rules: {
+        "import/no-default-export": "off",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
       files: [
         "**/__tests__/fixtures.{ts,tsx}",
         "**/__tests__/**/fixtures.{ts,tsx}",

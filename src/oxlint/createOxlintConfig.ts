@@ -83,6 +83,12 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       },
     },
     {
+      files: ["**/oxlint.config.ts", "**/oxfmt.config.ts"],
+      rules: {
+        "import/no-default-export": "off",
+      },
+    },
+    {
       files: ["**/index.{ts,tsx}"],
       rules: {
         "@alexgorbatchev/index-file-contract": "error",

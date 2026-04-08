@@ -74,9 +74,11 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/index-file-contract` on `**/index.ts` and `**/index.tsx`
    - `@alexgorbatchev/no-type-exports-from-constants` on `**/constants.{ts,tsx,mts,cts}` and `**/constants.d.{ts,tsx,mts,cts}`
    - `@alexgorbatchev/no-value-exports-from-types` on `**/types.{ts,tsx,mts,cts}` and `**/types.d.{ts,tsx,mts,cts}`
-7. **`__tests__/` area rules** run anywhere under `**/__tests__/**`:
+7. **Tool-owned config-entrypoint compatibility overrides** run only on `**/oxlint.config.ts` and `**/oxfmt.config.ts`:
+   - `import/no-default-export` is forced off because Oxlint and Oxfmt document these TypeScript config entrypoints as default-exported modules
+8. **`__tests__/` area rules** run anywhere under `**/__tests__/**`:
    - `@alexgorbatchev/no-module-mocking`
-8. **Test-file rules** run on `__tests__/**/*.test.ts` and `__tests__/**/*.test.tsx`:
+9. **Test-file rules** run on `__tests__/**/*.test.ts` and `__tests__/**/*.test.tsx`:
    - test files explicitly turn off `@alexgorbatchev/testid-naming-convention` and `@alexgorbatchev/require-component-root-testid` because test harnesses are not ownership components
    - `@alexgorbatchev/no-non-running-tests`
    - `@alexgorbatchev/no-conditional-logic-in-tests`
@@ -86,8 +88,8 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/fixture-import-path-convention`
    - `jest/no-disabled-tests`
    - `jest/no-focused-tests`
-9. **Fixture-entrypoint and fixture-area rules** run on nested `fixtures.ts`, `fixtures.tsx`, and `fixtures/`
-   directories anywhere under `__tests__/` or `stories/`, depending on the rule.
+10. **Fixture-entrypoint and fixture-area rules** run on nested `fixtures.ts`, `fixtures.tsx`, and `fixtures/`
+    directories anywhere under `__tests__/` or `stories/`, depending on the rule.
 
 This staged configuration is part of the contract. The global rules only protect the remaining hard placement
 requirements: tests must live under `__tests__/`, fixture exports must stay under `__tests__/` or `stories/`, and
