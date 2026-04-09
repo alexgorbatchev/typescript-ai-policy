@@ -172,9 +172,56 @@ bun run lint:target -- /Users/alex/development/projects/date-maker
 
 Releases are tag-driven and the committed package version is the source of truth.
 
-- bump `package.json` to the target version in git first
+### Required release decision protocol
+
+Before releasing, the agent must determine the correct `major.minor.patch` bump from the actual published-package impact,
+not from commit message wording.
+
+Use this repository-specific SemVer policy:
+
+- **patch**
+  - documentation-only changes
+  - test-only changes
+  - internal refactors with no published export or effective policy-surface change
+  - fixes to false positives or config-scoping mistakes where the intended public contract stays the same
+  - release-process or CI fixes that do not change the shipped package behavior
+- **minor**
+  - additive, non-breaking published capabilities that do not tighten the default policy surface for existing consumers
+  - examples: new optional exports or new functionality that existing consumers do not need to change for
+- **major**
+  - any change that can cause an existing consumer to newly fail linting, type-checking, config validation, or other enforced policy checks after upgrading
+  - any newly enabled rule in the shared config
+  - any tightening of an existing enabled rule
+  - any default-config behavior change that imposes new obligations on existing consumers
+  - any breaking change to published exports or release contract
+
+When unsure between `patch` and `major` for this package, assume **policy tightening is major** unless there is hard evidence
+that the change only fixes behavior back to the already-documented contract.
+
+### Release execution protocol
+
+- determine the next version first
+- bump `package.json` to that version in git first
 - create and push a matching annotated tag such as `v1.0.6`
 - the release workflow validates that `package.json` matches the tag version
 - after validation, the workflow runs `bun run check`, publishes to npm, and creates the matching GitHub Release with generated notes
 
 Do not rely on CI to rewrite `package.json` during release; a tag and the committed package version must already agree.
+
+### Failed release retry protocol
+
+For this repository, the **true release artifact is the published npm package version**, not the existence of a GitHub Release
+object by itself.
+
+That means:
+
+- if CI fails **before npm publish succeeds**, it is acceptable to retry the **same version**
+- if needed, the agent may delete and recreate the matching git tag so the release workflow re-runs for that same version
+- a failed GitHub Actions run or a created GitHub Release page does **not** by itself make the version consumed by users
+- if npm already shows that version as published, the agent must **not** try to republish or reuse it; bump to a new version instead
+
+Before retrying a failed version, verify the npm registry state directly, for example with:
+
+```bash
+npm view @alexgorbatchev/typescript-ai-policy version dist-tags --json
+```
