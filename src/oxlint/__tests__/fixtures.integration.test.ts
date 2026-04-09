@@ -46,4 +46,83 @@ describe("fixture lint-target integration", () => {
       ].join("\n"),
     );
   });
+
+  it("reports aliased fixture imports in tests", () => {
+    const lintTargetResult = runLintTargetFixture(
+      "fixture-import-path-convention/aliased-fixture-import-in-test-invalid",
+    );
+
+    expect(lintTargetResult.exitCode).toBe(1);
+    expect(lintTargetResult.output).toBe(
+      [
+        "==> oxlint",
+        "config: <repo-root>/src/oxlint/oxlint.config.ts",
+        "target: <fixture-root>",
+        "",
+        `  x @alexgorbatchev(fixture-import-path-convention): Import "fixture_userAccountRows" from a relative "fixtures" module without renaming it. The local binding must stay "fixture_userAccountRows".`,
+        "   ,-[src/accounts/__tests__/rows.test.ts:2:10]",
+        ` 1 | import { expect, test } from "bun:test";`,
+        ` 2 | import { fixture_userAccountRows as accountRows } from "./fixtures";`,
+        "   :          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        " 3 | ",
+        "   `----",
+        "",
+        "Found 0 warnings and 1 error.",
+        "Finished in <duration> on <file-count> files with <rule-count> rules using <thread-count> threads.",
+      ].join("\n"),
+    );
+  });
+
+  it("reports alternate fixture import paths in stories", () => {
+    const lintTargetResult = runLintTargetFixture(
+      "fixture-import-path-convention/alternate-fixtures-path-in-story-invalid",
+    );
+
+    expect(lintTargetResult.exitCode).toBe(1);
+    expect(lintTargetResult.output).toBe(
+      [
+        "==> oxlint",
+        "config: <repo-root>/src/oxlint/oxlint.config.ts",
+        "target: <fixture-root>",
+        "",
+        `  x @alexgorbatchev(fixture-import-path-convention): Change this import so "fixture_accountPanel" comes from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree.`,
+        "   ,-[src/accounts/stories/AccountPanel.stories.tsx:3:10]",
+        ` 2 | import { AccountPanel } from "../AccountPanel";`,
+        ` 3 | import { fixture_accountPanel } from "./fixtures.ts";`,
+        "   :          ^^^^^^^^^^^^^^^^^^^^",
+        " 4 | ",
+        "   `----",
+        "",
+        "Found 0 warnings and 1 error.",
+        "Finished in <duration> on <file-count> files with <rule-count> rules using <thread-count> threads.",
+      ].join("\n"),
+    );
+  });
+
+  it("reports inline fixture bindings in stories", () => {
+    const lintTargetResult = runLintTargetFixture(
+      "no-inline-fixture-bindings-in-tests/inline-fixture-binding-in-story-invalid",
+    );
+
+    expect(lintTargetResult.exitCode).toBe(1);
+    expect(lintTargetResult.output).toBe(
+      [
+        "==> oxlint",
+        "config: <repo-root>/src/oxlint/oxlint.config.ts",
+        "target: <fixture-root>",
+        "",
+        `  x @alexgorbatchev(no-inline-fixture-bindings-in-tests): Delete the inline "fixture_accountPanel" declaration from this file and import it from a relative "fixtures" module under the same "__tests__/" or "stories/" tree instead.`,
+        "    ,-[src/accounts/stories/AccountPanel.stories.tsx:12:7]",
+        " 11 |     ",
+        " 12 | ,-> const fixture_accountPanel = {",
+        ' 13 | |     label: "Ready",',
+        " 14 | `-> };",
+        " 15 |     ",
+        "    `----",
+        "",
+        "Found 0 warnings and 1 error.",
+        "Finished in <duration> on <file-count> files with <rule-count> rules using <thread-count> threads.",
+      ].join("\n"),
+    );
+  });
 });

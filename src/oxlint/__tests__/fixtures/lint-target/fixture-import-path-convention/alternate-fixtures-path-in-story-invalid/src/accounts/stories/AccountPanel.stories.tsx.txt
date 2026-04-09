@@ -1,0 +1,20 @@
+import type { Meta, StoryObj } from "@storybook/react";
+import { AccountPanel } from "../AccountPanel";
+import { fixture_accountPanel } from "./fixtures.ts";
+
+const meta: Meta<typeof AccountPanel> = {
+  component: AccountPanel,
+};
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+const Default: Story = {
+  args: {
+    rows: fixture_accountPanel,
+  },
+  play: async () => {},
+};
+
+export { Default as AccountPanel };

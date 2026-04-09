@@ -1,0 +1,3 @@
+import type { StoryRow } from "../StoryRow";
+
+export const fixture_accountPanel: StoryRow[] = [];
