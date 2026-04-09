@@ -19,6 +19,7 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-type-imports-from-constants": "error",
       "@alexgorbatchev/test-file-location-convention": "error",
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
+      "@alexgorbatchev/no-lint-disable-comments": "error",
       "typescript/no-explicit-any": "error",
     });
 
@@ -30,7 +31,6 @@ describe("createOxlintConfig", () => {
         "@alexgorbatchev/component-file-contract": "off",
         "@alexgorbatchev/component-file-naming-convention": "off",
         "@alexgorbatchev/component-story-file-convention": "off",
-        "import/no-default-export": "off",
         "@alexgorbatchev/story-file-location-convention": "error",
         "@alexgorbatchev/story-meta-type-annotation": "error",
         "@alexgorbatchev/story-export-contract": "error",
@@ -55,6 +55,7 @@ describe("createOxlintConfig", () => {
       rules: {
         "@alexgorbatchev/interface-naming-convention": "error",
         "@alexgorbatchev/no-i-prefixed-type-aliases": "error",
+        "@alexgorbatchev/no-direct-interface-to-type-assignment": "error",
         "@alexgorbatchev/no-inline-type-expressions": "error",
         "@alexgorbatchev/require-template-indent": "error",
       },
@@ -93,13 +94,6 @@ describe("createOxlintConfig", () => {
         "@alexgorbatchev/hook-file-contract": "error",
         "@alexgorbatchev/hook-file-naming-convention": "error",
         "@alexgorbatchev/hook-test-file-convention": "error",
-      },
-    });
-
-    expect(oxlintConfig.overrides).toContainEqual({
-      files: ["**/oxlint.config.ts", "**/oxfmt.config.ts"],
-      rules: {
-        "import/no-default-export": "off",
       },
     });
 
@@ -148,6 +142,7 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-type-imports-from-constants": "error",
       "@alexgorbatchev/test-file-location-convention": "error",
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
+      "@alexgorbatchev/no-lint-disable-comments": "error",
       "typescript/no-explicit-any": "error",
     });
   });

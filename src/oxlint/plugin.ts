@@ -15,6 +15,7 @@ import noValueExportsFromTypesRule from "./rules/no-value-exports-from-types.ts"
 import interfaceNamingConventionRule from "./rules/interface-naming-convention.ts";
 import noIPrefixedTypeAliasesRule from "./rules/no-i-prefixed-type-aliases.ts";
 import noInlineTypeExpressionsRule from "./rules/no-inline-type-expressions.ts";
+import noDirectInterfaceToTypeAssignmentRule from "./rules/no-direct-interface-to-type-assignment.ts";
 import componentFileLocationConventionRule from "./rules/component-file-location-convention.ts";
 import componentDirectoryFileConventionRule from "./rules/component-directory-file-convention.ts";
 import componentFileContractRule from "./rules/component-file-contract.ts";
@@ -39,6 +40,7 @@ import noInlineFixtureBindingsInTestsRule from "./rules/no-inline-fixture-bindin
 import fixtureImportPathConventionRule from "./rules/fixture-import-path-convention.ts";
 import noLocalTypeDeclarationsInFixtureFilesRule from "./rules/no-local-type-declarations-in-fixture-files.ts";
 import singleFixtureEntrypointRule from "./rules/single-fixture-entrypoint.ts";
+import noLintDisableCommentsRule from "./rules/no-lint-disable-comments.ts";
 
 const plugin = {
   meta: {
@@ -61,6 +63,7 @@ const plugin = {
     "no-value-exports-from-types": noValueExportsFromTypesRule,
     "interface-naming-convention": interfaceNamingConventionRule,
     "no-i-prefixed-type-aliases": noIPrefixedTypeAliasesRule,
+    "no-direct-interface-to-type-assignment": noDirectInterfaceToTypeAssignmentRule,
     "no-inline-type-expressions": noInlineTypeExpressionsRule,
     "component-file-location-convention": componentFileLocationConventionRule,
     "component-directory-file-convention": componentDirectoryFileConventionRule,
@@ -86,6 +89,7 @@ const plugin = {
     "fixture-import-path-convention": fixtureImportPathConventionRule,
     "no-local-type-declarations-in-fixture-files": noLocalTypeDeclarationsInFixtureFilesRule,
     "single-fixture-entrypoint": singleFixtureEntrypointRule,
+    "no-lint-disable-comments": noLintDisableCommentsRule,
   },
 };
 
