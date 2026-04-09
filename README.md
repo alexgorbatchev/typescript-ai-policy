@@ -98,6 +98,20 @@ At a glance, the shared policy enforces:
 - strict boundaries between runtime code, test code, story code, and fixture code
 - explicit type/value ownership rules for files such as `index.ts`, `constants.ts`, and `types.ts`
 
+## Storybook is the React component contract
+
+For React components, this policy is intentionally **story-first**.
+
+Every component ownership file must have a matching Storybook file, and every exported story must be typed and include
+a `play` function. In practice, that makes Storybook the canonical artifact for component behavior:
+
+- the same story layer can back CI interaction coverage
+- the same stories also act as the human visual reference for the component
+- component structure and component verification stay in one place instead of drifting across separate ad-hoc test files
+
+This package does **not** wire your CI for you, but it does enforce the repository shape required for Storybook-driven
+component verification.
+
 ## Expected layout shape
 
 The policy enforces **role directories**, not one hardcoded feature tree.
