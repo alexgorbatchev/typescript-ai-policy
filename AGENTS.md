@@ -200,7 +200,8 @@ that the change only fixes behavior back to the already-documented contract.
 
 ### Release execution protocol
 
-- determine the next version first
+- **Do not publish a release or push a release tag without an explicit user request.** Wait for the user to explicitly say "release this", "publish", or ask to cut a new version.
+- When explicitly requested, determine the next version first
 - bump `package.json` to that version in git first
 - create and push a matching annotated tag such as `v1.0.6`
 - the release workflow validates that `package.json` matches the tag version
