@@ -51,6 +51,7 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
         "@alexgorbatchev/no-i-prefixed-type-aliases": "error",
         "@alexgorbatchev/no-direct-interface-to-type-assignment": "error",
         "@alexgorbatchev/no-inline-type-expressions": "error",
+        "@alexgorbatchev/no-inline-type-imports": "error",
         "@alexgorbatchev/require-template-indent": "error",
       },
     },

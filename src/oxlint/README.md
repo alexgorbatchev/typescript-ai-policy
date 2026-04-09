@@ -52,6 +52,7 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/interface-naming-convention`
    - `@alexgorbatchev/no-i-prefixed-type-aliases`
    - `@alexgorbatchev/no-inline-type-expressions`
+   - `@alexgorbatchev/no-inline-type-imports`
    - `@alexgorbatchev/require-template-indent`
 3. **React component ownership rules** run on all `**/*.tsx` files unless a narrower file-role override disables
    them:
@@ -283,6 +284,32 @@ export type UserProfile = IUserProfile;
 ```
 
 ## Explicit type-expression policies
+
+### `@alexgorbatchev/no-inline-type-imports`
+
+**Policy:** Do not use inline type imports (`import('...').Type`). Import the type explicitly at the top of the file instead. `typeof import(...)` is allowed for extracting full module shapes.
+
+**Good**
+
+```ts
+import type { PluginOption } from "vite";
+
+const plugin: PluginOption = {};
+```
+
+```ts
+type ViteModule = typeof import("vite");
+```
+
+**Bad**
+
+```ts
+const plugin: import("vite").PluginOption = {};
+```
+
+```ts
+type PluginOption = import("vite").PluginOption;
+```
 
 ### `@alexgorbatchev/no-inline-type-expressions`
 

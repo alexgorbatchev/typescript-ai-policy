@@ -15,6 +15,7 @@ import noValueExportsFromTypesRule from "./rules/no-value-exports-from-types.ts"
 import interfaceNamingConventionRule from "./rules/interface-naming-convention.ts";
 import noIPrefixedTypeAliasesRule from "./rules/no-i-prefixed-type-aliases.ts";
 import noInlineTypeExpressionsRule from "./rules/no-inline-type-expressions.ts";
+import noInlineTypeImportsRule from "./rules/no-inline-type-imports.ts";
 import noDirectInterfaceToTypeAssignmentRule from "./rules/no-direct-interface-to-type-assignment.ts";
 import componentFileLocationConventionRule from "./rules/component-file-location-convention.ts";
 import componentDirectoryFileConventionRule from "./rules/component-directory-file-convention.ts";
@@ -65,6 +66,7 @@ const plugin = {
     "no-i-prefixed-type-aliases": noIPrefixedTypeAliasesRule,
     "no-direct-interface-to-type-assignment": noDirectInterfaceToTypeAssignmentRule,
     "no-inline-type-expressions": noInlineTypeExpressionsRule,
+    "no-inline-type-imports": noInlineTypeImportsRule,
     "component-file-location-convention": componentFileLocationConventionRule,
     "component-directory-file-convention": componentDirectoryFileConventionRule,
     "component-file-contract": componentFileContractRule,
