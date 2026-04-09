@@ -151,8 +151,9 @@ conflicting keys.
 
 For Oxlint specifically, consumer configs are extension-only: if the callback tries to redefine any shared rule name,
 the factory throws with guidance to change the shared package instead of overriding that rule downstream. The shared
-Oxlint config also force-disables `import/no-default-export` for `oxlint.config.ts` and `oxfmt.config.ts`, because
-Oxlint and Oxfmt document those TypeScript config entrypoints as default-exported modules.
+Oxlint config also force-disables `import/no-default-export` for `*.stories.tsx`, `oxlint.config.ts`, and
+`oxfmt.config.ts`, because Storybook CSF stories require a default-exported meta object and Oxlint/Oxfmt document
+those TypeScript config entrypoints as default-exported modules.
 
 When you run Oxlint manually, use Bun to launch the CLI:
 

@@ -67,6 +67,7 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       rules: {
         "@alexgorbatchev/testid-naming-convention": "off",
         "@alexgorbatchev/require-component-root-testid": "off",
+        "import/no-default-export": "off",
         "@alexgorbatchev/story-file-location-convention": "error",
         "@alexgorbatchev/story-meta-type-annotation": "error",
         "@alexgorbatchev/story-export-contract": "error",

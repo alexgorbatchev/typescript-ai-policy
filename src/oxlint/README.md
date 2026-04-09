@@ -61,6 +61,7 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/component-story-file-convention`
 4. **Storybook file rules** run only on `**/*.stories.tsx`:
    - story files explicitly turn off `@alexgorbatchev/testid-naming-convention` and `@alexgorbatchev/require-component-root-testid` because story harnesses are not ownership components
+   - story files also turn off `import/no-default-export` because Storybook CSF requires a default-exported meta object
    - `@alexgorbatchev/story-file-location-convention`
    - `@alexgorbatchev/story-meta-type-annotation`
    - `@alexgorbatchev/story-export-contract`
