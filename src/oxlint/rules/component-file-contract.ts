@@ -14,10 +14,10 @@ import {
   isInStoriesDirectory,
   isInTestsDirectory,
   isTypeDeclaration,
-  readDeclarationIdentifierNames,
   readProgramReportNode,
   readMultipartComponentRootName,
   readPatternIdentifierNames,
+  readDefaultExportName,
   unwrapExpression,
 } from "./helpers.ts";
 
@@ -152,29 +152,6 @@ function readStatementRuntimeExportEntries(statement: AstProgramStatement): Comp
   return readDeclarationRuntimeExportEntries(statement.declaration);
 }
 
-function readDefaultExportName(declaration: TSESTree.ExportDefaultDeclaration["declaration"]): string | null {
-  if (declaration.type === "Identifier") {
-    return declaration.name;
-  }
-
-  if (declaration.type === "VariableDeclaration") {
-    const firstDeclarator = declaration.declarations[0];
-    return firstDeclarator?.id.type === "Identifier" ? firstDeclarator.id.name : null;
-  }
-
-  if (
-    declaration.type === "FunctionDeclaration" ||
-    declaration.type === "ClassDeclaration" ||
-    declaration.type === "TSEnumDeclaration" ||
-    declaration.type === "TSInterfaceDeclaration" ||
-    declaration.type === "TSTypeAliasDeclaration"
-  ) {
-    return readDeclarationIdentifierNames(declaration)[0] ?? null;
-  }
-
-  return null;
-}
-
 function readDeclarationRuntimeExportEntries(
   declaration: AstDeclarationWithIdentifiers,
 ): ComponentRuntimeExportEntry[] {
@@ -284,7 +261,15 @@ const componentFileContractRule: RuleModule = {
 
     return {
       Program(node) {
-        const runtimeExportEntries = readRuntimeExportEntries(node);
+        const rawRuntimeExportEntries = readRuntimeExportEntries(node);
+
+        const validComponentRuntimeExportEntries = rawRuntimeExportEntries.filter(isValidMainComponentRuntimeExport);
+        const validComponentNames = validComponentRuntimeExportEntries.map((entry) => entry.name);
+
+        const runtimeExportEntries = rawRuntimeExportEntries.filter(
+          (entry) => !(entry.kind === "default-export" && validComponentNames.includes(entry.name)),
+        );
+
         if (runtimeExportEntries.length === 0) {
           context.report({
             node: readProgramReportNode(node),

@@ -14,6 +14,7 @@ import {
   isTypeDeclaration,
   readPatternIdentifierNames,
   readProgramReportNode,
+  readDefaultExportName,
 } from "./helpers.ts";
 
 type HookRuntimeExportEntry = {
@@ -59,11 +60,13 @@ function readRuntimeExportEntries(program: AstProgram): HookRuntimeExportEntry[]
 
 function readStatementRuntimeExportEntries(statement: AstProgramStatement): HookRuntimeExportEntry[] {
   if (statement.type === "ExportDefaultDeclaration") {
-    return [{ kind: "default-export", node: statement }];
+    return [
+      { kind: "default-export", name: readDefaultExportName(statement.declaration) ?? "default", node: statement },
+    ];
   }
 
   if (statement.type === "TSExportAssignment") {
-    return [{ kind: "default-export", node: statement }];
+    return [{ kind: "default-export", name: "default", node: statement }];
   }
 
   if (statement.type === "ExportAllDeclaration") {
@@ -155,7 +158,15 @@ const hookFileContractRule: RuleModule = {
 
     return {
       Program(node) {
-        const runtimeExportEntries = readRuntimeExportEntries(node);
+        const rawRuntimeExportEntries = readRuntimeExportEntries(node);
+
+        const validHookRuntimeExportEntries = rawRuntimeExportEntries.filter(isValidMainHookRuntimeExport);
+        const validHookNames = validHookRuntimeExportEntries.map((entry) => entry.name);
+
+        const runtimeExportEntries = rawRuntimeExportEntries.filter(
+          (entry) => !(entry.kind === "default-export" && entry.name && validHookNames.includes(entry.name)),
+        );
+
         if (runtimeExportEntries.length === 0) {
           context.report({
             node: readProgramReportNode(node),

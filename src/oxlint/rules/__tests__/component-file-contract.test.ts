@@ -68,6 +68,17 @@ ruleTester.run(
         filename: "src/ui/components/select.tsx",
         languageOptions: languageOpts,
       },
+      {
+        code: `
+          export function Button() {
+            return <button />;
+          }
+          
+          export default Button;
+        `,
+        filename: "src/ui/components/Button.tsx",
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {

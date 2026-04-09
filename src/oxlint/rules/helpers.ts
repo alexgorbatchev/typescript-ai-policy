@@ -557,3 +557,26 @@ export function readMultipartComponentRootName(componentNames: readonly string[]
     ? rootComponentName
     : null;
 }
+
+export function readDefaultExportName(declaration: TSESTree.ExportDefaultDeclaration["declaration"]): string | null {
+  if (declaration.type === "Identifier") {
+    return declaration.name;
+  }
+
+  if (declaration.type === "VariableDeclaration") {
+    const firstDeclarator = declaration.declarations[0];
+    return firstDeclarator?.id.type === "Identifier" ? firstDeclarator.id.name : null;
+  }
+
+  if (
+    declaration.type === "FunctionDeclaration" ||
+    declaration.type === "ClassDeclaration" ||
+    declaration.type === "TSEnumDeclaration" ||
+    declaration.type === "TSInterfaceDeclaration" ||
+    declaration.type === "TSTypeAliasDeclaration"
+  ) {
+    return readDeclarationIdentifierNames(declaration)[0] ?? null;
+  }
+
+  return null;
+}

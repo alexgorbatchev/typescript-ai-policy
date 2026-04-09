@@ -42,6 +42,17 @@ ruleTester.run(
         filename: "src/accounts/hooks/__tests__/useAccount.test.ts",
         languageOptions: languageOpts,
       },
+      {
+        code: `
+          export function useAccount() {
+            return null;
+          }
+          
+          export default useAccount;
+        `,
+        filename: "src/accounts/hooks/useAccount.ts",
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {
