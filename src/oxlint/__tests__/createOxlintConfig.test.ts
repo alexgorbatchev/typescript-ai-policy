@@ -40,6 +40,17 @@ describe("createOxlintConfig", () => {
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/*.test.tsx"],
+      rules: {
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/component-file-contract": "off",
+        "@alexgorbatchev/component-file-naming-convention": "off",
+        "@alexgorbatchev/component-story-file-convention": "off",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
       files: ["**/*.{ts,tsx,mts,cts}"],
       rules: {
         "@alexgorbatchev/interface-naming-convention": "error",

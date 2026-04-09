@@ -67,29 +67,33 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/story-export-contract`
    - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
    - `@alexgorbatchev/fixture-import-path-convention`
-5. **Hook ownership rules** run on any `use*.ts` or `use*.tsx` ownership filename, with rule-level backstops that skip `__tests__/`, `stories/`, and exempt support basenames:
+5. **Basename-addressable `.test.tsx` file-role compatibility overrides** run on `**/*.test.tsx`:
+   - these files explicitly turn off the component-ownership rules (`@alexgorbatchev/testid-naming-convention`, `@alexgorbatchev/require-component-root-testid`, `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-story-file-convention`) because a basename-addressable test file is still a test role even when misplaced and should be reported by `@alexgorbatchev/test-file-location-convention` instead of component-ownership rules
+6. **Hook ownership rules** run on any `use*.ts` or `use*.tsx` ownership filename, with rule-level backstops that skip `__tests__/`, `stories/`, and exempt support basenames:
    - `@alexgorbatchev/hook-file-contract`
    - `@alexgorbatchev/hook-file-naming-convention`
    - `@alexgorbatchev/hook-test-file-convention`
-6. **Filename-addressable file-role rules** run only on the exact file role they govern:
+7. **Filename-addressable file-role rules** run only on the exact file role they govern:
    - `@alexgorbatchev/index-file-contract` on `**/index.ts` and `**/index.tsx`
    - `@alexgorbatchev/no-type-exports-from-constants` on `**/constants.{ts,tsx,mts,cts}` and `**/constants.d.{ts,tsx,mts,cts}`
    - `@alexgorbatchev/no-value-exports-from-types` on `**/types.{ts,tsx,mts,cts}` and `**/types.d.{ts,tsx,mts,cts}`
-7. **Tool-owned config-entrypoint compatibility overrides** run only on `**/oxlint.config.ts` and `**/oxfmt.config.ts`:
+8. **Tool-owned config-entrypoint compatibility overrides** run only on `**/oxlint.config.ts` and `**/oxfmt.config.ts`:
    - `import/no-default-export` is forced off because Oxlint and Oxfmt document these TypeScript config entrypoints as default-exported modules
-8. **`__tests__/` area rules** run anywhere under `**/__tests__/**`:
+9. **`__tests__/` area rules** run anywhere under `**/__tests__/**`:
    - `@alexgorbatchev/no-module-mocking`
-9. **Test-file rules** run on `__tests__/**/*.test.ts` and `__tests__/**/*.test.tsx`:
-   - test files explicitly turn off `@alexgorbatchev/testid-naming-convention` and `@alexgorbatchev/require-component-root-testid` because test harnesses are not ownership components
-   - `@alexgorbatchev/no-non-running-tests`
-   - `@alexgorbatchev/no-conditional-logic-in-tests`
-   - `@alexgorbatchev/no-throw-in-tests`
-   - `@alexgorbatchev/no-test-file-exports`
-   - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
-   - `@alexgorbatchev/fixture-import-path-convention`
-   - `jest/no-disabled-tests`
-   - `jest/no-focused-tests`
-10. **Fixture-entrypoint and fixture-area rules** run on nested `fixtures.ts`, `fixtures.tsx`, and `fixtures/`
+10. **Test-file rules** run on `__tests__/**/*.test.ts` and `__tests__/**/*.test.tsx`:
+
+- test files explicitly turn off `@alexgorbatchev/testid-naming-convention` and `@alexgorbatchev/require-component-root-testid` because test harnesses are not ownership components
+- `@alexgorbatchev/no-non-running-tests`
+- `@alexgorbatchev/no-conditional-logic-in-tests`
+- `@alexgorbatchev/no-throw-in-tests`
+- `@alexgorbatchev/no-test-file-exports`
+- `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
+- `@alexgorbatchev/fixture-import-path-convention`
+- `jest/no-disabled-tests`
+- `jest/no-focused-tests`
+
+11. **Fixture-entrypoint and fixture-area rules** run on nested `fixtures.ts`, `fixtures.tsx`, and `fixtures/`
     directories anywhere under `__tests__/` or `stories/`, depending on the rule.
 
 This staged configuration is part of the contract. The global rules only protect the remaining hard placement

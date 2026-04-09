@@ -79,6 +79,16 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
       },
     },
     {
+      files: ["**/*.test.tsx"],
+      rules: {
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/component-file-contract": "off",
+        "@alexgorbatchev/component-file-naming-convention": "off",
+        "@alexgorbatchev/component-story-file-convention": "off",
+      },
+    },
+    {
       files: ["**/use[A-Z]*.ts", "**/use[A-Z]*.tsx", "**/use-*.ts", "**/use-*.tsx"],
       rules: {
         "@alexgorbatchev/hook-file-contract": "error",
