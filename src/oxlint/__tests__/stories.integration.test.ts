@@ -63,4 +63,27 @@ describe("story lint-target integration", () => {
       ].join("\n"),
     );
   });
+
+  it("reports story files whose sibling component ownership file is missing", () => {
+    const lintTargetResult = runLintTargetFixture("story-file-location-convention/missing-sibling-component-invalid");
+
+    expect(lintTargetResult.exitCode).toBe(1);
+    expect(lintTargetResult.output).toBe(
+      [
+        "==> oxlint",
+        "config: <repo-root>/src/oxlint/oxlint.config.ts",
+        "target: <fixture-root>",
+        "",
+        `  x @alexgorbatchev(story-file-location-convention): Rename or move this story so it matches an existing sibling component ownership file. ".../src/accounts/Missing.tsx" must exist for this story file.`,
+        "   ,-[src/accounts/stories/catalog/Missing.stories.tsx:1:1]",
+        ` 1 | import type { Meta, StoryObj } from "@storybook/react";`,
+        "   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        ` 2 | import { Missing } from "../../Missing";`,
+        "   `----",
+        "",
+        "Found 0 warnings and 1 error.",
+        "Finished in <duration> on <file-count> files with <rule-count> rules using <thread-count> threads.",
+      ].join("\n"),
+    );
+  });
 });
