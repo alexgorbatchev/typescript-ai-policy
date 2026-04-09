@@ -27,6 +27,9 @@ describe("createOxlintConfig", () => {
       rules: {
         "@alexgorbatchev/testid-naming-convention": "off",
         "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/component-file-contract": "off",
+        "@alexgorbatchev/component-file-naming-convention": "off",
+        "@alexgorbatchev/component-story-file-convention": "off",
         "import/no-default-export": "off",
         "@alexgorbatchev/story-file-location-convention": "error",
         "@alexgorbatchev/story-meta-type-annotation": "error",

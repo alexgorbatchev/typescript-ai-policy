@@ -52,15 +52,15 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/no-i-prefixed-type-aliases`
    - `@alexgorbatchev/no-inline-type-expressions`
    - `@alexgorbatchev/require-template-indent`
-3. **React component ownership rules** run on all `**/*.tsx` files, with the component-file rules themselves
-   exempting `stories/`, `__tests__/`, and support basenames:
+3. **React component ownership rules** run on all `**/*.tsx` files unless a narrower file-role override disables
+   them:
    - `@alexgorbatchev/testid-naming-convention`
    - `@alexgorbatchev/require-component-root-testid`
    - `@alexgorbatchev/component-file-contract`
    - `@alexgorbatchev/component-file-naming-convention`
    - `@alexgorbatchev/component-story-file-convention`
 4. **Storybook file rules** run only on `**/*.stories.tsx`:
-   - story files explicitly turn off `@alexgorbatchev/testid-naming-convention` and `@alexgorbatchev/require-component-root-testid` because story harnesses are not ownership components
+   - story files explicitly turn off the component-ownership rules (`@alexgorbatchev/testid-naming-convention`, `@alexgorbatchev/require-component-root-testid`, `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-story-file-convention`) because `*.stories.tsx` is a story-file role even when the file is misplaced and should be reported by story-specific rules instead of component-ownership rules
    - story files also turn off `import/no-default-export` because Storybook CSF requires a default-exported meta object
    - `@alexgorbatchev/story-file-location-convention`
    - `@alexgorbatchev/story-meta-type-annotation`
