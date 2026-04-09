@@ -1,0 +1,14 @@
+import type { Meta, StoryObj } from "@storybook/react";
+import { AccountPanel } from "../AccountPanel";
+
+const meta: Meta<typeof AccountPanel> = {
+  component: AccountPanel,
+};
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+const Default: Story = {};
+
+export { Default as AccountPanel };
