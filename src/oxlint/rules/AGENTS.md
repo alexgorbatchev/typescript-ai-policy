@@ -67,6 +67,46 @@ When adding or changing rules here:
 10. If a rule applies to a path-glob-addressable file role such as `index.ts`, `constants.ts`, or `types.ts`, require narrow `overrides[].files` activation in `../oxlint.config.ts` instead of global `rules`.
 11. If a rule is fixable, implement it with standard ESLint fixer callbacks.
 
+## Mandatory red/green workflow for policy changes
+
+**Every policy change in this directory must be developed red/green. No exceptions.**
+
+If you add, tighten, relax, or re-scope a rule or its config wiring, do the work in this order:
+
+1. **Write or update the test first** so it captures the intended policy change.
+2. **Run the test and observe it fail** against the current implementation. This is the required **red** state.
+3. **Only after the failure is proven**, change the rule/config/docs to implement the policy.
+4. **Run the same test again and make it pass.** This is the required **green** state.
+5. **Run the broader affected suite** so the policy still works as part of the whole system.
+
+Do **not** change rule code first and “backfill” tests later. A policy change without a prior failing test is an invalid change process in this repository.
+
+### What must go red first
+
+- **Rule semantics change** → start with a `RuleTester` test in `__tests__/` for the rule module.
+- **Config wiring / override scope / file-role behavior change** → start with an integration test under `src/oxlint/__tests__/` that exercises the real shared config.
+- **Cross-rule or whole-policy behavior change** → add both:
+  - the narrow `RuleTester` coverage for the local rule behavior
+  - the integration coverage for the full configured policy surface
+
+### Integration-test requirement
+
+If the change affects any of the following, you must add or update the lint-target integration harness first and prove the failing case there before fixing implementation:
+
+- override `files` globs
+- rule enable/disable scope
+- interactions between story, test, hook, fixture, or component file roles
+- conflicts where one rule reports a file that should be owned by another rule
+- any bug that reproduces only when the full shared config is loaded
+
+### Minimum validation commands
+
+Run the smallest relevant red/green command first, then the broader validation:
+
+- Single rule test: `bun test src/oxlint/rules/__tests__/my-rule.test.ts`
+- Shared-config integration tests: `bun test src/oxlint/__tests__`
+- Full repository validation: `bun run check`
+
 ## Rule test instructions
 
 Use the same structure for every Oxlint rule test in `__tests__/`.
