@@ -3,7 +3,7 @@ import { runLintTargetFixture } from "./runLintTargetFixture.ts";
 
 describe("story lint-target integration", () => {
   it("allows Storybook default meta exports inside valid story directories", () => {
-    const lintTargetResult = runLintTargetFixture("storybook-default-export-valid");
+    const lintTargetResult = runLintTargetFixture("import-no-default-export/valid-default-export");
 
     expect(lintTargetResult.exitCode).toBe(0);
     expect(lintTargetResult.output).toBe(
@@ -18,7 +18,7 @@ describe("story lint-target integration", () => {
   });
 
   it("reports story exports that omit play functions", () => {
-    const lintTargetResult = runLintTargetFixture("storybook-missing-play-invalid");
+    const lintTargetResult = runLintTargetFixture("story-export-contract/missing-play-invalid");
 
     expect(lintTargetResult.exitCode).toBe(1);
     expect(lintTargetResult.output).toBe(
@@ -42,7 +42,7 @@ describe("story lint-target integration", () => {
   });
 
   it("reports misplaced story files with story-specific diagnostics instead of component-owner noise", () => {
-    const lintTargetResult = runLintTargetFixture("storybook-misplaced-file-invalid");
+    const lintTargetResult = runLintTargetFixture("story-file-location-convention/misplaced-story-file-invalid");
 
     expect(lintTargetResult.exitCode).toBe(1);
     expect(lintTargetResult.output).toBe(

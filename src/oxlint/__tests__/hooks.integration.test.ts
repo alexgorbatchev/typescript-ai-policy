@@ -3,7 +3,7 @@ import { runLintTargetFixture } from "./runLintTargetFixture.ts";
 
 describe("hook lint-target integration", () => {
   it("allows hook ownership files with adjacent sibling tests", () => {
-    const lintTargetResult = runLintTargetFixture("hook-valid-with-adjacent-test");
+    const lintTargetResult = runLintTargetFixture("hook-test-file-convention/valid-with-adjacent-test");
 
     expect(lintTargetResult.exitCode).toBe(0);
     expect(lintTargetResult.output).toBe(
@@ -18,7 +18,7 @@ describe("hook lint-target integration", () => {
   });
 
   it("reports hook ownership files that are missing a sibling hook test", () => {
-    const lintTargetResult = runLintTargetFixture("hook-missing-sibling-test-invalid");
+    const lintTargetResult = runLintTargetFixture("hook-test-file-convention/missing-sibling-test-invalid");
 
     expect(lintTargetResult.exitCode).toBe(1);
     expect(lintTargetResult.output).toBe(

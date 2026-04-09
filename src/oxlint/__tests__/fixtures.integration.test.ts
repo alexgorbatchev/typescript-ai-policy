@@ -3,7 +3,7 @@ import { runLintTargetFixture } from "./runLintTargetFixture.ts";
 
 describe("fixture lint-target integration", () => {
   it("reports fixture exports that leak outside fixture entrypoints", () => {
-    const lintTargetResult = runLintTargetFixture("fixture-export-leak-invalid");
+    const lintTargetResult = runLintTargetFixture("no-fixture-exports-outside-fixture-entrypoint/export-leak-invalid");
 
     expect(lintTargetResult.exitCode).toBe(1);
     expect(lintTargetResult.output).toBe(

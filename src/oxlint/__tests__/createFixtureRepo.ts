@@ -27,13 +27,18 @@ function copyFixtureDirectory(sourceDirectoryPath: string, destinationDirectoryP
   });
 }
 
-export function createFixtureRepo(fixtureName: string): string {
-  const sourceFixtureDirectoryPath = join(FIXTURE_ROOT_PATH, fixtureName);
+function readFixtureDirectoryPrefix(fixturePath: string): string {
+  return fixturePath.replaceAll("/", "-");
+}
+
+export function createFixtureRepo(fixturePath: string): string {
+  const sourceFixtureDirectoryPath = join(FIXTURE_ROOT_PATH, fixturePath);
   if (!existsSync(sourceFixtureDirectoryPath)) {
-    throw new Error(`Unknown lint-target fixture: ${fixtureName}`);
+    throw new Error(`Unknown lint-target fixture: ${fixturePath}`);
   }
 
-  const fixtureRepositoryPath = mkdtempSync(join(tmpdir(), `typescript-ai-policy-${fixtureName}-`));
+  const fixtureDirectoryPrefix = readFixtureDirectoryPrefix(fixturePath);
+  const fixtureRepositoryPath = mkdtempSync(join(tmpdir(), `typescript-ai-policy-${fixtureDirectoryPrefix}-`));
   copyFixtureDirectory(sourceFixtureDirectoryPath, fixtureRepositoryPath);
 
   return fixtureRepositoryPath;

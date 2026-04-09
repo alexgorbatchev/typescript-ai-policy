@@ -3,7 +3,7 @@ import { runLintTargetFixture } from "./runLintTargetFixture.ts";
 
 describe("test-file lint-target integration", () => {
   it("reports misplaced test files with test-location diagnostics instead of component-owner noise", () => {
-    const lintTargetResult = runLintTargetFixture("misplaced-test-file-invalid");
+    const lintTargetResult = runLintTargetFixture("test-file-location-convention/misplaced-test-file-invalid");
 
     expect(lintTargetResult.exitCode).toBe(1);
     expect(lintTargetResult.output).toBe(
