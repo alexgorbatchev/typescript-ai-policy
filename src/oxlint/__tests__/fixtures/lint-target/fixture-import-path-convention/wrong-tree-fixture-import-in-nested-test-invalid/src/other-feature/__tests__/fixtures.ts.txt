@@ -1,0 +1,3 @@
+import type { UserRow } from "../UserRow";
+
+export const fixture_userAccountRows: UserRow[] = [];

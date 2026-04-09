@@ -1,0 +1,7 @@
+import { expect, test } from "bun:test";
+
+const fixture_userAccountRows = [{ id: "1" }];
+
+test("uses fixture", () => {
+  expect(fixture_userAccountRows).toEqual([{ id: "1" }]);
+});

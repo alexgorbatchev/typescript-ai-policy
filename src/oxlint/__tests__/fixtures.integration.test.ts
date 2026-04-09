@@ -125,4 +125,71 @@ describe("fixture lint-target integration", () => {
       ].join("\n"),
     );
   });
+
+  it("allows nested tests to import fixtures from the sibling support tree", () => {
+    const lintTargetResult = runLintTargetFixture("fixture-import-path-convention/nested-test-valid-relative-fixtures");
+
+    expect(lintTargetResult.exitCode).toBe(0);
+    expect(lintTargetResult.output).toBe(
+      [
+        "==> oxlint",
+        "config: <repo-root>/src/oxlint/oxlint.config.ts",
+        "target: <fixture-root>",
+        "Found 0 warnings and 0 errors.",
+        "Finished in <duration> on <file-count> files with <rule-count> rules using <thread-count> threads.",
+      ].join("\n"),
+    );
+  });
+
+  it("reports wrong-tree fixture imports in nested tests", () => {
+    const lintTargetResult = runLintTargetFixture(
+      "fixture-import-path-convention/wrong-tree-fixture-import-in-nested-test-invalid",
+    );
+
+    expect(lintTargetResult.exitCode).toBe(1);
+    expect(lintTargetResult.output).toBe(
+      [
+        "==> oxlint",
+        "config: <repo-root>/src/oxlint/oxlint.config.ts",
+        "target: <fixture-root>",
+        "",
+        `  x @alexgorbatchev(fixture-import-path-convention): Change this import so "fixture_userAccountRows" comes from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree.`,
+        "   ,-[src/accounts/__tests__/integration/rows.test.ts:2:10]",
+        ` 1 | import { expect, test } from "bun:test";`,
+        ` 2 | import { fixture_userAccountRows } from "../../other-feature/__tests__/fixtures";`,
+        "   :          ^^^^^^^^^^^^^^^^^^^^^^^",
+        " 3 | ",
+        "   `----",
+        "",
+        "Found 0 warnings and 1 error.",
+        "Finished in <duration> on <file-count> files with <rule-count> rules using <thread-count> threads.",
+      ].join("\n"),
+    );
+  });
+
+  it("reports inline fixture bindings in tests", () => {
+    const lintTargetResult = runLintTargetFixture(
+      "no-inline-fixture-bindings-in-tests/inline-fixture-binding-in-test-invalid",
+    );
+
+    expect(lintTargetResult.exitCode).toBe(1);
+    expect(lintTargetResult.output).toBe(
+      [
+        "==> oxlint",
+        "config: <repo-root>/src/oxlint/oxlint.config.ts",
+        "target: <fixture-root>",
+        "",
+        `  x @alexgorbatchev(no-inline-fixture-bindings-in-tests): Delete the inline "fixture_userAccountRows" declaration from this file and import it from a relative "fixtures" module under the same "__tests__/" or "stories/" tree instead.`,
+        "   ,-[src/accounts/__tests__/rows.test.ts:3:7]",
+        ` 2 | `,
+        ` 3 | const fixture_userAccountRows = [{ id: "1" }];`,
+        "   :       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        ` 4 | `,
+        "   `----",
+        "",
+        "Found 0 warnings and 1 error.",
+        "Finished in <duration> on <file-count> files with <rule-count> rules using <thread-count> threads.",
+      ].join("\n"),
+    );
+  });
 });

@@ -1,0 +1,6 @@
+import { expect, test } from "bun:test";
+import { fixture_userAccountRows } from "../fixtures";
+
+test("uses fixture", () => {
+  expect(fixture_userAccountRows).toEqual([]);
+});
