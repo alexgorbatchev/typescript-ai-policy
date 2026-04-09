@@ -62,10 +62,11 @@ When adding or changing rules here:
 5. Prefer conventional ESLint-style rule ids: use `no-*` for bans, `require-*` for must-exist policies, and `*-convention` / `consistent-*` for naming or formatting rules.
 6. Keep each rule focused on one repository policy.
 7. Prefer clear `meta.docs.description`, `schema`, and `messages` over ad-hoc reporting.
-8. Use `messageId` + `data` in `context.report(...)` when the rule defines `meta.messages`.
-9. Put file-scoping exceptions in Oxlint config when possible, not inside rule heuristics.
-10. If a rule applies to a path-glob-addressable file role such as `index.ts`, `constants.ts`, or `types.ts`, require narrow `overrides[].files` activation in `../oxlint.config.ts` instead of global `rules`.
-11. If a rule is fixable, implement it with standard ESLint fixer callbacks.
+8. Use `messageId` + `data` in `context.report(...)` when the rule defines `meta.messages`. However, **do not include node names or identifiers in the message text** because the lint harness inherently points to the node anyway.
+9. **Keep steering messages strict and direct.** Rule messages must be a maximum of 2 short sentences that provide a strict, direct instruction on what to fix.
+10. Put file-scoping exceptions in Oxlint config when possible, not inside rule heuristics.
+11. If a rule applies to a path-glob-addressable file role such as `index.ts`, `constants.ts`, or `types.ts`, require narrow `overrides[].files` activation in `../oxlint.config.ts` instead of global `rules`.
+12. If a rule is fixable, implement it with standard ESLint fixer callbacks.
 
 ## Mandatory red/green workflow for policy changes
 

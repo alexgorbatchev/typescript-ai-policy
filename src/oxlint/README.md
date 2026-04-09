@@ -47,6 +47,7 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/no-type-imports-from-constants`
    - `@alexgorbatchev/test-file-location-convention`
    - `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
+   - `@alexgorbatchev/no-lint-disable-comments`
 2. **TypeScript-wide naming, explicit-type, and template-literal rules** run on all `**/*.{ts,tsx,mts,cts}` files:
    - `@alexgorbatchev/interface-naming-convention`
    - `@alexgorbatchev/no-i-prefixed-type-aliases`
@@ -61,7 +62,6 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/component-story-file-convention`
 4. **Storybook file rules** run only on `**/*.stories.tsx`:
    - story files explicitly turn off the component-ownership rules (`@alexgorbatchev/testid-naming-convention`, `@alexgorbatchev/require-component-root-testid`, `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-story-file-convention`) because `*.stories.tsx` is a story-file role even when the file is misplaced and should be reported by story-specific rules instead of component-ownership rules
-   - story files also turn off `import/no-default-export` because Storybook CSF requires a default-exported meta object
    - `@alexgorbatchev/story-file-location-convention`
    - `@alexgorbatchev/story-meta-type-annotation`
    - `@alexgorbatchev/story-export-contract`
@@ -77,11 +77,9 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/index-file-contract` on `**/index.ts` and `**/index.tsx`
    - `@alexgorbatchev/no-type-exports-from-constants` on `**/constants.{ts,tsx,mts,cts}` and `**/constants.d.{ts,tsx,mts,cts}`
    - `@alexgorbatchev/no-value-exports-from-types` on `**/types.{ts,tsx,mts,cts}` and `**/types.d.{ts,tsx,mts,cts}`
-8. **Tool-owned config-entrypoint compatibility overrides** run only on `**/oxlint.config.ts` and `**/oxfmt.config.ts`:
-   - `import/no-default-export` is forced off because Oxlint and Oxfmt document these TypeScript config entrypoints as default-exported modules
-9. **`__tests__/` area rules** run anywhere under `**/__tests__/**`:
+8. **`__tests__/` area rules** run anywhere under `**/__tests__/**`:
    - `@alexgorbatchev/no-module-mocking`
-10. **Test-file rules** run on `__tests__/**/*.test.ts` and `__tests__/**/*.test.tsx`:
+9. **Test-file rules** run on `__tests__/**/*.test.ts` and `__tests__/**/*.test.tsx`:
 
 - test files explicitly turn off `@alexgorbatchev/testid-naming-convention` and `@alexgorbatchev/require-component-root-testid` because test harnesses are not ownership components
 - `@alexgorbatchev/no-non-running-tests`
@@ -93,7 +91,7 @@ on files that cannot meaningfully violate them.
 - `jest/no-disabled-tests`
 - `jest/no-focused-tests`
 
-11. **Fixture-entrypoint and fixture-area rules** run on nested `fixtures.ts`, `fixtures.tsx`, and `fixtures/`
+10. **Fixture-entrypoint and fixture-area rules** run on nested `fixtures.ts`, `fixtures.tsx`, and `fixtures/`
     directories anywhere under `__tests__/` or `stories/`, depending on the rule.
 
 This staged configuration is part of the contract. The global rules only protect the remaining hard placement
@@ -149,6 +147,12 @@ function readRows(): any[] {
   return [];
 }
 ```
+
+## Global enforcement policies
+
+### `@alexgorbatchev/no-lint-disable-comments`
+
+**Policy:** Do not use inline lint-disable comments for ESLint or Oxlint. Fix the code to satisfy the shared policy instead of bypassing it locally.
 
 ### `jest/no-disabled-tests`
 
@@ -257,6 +261,26 @@ export type IURLConfig = {
 ```
 
 **Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can apply supported type-alias renames through the `tsgo` LSP backend. The fixer is intentionally conservative: it only drops the leading `I` when the diagnostic resolves to a concrete `type` alias name that already matches the repository's banned `I[A-Z][A-Za-z0-9]*` shape.
+
+### `@alexgorbatchev/no-direct-interface-to-type-assignment`
+
+**Policy:** Do not create useless passthrough type aliases for interfaces (e.g. `type MyType = IMyType`). Direct assignments provide no type-level benefit and add unnecessary indirection.
+
+**Good**
+
+```ts
+export type UserProfile = Omit<IUserProfile, "id">;
+```
+
+```ts
+export type Id = string;
+```
+
+**Bad**
+
+```ts
+export type UserProfile = IUserProfile;
+```
 
 ## Explicit type-expression policies
 
@@ -516,6 +540,8 @@ export function SurfacePanel() {
 
 **Policy:** A component ownership file may export exactly one main runtime component plus unrestricted type-only API, or one multipart component family plus unrestricted type-only API. Multipart families are allowed when every runtime export is a valid component export and all component names share the same shortest root name, such as `Select`, `SelectTrigger`, and `SelectValue`. Plain components must use `export function ComponentName() {}`. Wrapped components must use a direct named `export const` binding whose innermost function expression is named and matches the exported symbol.
 
+To satisfy external interfaces (such as Next.js pages or lazy loading) that require a default export, you may add `export default ComponentName;` at the bottom of the file as a passthrough alias. Inline `export default function ComponentName()` remains forbidden because the primary contract requires a named component export.
+
 **Good**
 
 ```tsx
@@ -542,6 +568,14 @@ export function Select() {
 export function SelectValue() {
   return <span />;
 }
+```
+
+```tsx
+export function Page() {
+  return <div />;
+}
+
+export default Page;
 ```
 
 **Bad**
@@ -667,12 +701,22 @@ export { Default as AccountPanel };
 **Policy:** A hook ownership file may export exactly one main runtime hook plus unrestricted type-only API. The main
 hook export must be a plain named function declaration: `export function useThing() {}`.
 
+To satisfy external interfaces that require a default export, you may add `export default useThing;` at the bottom of the file as a passthrough alias.
+
 **Good**
 
 ```ts
 export function useAccount() {
   return null;
 }
+```
+
+```ts
+export function useFeatureFlag() {
+  return false;
+}
+
+export default useFeatureFlag;
 ```
 
 **Bad**

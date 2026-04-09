@@ -73,9 +73,6 @@ defaults, so the shared policy still wins on conflicting keys.
 For Oxlint specifically, consumer configs are extension-only. If the callback tries to redefine a shared rule, the
 factory throws instead of letting repositories silently weaken the policy downstream.
 
-The shared Oxlint config also force-disables `import/no-default-export` for `*.stories.tsx`, `oxlint.config.ts`, and
-`oxfmt.config.ts`, because those file roles require default exports.
-
 When you run Oxlint manually, use Bun to launch the CLI:
 
 ```bash
@@ -97,6 +94,20 @@ At a glance, the shared policy enforces:
 - deterministic component test ids such as `ComponentName` and `ComponentName--child`
 - strict boundaries between runtime code, test code, story code, and fixture code
 - explicit type/value ownership rules for files such as `index.ts`, `constants.ts`, and `types.ts`
+- strict naming and structural conventions for interfaces and type aliases
+- a policy stance that inline lint-disable comments are not an acceptable escape hatch for fixing violations
+
+## Lint-disable comments are not a valid repair strategy
+
+Agents and developers are expected to satisfy the shared policy directly, not suppress it locally with comments such as `// oxlint-disable-next-line` or `/* oxlint-disable */`.
+
+This package explicitly bans inline lint-disable comments for both ESLint and Oxlint. Treat this as a **hard policy signal**, not as an obstacle to bypass. The enforcement strategy assumes you will fix the underlying contract violation rather than suppressing the warning.
+
+The important contract is simple:
+
+- do not use inline lint-disable comments to get around the shared policy
+- fix the code so it satisfies the rule set instead
+- if the policy itself is wrong, change the shared package deliberately rather than bypassing it locally
 
 ## Storybook is the React component contract
 
