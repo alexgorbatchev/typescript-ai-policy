@@ -3,6 +3,7 @@ import { Missing } from "../../Missing";
 
 const meta: Meta<typeof Missing> = {
   component: Missing,
+  title: "accounts/catalog/Missing",
 };
 
 export default meta;

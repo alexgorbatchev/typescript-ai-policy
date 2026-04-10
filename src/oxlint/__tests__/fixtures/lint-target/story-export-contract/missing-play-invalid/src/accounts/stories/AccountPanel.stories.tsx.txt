@@ -3,6 +3,7 @@ import { AccountPanel } from "../AccountPanel";
 
 const meta: Meta<typeof AccountPanel> = {
   component: AccountPanel,
+  title: "accounts/AccountPanel",
 };
 
 export default meta;

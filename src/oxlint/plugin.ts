@@ -25,6 +25,7 @@ import componentStoryFileConventionRule from "./rules/component-story-file-conve
 import storiesDirectoryFileConventionRule from "./rules/stories-directory-file-convention.ts";
 import storyFileLocationConventionRule from "./rules/story-file-location-convention.ts";
 import storyMetaTypeAnnotationRule from "./rules/story-meta-type-annotation.ts";
+import storyTitleConventionRule from "./rules/story-title-convention.ts";
 import storyExportContractRule from "./rules/story-export-contract.ts";
 import hookExportLocationConventionRule from "./rules/hook-export-location-convention.ts";
 import hooksDirectoryFileConventionRule from "./rules/hooks-directory-file-convention.ts";
@@ -75,6 +76,7 @@ const plugin = {
     "stories-directory-file-convention": storiesDirectoryFileConventionRule,
     "story-file-location-convention": storyFileLocationConventionRule,
     "story-meta-type-annotation": storyMetaTypeAnnotationRule,
+    "story-title-convention": storyTitleConventionRule,
     "story-export-contract": storyExportContractRule,
     "hook-export-location-convention": hookExportLocationConventionRule,
     "hooks-directory-file-convention": hooksDirectoryFileConventionRule,

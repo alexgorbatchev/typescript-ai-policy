@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import type { NodeWithParent, TSESTree } from "@typescript-eslint/types";
 import type {
   AstClassLike,
@@ -13,6 +13,7 @@ import type {
 
 const NON_OWNERSHIP_SUPPORT_BASENAMES = new Set(["index", "types", "constants", "helpers"]);
 const STRICT_AREA_ALLOWED_SUPPORT_FILES = new Set(["index.ts", "types.ts"]);
+const PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH = new Map<string, string | null>();
 
 type DirectoryNames = ReadonlySet<string> | readonly string[];
 type FirstMatchingDirectoryResult = {
@@ -230,6 +231,54 @@ export function readRootPathBeforeDirectory(filename: string, expectedDirectoryN
   }
 
   return normalizedFilename.slice(0, directoryIndex);
+}
+
+export function readNearestPackageRootPath(filename: string): string | null {
+  const visitedDirectoryPaths: string[] = [];
+  let currentDirectoryPath = resolve(dirname(filename));
+
+  while (true) {
+    if (PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH.has(currentDirectoryPath)) {
+      const cachedPackageRootPath =
+        PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH.get(currentDirectoryPath) ?? null;
+
+      visitedDirectoryPaths.forEach((visitedDirectoryPath) => {
+        PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH.set(visitedDirectoryPath, cachedPackageRootPath);
+      });
+
+      return cachedPackageRootPath;
+    }
+
+    visitedDirectoryPaths.push(currentDirectoryPath);
+
+    if (existsSync(join(currentDirectoryPath, "package.json"))) {
+      visitedDirectoryPaths.forEach((visitedDirectoryPath) => {
+        PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH.set(visitedDirectoryPath, currentDirectoryPath);
+      });
+
+      return currentDirectoryPath;
+    }
+
+    const parentDirectoryPath = dirname(currentDirectoryPath);
+    if (parentDirectoryPath === currentDirectoryPath) {
+      visitedDirectoryPaths.forEach((visitedDirectoryPath) => {
+        PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH.set(visitedDirectoryPath, null);
+      });
+
+      return null;
+    }
+
+    currentDirectoryPath = parentDirectoryPath;
+  }
+}
+
+export function readPackageRelativePath(filename: string): string | null {
+  const packageRootPath = readNearestPackageRootPath(filename);
+  if (packageRootPath === null) {
+    return null;
+  }
+
+  return normalizeFilename(relative(packageRootPath, resolve(filename)));
 }
 
 export function findDescendantFilePath(rootDirectoryPath: string, expectedBaseName: string): string | null {

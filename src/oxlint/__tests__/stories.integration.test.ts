@@ -16,10 +16,26 @@ describe("story lint-target integration", () => {
       {
         column: 24,
         filePath: "src/accounts/stories/AccountPanel.stories.tsx",
-        line: 12,
+        line: 13,
         message:
           "Add a `play` property to this story object. Component stories are the required interaction-test surface for the sibling component.",
         ruleId: "@alexgorbatchev(story-export-contract)",
+        severity: "error",
+      },
+    ]);
+  });
+
+  it("reports story meta titles that do not match the package-relative story path", () => {
+    const lintTargetResult = runLintTargetFixture("story-title-convention/missing-title-invalid");
+
+    expectLintTargetFailure(lintTargetResult, [
+      {
+        column: 41,
+        filePath: "src/accounts/stories/catalog/AccountPanel.stories.tsx",
+        line: 4,
+        message:
+          'Add `title: "accounts/catalog/AccountPanel"` to this meta object. Storybook titles must match the package-relative story path without the structural `src/` or `stories/` segments.',
+        ruleId: "@alexgorbatchev(story-title-convention)",
         severity: "error",
       },
     ]);

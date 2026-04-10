@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { AccountPanel } from "../AccountPanel";
+import { AccountPanel } from "../../AccountPanel";
 
 const meta: Meta<typeof AccountPanel> = {
   component: AccountPanel,
-  title: "accounts/AccountPanel",
 };
 
 export default meta;

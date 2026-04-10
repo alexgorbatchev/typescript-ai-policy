@@ -80,7 +80,7 @@ describe("fixture lint-target integration", () => {
       {
         column: 7,
         filePath: "src/accounts/stories/AccountPanel.stories.tsx",
-        line: 12,
+        line: 13,
         message:
           'Delete the inline "fixture_accountPanel" declaration from this file and import it from a relative "fixtures" module under the same "__tests__/" or "stories/" tree instead.',
         ruleId: "@alexgorbatchev(no-inline-fixture-bindings-in-tests)",

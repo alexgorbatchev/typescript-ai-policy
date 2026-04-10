@@ -75,6 +75,7 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
         "@alexgorbatchev/component-story-file-convention": "off",
         "@alexgorbatchev/story-file-location-convention": "error",
         "@alexgorbatchev/story-meta-type-annotation": "error",
+        "@alexgorbatchev/story-title-convention": "error",
         "@alexgorbatchev/story-export-contract": "error",
         "@alexgorbatchev/no-inline-fixture-bindings-in-tests": "error",
         "@alexgorbatchev/fixture-import-path-convention": "error",

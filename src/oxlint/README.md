@@ -65,6 +65,7 @@ on files that cannot meaningfully violate them.
    - story files explicitly turn off the component-ownership rules (`@alexgorbatchev/testid-naming-convention`, `@alexgorbatchev/require-component-root-testid`, `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-story-file-convention`) because `*.stories.tsx` is a story-file role even when the file is misplaced and should be reported by story-specific rules instead of component-ownership rules
    - `@alexgorbatchev/story-file-location-convention`
    - `@alexgorbatchev/story-meta-type-annotation`
+   - `@alexgorbatchev/story-title-convention`
    - `@alexgorbatchev/story-export-contract`
    - `@alexgorbatchev/no-inline-fixture-bindings-in-tests`
    - `@alexgorbatchev/fixture-import-path-convention`
@@ -666,6 +667,7 @@ ComponentName> = { ... }`. Do not use object assertions or rely on inference for
 ```tsx
 const meta: Meta<typeof AccountPanel> = {
   component: AccountPanel,
+  title: "accounts/AccountPanel",
 };
 
 export default meta;
@@ -676,9 +678,40 @@ export default meta;
 ```tsx
 const meta = {
   component: AccountPanel,
+  title: "accounts/AccountPanel",
 } as Meta<typeof AccountPanel>;
 
 export default meta;
+```
+
+### `@alexgorbatchev/story-title-convention`
+
+**Policy:** Storybook files must set `meta.title` to the package-relative story path with the structural `src/` and
+`stories/` segments removed.
+
+**Good**
+
+```text
+packages/ui/src/accounts/stories/AccountPanel.stories.tsx -> accounts/AccountPanel
+packages/ui/src/accounts/stories/catalog/AccountPanel.stories.tsx -> accounts/catalog/AccountPanel
+```
+
+**Good**
+
+```tsx
+const meta: Meta<typeof AccountPanel> = {
+  component: AccountPanel,
+  title: "accounts/catalog/AccountPanel",
+};
+```
+
+**Bad**
+
+```tsx
+const meta: Meta<typeof AccountPanel> = {
+  component: AccountPanel,
+  title: "src/accounts/stories/catalog/AccountPanel",
+};
 ```
 
 ### `@alexgorbatchev/story-export-contract`
