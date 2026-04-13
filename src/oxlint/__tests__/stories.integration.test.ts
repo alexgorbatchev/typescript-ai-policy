@@ -30,7 +30,7 @@ describe("story lint-target integration", () => {
 
     expectLintTargetFailure(lintTargetResult, [
       {
-        column: 41,
+        column: 7,
         filePath: "src/accounts/stories/catalog/AccountPanel.stories.tsx",
         line: 4,
         message:

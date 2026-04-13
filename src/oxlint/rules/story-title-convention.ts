@@ -34,7 +34,12 @@ function readTopLevelVariableDeclarator(program: AstProgram, name: string): Meta
   return null;
 }
 
-function readMetaObjectExpression(program: AstProgram): TSESTree.ObjectExpression | null {
+type MetaInfo = {
+  objectExpression: TSESTree.ObjectExpression;
+  declaratorId: TSESTree.Identifier;
+};
+
+function readMetaInfo(program: AstProgram): MetaInfo | null {
   const defaultExportDeclaration = readDefaultExportDeclaration(program);
   if (!defaultExportDeclaration || defaultExportDeclaration.declaration.type !== "Identifier") {
     return null;
@@ -47,7 +52,14 @@ function readMetaObjectExpression(program: AstProgram): TSESTree.ObjectExpressio
 
   const metaInitializer = unwrapTypeScriptExpression(metaBinding.declarator.init);
 
-  return metaInitializer.type === "ObjectExpression" ? metaInitializer : null;
+  if (metaInitializer.type === "ObjectExpression") {
+    return {
+      objectExpression: metaInitializer,
+      declaratorId: metaBinding.declarator.id as TSESTree.Identifier,
+    };
+  }
+
+  return null;
 }
 
 function readPropertyName(property: TSESTree.Property): string | null {
@@ -143,15 +155,15 @@ const storyTitleConventionRule: RuleModule = {
           return;
         }
 
-        const metaObjectExpression = readMetaObjectExpression(node);
-        if (!metaObjectExpression) {
+        const metaInfo = readMetaInfo(node);
+        if (!metaInfo) {
           return;
         }
 
-        const titleProperty = readTitleProperty(metaObjectExpression);
+        const titleProperty = readTitleProperty(metaInfo.objectExpression);
         if (!titleProperty) {
           context.report({
-            node: metaObjectExpression,
+            node: metaInfo.declaratorId,
             messageId: "missingStoryTitle",
             data: {
               expectedTitle,
