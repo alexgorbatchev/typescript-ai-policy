@@ -34,7 +34,7 @@ describe("story lint-target integration", () => {
         filePath: "src/accounts/stories/catalog/AccountPanel.stories.tsx",
         line: 4,
         message:
-          'Add `title: "accounts/catalog/AccountPanel"` to this meta object. Storybook titles must match the package-relative story path without the structural `src/` or `stories/` segments.',
+          'Add `title: "@my-org/my-package/accounts/catalog/AccountPanel"` to this meta object. Storybook titles must match the package-relative story path without the structural `src/` or `stories/` segments.',
         ruleId: "@alexgorbatchev(story-title-convention)",
         severity: "error",
       },

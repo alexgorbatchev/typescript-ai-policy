@@ -17,19 +17,19 @@ afterAll(() => {
   rmSync(tempRootDirectoryPath, { recursive: true, force: true });
 });
 
-function createPackageRootDirectoryPath(name: string): string {
+function createPackageRootDirectoryPath(name: string, packageName: string): string {
   const directoryPath = join(tempRootDirectoryPath, name);
   mkdirSync(directoryPath, { recursive: true });
-  writeFileSync(join(directoryPath, "package.json"), "{}\n");
+  writeFileSync(join(directoryPath, "package.json"), JSON.stringify({ name: packageName }) + "\n");
   return directoryPath;
 }
 
-const basicPackageRootDirectoryPath = createPackageRootDirectoryPath("basic-package");
+const basicPackageRootDirectoryPath = createPackageRootDirectoryPath("basic-package", "@scope/basic-package");
 
-const workspaceRootDirectoryPath = createPackageRootDirectoryPath("workspace-root");
+const workspaceRootDirectoryPath = createPackageRootDirectoryPath("workspace-root", "workspace-root");
 const nestedPackageRootDirectoryPath = join(workspaceRootDirectoryPath, "packages", "ui");
 mkdirSync(nestedPackageRootDirectoryPath, { recursive: true });
-writeFileSync(join(nestedPackageRootDirectoryPath, "package.json"), "{}\n");
+writeFileSync(join(nestedPackageRootDirectoryPath, "package.json"), JSON.stringify({ name: "@scope/ui" }) + "\n");
 
 const ruleTester = new RuleTester();
 
@@ -42,7 +42,7 @@ ruleTester.run("story-title-convention enforces package-relative Storybook title
 
         const meta: Meta<typeof AccountPanel> = {
           component: AccountPanel,
-          title: 'accounts/AccountPanel',
+          title: '@scope/basic-package/accounts/AccountPanel',
         };
 
         export default meta;
@@ -57,7 +57,7 @@ ruleTester.run("story-title-convention enforces package-relative Storybook title
 
         const meta: Meta<typeof TextField> = {
           component: TextField,
-          title: 'forms/catalog/TextField',
+          title: '@scope/ui/forms/catalog/TextField',
         };
 
         export default meta;
@@ -84,7 +84,7 @@ ruleTester.run("story-title-convention enforces package-relative Storybook title
         {
           messageId: "missingStoryTitle",
           data: {
-            expectedTitle: "accounts/AccountPanel",
+            expectedTitle: "@scope/basic-package/accounts/AccountPanel",
           },
         },
       ],
@@ -108,7 +108,7 @@ ruleTester.run("story-title-convention enforces package-relative Storybook title
         {
           messageId: "unexpectedStoryTitle",
           data: {
-            expectedTitle: "forms/catalog/TextField",
+            expectedTitle: "@scope/ui/forms/catalog/TextField",
           },
         },
       ],

@@ -1,6 +1,11 @@
 import type { TSESTree } from "@typescript-eslint/types";
 import type { AstProgram, RuleModule } from "./types.ts";
-import { getPathSegments, readPackageRelativePath, unwrapTypeScriptExpression } from "./helpers.ts";
+import {
+  getPathSegments,
+  readNearestPackageName,
+  readPackageRelativePath,
+  unwrapTypeScriptExpression,
+} from "./helpers.ts";
 
 type MetaBinding = {
   declaration: TSESTree.VariableDeclaration;
@@ -108,6 +113,11 @@ function readExpectedStoryTitle(filename: string): string | null {
     return null;
   }
 
+  const packageName = readNearestPackageName(filename);
+  if (!packageName) {
+    return null;
+  }
+
   let pathSegments = getPathSegments(packageRelativePath);
   if (pathSegments[0] === "src") {
     pathSegments = pathSegments.slice(1);
@@ -124,6 +134,7 @@ function readExpectedStoryTitle(filename: string): string | null {
   }
 
   const storyTitleSegments = [
+    packageName,
     ...pathSegments.slice(0, storiesDirectoryIndex),
     ...pathSegments.slice(storiesDirectoryIndex + 1, -1),
     storyFilename.slice(0, -".stories.tsx".length),

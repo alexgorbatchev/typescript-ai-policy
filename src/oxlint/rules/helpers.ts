@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import type { NodeWithParent, TSESTree } from "@typescript-eslint/types";
 import type {
@@ -269,6 +269,21 @@ export function readNearestPackageRootPath(filename: string): string | null {
     }
 
     currentDirectoryPath = parentDirectoryPath;
+  }
+}
+
+export function readNearestPackageName(filename: string): string | null {
+  const packageRootPath = readNearestPackageRootPath(filename);
+  if (!packageRootPath) {
+    return null;
+  }
+
+  try {
+    const packageJsonContent = readFileSync(join(packageRootPath, "package.json"), "utf8");
+    const packageJson = JSON.parse(packageJsonContent);
+    return typeof packageJson.name === "string" ? packageJson.name : null;
+  } catch {
+    return null;
   }
 }
 
