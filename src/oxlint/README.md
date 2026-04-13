@@ -686,14 +686,14 @@ export default meta;
 
 ### `@alexgorbatchev/story-title-convention`
 
-**Policy:** Storybook files must set `meta.title` to the package-relative story path with the structural `src/` and
+**Policy:** Storybook files must set `meta.title` to the package-relative story path including the package name, with the structural `src/` and
 `stories/` segments removed.
 
 **Good**
 
 ```text
-packages/ui/src/accounts/stories/AccountPanel.stories.tsx -> accounts/AccountPanel
-packages/ui/src/accounts/stories/catalog/AccountPanel.stories.tsx -> accounts/catalog/AccountPanel
+packages/ui/src/accounts/stories/AccountPanel.stories.tsx -> @scope/ui/accounts/AccountPanel
+packages/ui/src/accounts/stories/catalog/AccountPanel.stories.tsx -> @scope/ui/accounts/catalog/AccountPanel
 ```
 
 **Good**
@@ -701,7 +701,7 @@ packages/ui/src/accounts/stories/catalog/AccountPanel.stories.tsx -> accounts/ca
 ```tsx
 const meta: Meta<typeof AccountPanel> = {
   component: AccountPanel,
-  title: "accounts/catalog/AccountPanel",
+  title: "@scope/ui/accounts/catalog/AccountPanel",
 };
 ```
 
