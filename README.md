@@ -33,14 +33,15 @@ Upstream Oxlint, TypeScript, and Jest rules stay enabled as baseline correctness
 bun add -d @alexgorbatchev/typescript-ai-policy oxfmt oxlint
 ```
 
-If you want the semantic-fix CLI, install its tsgo backend too:
+If you want the semantic-fix CLI, install its optional peer dependencies too:
 
 ```bash
-bun add -d @typescript/native-preview
+bun add -d typescript @typescript/native-preview
 ```
 
-The semantic-fix CLI requires Bun at runtime because the installed bin uses a Bun shebang. That means Bun must be
-installed and available on `PATH` when you run the command.
+The published package ships compiled `.js` runtime files plus `.d.ts` declarations. The installed semantic-fix CLI runs
+through Node.js, so Bun is not required just to execute the package-installed bin, but the CLI still expects its
+optional peer dependencies to be installed in the consuming project.
 
 ## Quick start
 
@@ -164,6 +165,9 @@ Package-installed usage:
 Repository-local development usage:
 
 - `bun run fix:semantic -- <target-directory>` — run the same semantic fixer from this repository checkout while developing the package itself.
+
+The repository-local development command still uses Bun to execute the TypeScript source directly. The published npm
+package uses the compiled Node.js bin instead.
 
 Today the framework applies three conservative semantic fixes:
 

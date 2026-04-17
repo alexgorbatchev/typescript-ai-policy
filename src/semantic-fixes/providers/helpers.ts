@@ -1,14 +1,17 @@
 import { readFileSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
-import ts from "typescript";
+import type { Identifier, Node, SourceFile } from "typescript";
+import { readTypeScriptModule } from "../readTypeScriptModule.ts";
 import type { OxlintDiagnostic, SemanticFixProviderContext, SymbolRenameOperation } from "../types.ts";
 
-type NamedDeclarationWithIdentifier = ts.Node & {
-  name: ts.Identifier;
+const ts = readTypeScriptModule();
+
+type NamedDeclarationWithIdentifier = Node & {
+  name: Identifier;
 };
 
 type NamedDeclarationMatcher<TDeclaration extends NamedDeclarationWithIdentifier> = (
-  node: ts.Node,
+  node: Node,
 ) => node is TDeclaration;
 
 export function readAbsoluteDiagnosticFilePath(
@@ -25,14 +28,14 @@ export function readAbsoluteDiagnosticFilePath(
 export function readDiagnosticSourceFile(
   diagnostic: OxlintDiagnostic,
   context: SemanticFixProviderContext,
-): ts.SourceFile {
+): SourceFile {
   const filePath = readAbsoluteDiagnosticFilePath(diagnostic, context);
   const content = readFileSync(filePath, "utf8");
 
   return ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true);
 }
 
-export function readOffsetFromLineAndColumn(sourceFile: ts.SourceFile, line: number, column: number): number | null {
+export function readOffsetFromLineAndColumn(sourceFile: SourceFile, line: number, column: number): number | null {
   if (line < 1 || column < 1) {
     return null;
   }
@@ -45,7 +48,7 @@ export function readOffsetFromLineAndColumn(sourceFile: ts.SourceFile, line: num
 }
 
 export function readNamedDeclarationAtOffset<TDeclaration extends NamedDeclarationWithIdentifier>(
-  node: ts.Node,
+  node: Node,
   offset: number,
   isMatchingDeclaration: NamedDeclarationMatcher<TDeclaration>,
 ): TDeclaration | null {
@@ -71,7 +74,7 @@ export function readNamedDeclarationAtOffset<TDeclaration extends NamedDeclarati
 }
 
 export function readNamedDeclarationFromDiagnosticLabel<TDeclaration extends NamedDeclarationWithIdentifier>(
-  sourceFile: ts.SourceFile,
+  sourceFile: SourceFile,
   label: OxlintDiagnostic["labels"][number],
   isMatchingDeclaration: NamedDeclarationMatcher<TDeclaration>,
 ): TDeclaration | null {
@@ -94,8 +97,8 @@ export function readNamedDeclarationFromDiagnosticLabel<TDeclaration extends Nam
 
 export function readRenameSymbolOperation(
   diagnostic: OxlintDiagnostic,
-  sourceFile: ts.SourceFile,
-  declarationName: ts.Identifier,
+  sourceFile: SourceFile,
+  declarationName: Identifier,
   newName: string,
 ): SymbolRenameOperation {
   const filePath = sourceFile.fileName;

@@ -1,7 +1,10 @@
 import { dirname, relative, resolve } from "node:path";
 import { readFileSync } from "node:fs";
-import ts from "typescript";
+import type { ImportTypeNode, Node, SourceFile, StringLiteralLike } from "typescript";
+import { readTypeScriptModule } from "./readTypeScriptModule.ts";
 import type { TextEdit } from "./types.ts";
+
+const ts = readTypeScriptModule();
 
 function isRelativeModuleSpecifier(moduleSpecifier: string): boolean {
   return (
@@ -23,10 +26,10 @@ function readRelativeModuleSpecifier(fromDirectoryPath: string, targetPath: stri
 
 type ModuleSpecifierEntry = {
   moduleSpecifier: string;
-  node: ts.StringLiteralLike;
+  node: StringLiteralLike;
 };
 
-function readImportTypeArgumentLiteral(node: ts.ImportTypeNode): ts.StringLiteralLike | null {
+function readImportTypeArgumentLiteral(node: ImportTypeNode): StringLiteralLike | null {
   if (!ts.isLiteralTypeNode(node.argument)) {
     return null;
   }
@@ -34,7 +37,7 @@ function readImportTypeArgumentLiteral(node: ts.ImportTypeNode): ts.StringLitera
   return ts.isStringLiteralLike(node.argument.literal) ? node.argument.literal : null;
 }
 
-function readModuleSpecifierEntry(node: ts.Node): ModuleSpecifierEntry | null {
+function readModuleSpecifierEntry(node: Node): ModuleSpecifierEntry | null {
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
     return node.moduleSpecifier && ts.isStringLiteralLike(node.moduleSpecifier)
       ? {
@@ -88,10 +91,10 @@ function readModuleSpecifierEntry(node: ts.Node): ModuleSpecifierEntry | null {
   return null;
 }
 
-function readModuleSpecifierEntries(sourceFile: ts.SourceFile): readonly ModuleSpecifierEntry[] {
+function readModuleSpecifierEntries(sourceFile: SourceFile): readonly ModuleSpecifierEntry[] {
   const moduleSpecifierEntries: ModuleSpecifierEntry[] = [];
 
-  function visitNode(node: ts.Node): void {
+  function visitNode(node: Node): void {
     const moduleSpecifierEntry = readModuleSpecifierEntry(node);
     if (moduleSpecifierEntry) {
       moduleSpecifierEntries.push(moduleSpecifierEntry);

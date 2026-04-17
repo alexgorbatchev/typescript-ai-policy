@@ -15,39 +15,45 @@
   },
   "type": "module",
   "files": [
-    "src/oxfmt/createOxfmtConfig.ts",
-    "src/oxlint/assertNoRuleCollisions.ts",
-    "src/oxlint/createOxlintConfig.ts",
-    "src/oxlint/oxlint.config.ts",
-    "src/oxlint/plugin.ts",
-    "src/oxlint/rules/*.ts",
-    "src/semantic-fixes/*.ts",
-    "src/semantic-fixes/backends/tsgo-lsp/*.ts",
-    "src/semantic-fixes/providers/*.ts",
-    "src/shared/mergeConfig.ts"
+    "dist"
   ],
   "bin": {
-    "typescript-ai-policy-fix-semantic": "./src/semantic-fixes/runApplySemanticFixes.ts"
+    "typescript-ai-policy-fix-semantic": "./dist/bin/typescript-ai-policy-fix-semantic.js"
   },
   "exports": {
-    "./oxfmt-config": "./src/oxfmt/createOxfmtConfig.ts",
-    "./oxlint-config": "./src/oxlint/createOxlintConfig.ts",
-    "./oxlint-plugin": "./src/oxlint/plugin.ts"
+    "./oxfmt-config": {
+      "types": "./dist/oxfmt-config.d.ts",
+      "import": "./dist/oxfmt-config.js"
+    },
+    "./oxlint-config": {
+      "types": "./dist/oxlint-config.d.ts",
+      "import": "./dist/oxlint-config.js"
+    },
+    "./oxlint-plugin": {
+      "types": "./dist/oxlint-plugin.d.ts",
+      "import": "./dist/oxlint-plugin.js"
+    }
   },
   "peerDependencies": {
     "@typescript/native-preview": "^7.0.0-dev.20260330.1",
+    "typescript": "^6",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.57.0"
   },
   "peerDependenciesMeta": {
     "@typescript/native-preview": {
       "optional": true
+    },
+    "typescript": {
+      "optional": true
     }
   },
   "scripts": {
+    "build": "tsdown",
     "check": "./scripts/check.sh",
     "fix:semantic": "bun src/semantic-fixes/runApplySemanticFixes.ts",
-    "lint:target": "./scripts/lint-target.sh"
+    "lint:target": "./scripts/lint-target.sh",
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -55,6 +61,7 @@
     "@typescript/native-preview": "^7.0.0-dev.20260330.1",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.57.0",
+    "tsdown": "^0.21.9",
     "typescript": "^6"
   }
 }

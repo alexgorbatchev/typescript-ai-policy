@@ -1,4 +1,4 @@
-import ts from "typescript";
+import { readTypeScriptModule } from "../readTypeScriptModule.ts";
 import type {
   OxlintDiagnostic,
   SemanticFixOperation,
@@ -10,6 +10,8 @@ import {
   readNamedDeclarationFromDiagnosticLabel,
   readRenameSymbolOperation,
 } from "./helpers.ts";
+
+const ts = readTypeScriptModule();
 
 function readNormalizedTypeAliasName(typeAliasName: string): string | null {
   if (!/^I[A-Z][A-Za-z0-9]*$/u.test(typeAliasName)) {

@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import ts from "typescript";
+import { readTypeScriptModule } from "./readTypeScriptModule.ts";
 import type { TextEdit } from "./types.ts";
 
 type OffsetTextEdit = {
@@ -49,6 +49,7 @@ function compareOffsetTextEditsDescending(left: OffsetTextEdit, right: OffsetTex
 }
 
 function readOffset(positionContent: string, line: number, character: number): number {
+  const ts = readTypeScriptModule();
   const sourceFile = ts.createSourceFile("file.ts", positionContent, ts.ScriptTarget.Latest, true);
   return ts.getPositionOfLineAndCharacter(sourceFile, line, character);
 }

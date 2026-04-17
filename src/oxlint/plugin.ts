@@ -44,7 +44,20 @@ import noLocalTypeDeclarationsInFixtureFilesRule from "./rules/no-local-type-dec
 import singleFixtureEntrypointRule from "./rules/single-fixture-entrypoint.ts";
 import noLintDisableCommentsRule from "./rules/no-lint-disable-comments.ts";
 
-const plugin = {
+type PluginMeta = {
+  name: string;
+};
+
+type PluginRules = Record<string, unknown>;
+
+type OxlintPlugin = {
+  meta: PluginMeta;
+  rules: PluginRules;
+};
+
+// Keep the published plugin type minimal so generated declarations do not inline
+// the entire @typescript-eslint rule type graph into this package's public API.
+const plugin: OxlintPlugin = {
   meta: {
     name: "@alexgorbatchev",
   },
