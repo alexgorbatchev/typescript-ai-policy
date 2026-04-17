@@ -1,17 +1,29 @@
+import assert from "node:assert";
 import { describe, expect, it } from "bun:test";
+import type { ExternalPluginEntry } from "oxlint";
 import createOxlintConfig from "../createOxlintConfig.ts";
+
+type ExplicitJsPlugin = {
+  name: string;
+  specifier: string;
+};
+
+function assertIsExplicitJsPlugin(value: ExternalPluginEntry | undefined): asserts value is ExplicitJsPlugin {
+  assert(value && typeof value !== "string", "Expected an explicit JS plugin specifier object.");
+}
 
 describe("createOxlintConfig", () => {
   it("returns the shared lint defaults when no callback is provided", () => {
     const oxlintConfig = createOxlintConfig();
+    const jsPlugin = oxlintConfig.jsPlugins?.[0];
 
     expect(oxlintConfig.plugins).toEqual(["unicorn", "typescript", "oxc", "react", "jest"]);
-    expect(oxlintConfig.jsPlugins).toEqual([
-      {
-        name: "@alexgorbatchev",
-        specifier: "@alexgorbatchev/typescript-ai-policy/oxlint-plugin",
-      },
-    ]);
+    assertIsExplicitJsPlugin(jsPlugin);
+    expect(jsPlugin).toEqual({
+      name: "@alexgorbatchev",
+      specifier: expect.any(String),
+    });
+    expect(jsPlugin?.specifier.endsWith("/src/oxlint/plugin.ts")).toBe(true);
     expect(oxlintConfig.rules).toEqual({
       eqeqeq: "error",
       "@alexgorbatchev/no-react-create-element": "error",

@@ -1,8 +1,15 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig, type OxlintConfig } from "oxlint";
 import { mergeConfig } from "../shared/mergeConfig.ts";
 import { assertNoRuleCollisions } from "./assertNoRuleCollisions.ts";
 
 export type OxlintConfigCallback = () => OxlintConfig;
+
+function readJsPluginSpecifier(): string {
+  const pluginRelativePath = import.meta.url.endsWith("/createOxlintConfig.ts") ? "./plugin.ts" : "./oxlint-plugin.js";
+
+  return fileURLToPath(new URL(pluginRelativePath, import.meta.url));
+}
 
 //
 // The rules must be optimized for performance:
@@ -30,7 +37,7 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
   jsPlugins: [
     {
       name: "@alexgorbatchev",
-      specifier: "@alexgorbatchev/typescript-ai-policy/oxlint-plugin",
+      specifier: readJsPluginSpecifier(),
     },
   ],
   rules: {
