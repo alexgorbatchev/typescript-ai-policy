@@ -206,6 +206,7 @@ that the change only fixes behavior back to the already-documented contract.
 - create and push a matching annotated tag such as `v1.0.6`
 - the release workflow validates that `package.json` matches the tag version
 - after validation, the workflow runs `bun run check`, publishes to npm, and creates the matching GitHub Release with generated notes
+- **after the release workflow finishes, you must edit the GitHub Release notes** (using the `github-release` skill/`gh release edit`) to provide a generally expected level of detail. The auto-generated notes are not sufficient on their own. You must explain the changes, their impact, and any migration steps if applicable.
 
 Do not rely on CI to rewrite `package.json` during release; a tag and the committed package version must already agree.
 
