@@ -18,7 +18,7 @@
     "dist"
   ],
   "bin": {
-    "typescript-ai-policy-fix-semantic": "./dist/bin/typescript-ai-policy-fix-semantic.js"
+    "typescript-ai-policy": "./dist/bin/typescript-ai-policy.js"
   },
   "exports": {
     "./oxfmt-config": {
@@ -51,7 +51,7 @@
   "scripts": {
     "build": "tsdown",
     "check": "./scripts/check.sh",
-    "fix:semantic": "bun src/semantic-fixes/runApplySemanticFixes.ts",
+    "fix:semantic": "bun src/cli/runTypescriptAiPolicyCliMain.ts fix-semantic",
     "lint:target": "./scripts/lint-target.sh",
     "prepack": "npm run build"
   },
@@ -63,5 +63,8 @@
     "oxlint": "^1.57.0",
     "tsdown": "^0.21.9",
     "typescript": "^6"
+  },
+  "dependencies": {
+    "commander": "^13.1.0"
   }
 }

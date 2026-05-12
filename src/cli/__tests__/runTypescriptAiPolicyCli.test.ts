@@ -1,0 +1,289 @@
+import { expect, it } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { runTypescriptAiPolicyCli } from "../runTypescriptAiPolicyCli.ts";
+import type {
+  ApplySemanticFixesOptions,
+  ApplySemanticFixesResult,
+  ApplySemanticFixesProgressEvent,
+} from "../../semantic-fixes/types.ts";
+import type { TypescriptAiPolicyCliDependencies } from "../types.ts";
+
+const FIXTURE_RUNTIME_PATHS = {
+  oxlintConfigPath: "/runtime/oxlint.config.ts",
+  oxlintExecutablePath: "/runtime/oxlint",
+  tsgoExecutablePath: "/runtime/tsgo.js",
+};
+
+type TestHarness = {
+  applyCalls: ApplySemanticFixesOptions[];
+  dependencies: TypescriptAiPolicyCliDependencies;
+  stderr: string[];
+  stdout: string[];
+};
+
+type TestHarnessOptions = {
+  applyResult?: ApplySemanticFixesResult;
+  progressEvents?: readonly ApplySemanticFixesProgressEvent[];
+};
+
+function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
+  const applyCalls: ApplySemanticFixesOptions[] = [];
+  const stdout: string[] = [];
+  const stderr: string[] = [];
+  const applyResult: ApplySemanticFixesResult = options.applyResult ?? {
+    appliedFileCount: 0,
+    backendName: "tsgo-lsp+native",
+    changedFilePaths: [],
+    plannedFixCount: 0,
+    skippedDiagnostics: [],
+  };
+  const progressEvents = options.progressEvents ?? [];
+
+  return {
+    applyCalls,
+    dependencies: {
+      async applySemanticFixes(applyOptions: ApplySemanticFixesOptions): Promise<ApplySemanticFixesResult> {
+        applyCalls.push(applyOptions);
+
+        for (const progressEvent of progressEvents) {
+          applyOptions.onProgress?.(progressEvent);
+        }
+
+        return applyResult;
+      },
+      readSemanticFixRuntimePaths() {
+        return FIXTURE_RUNTIME_PATHS;
+      },
+      writeStderr(text: string) {
+        stderr.push(text);
+      },
+      writeStdout(text: string) {
+        stdout.push(text);
+      },
+    },
+    stderr,
+    stdout,
+  };
+}
+
+it("runs the fix-semantic subcommand through the package CLI", async () => {
+  const targetDirectoryPath = await mkdtemp(join(tmpdir(), "typescript-ai-policy-cli-"));
+  const harness = createTestHarness({
+    applyResult: {
+      appliedFileCount: 1,
+      backendName: "tsgo-lsp+native",
+      changedFilePaths: [join(targetDirectoryPath, "models.ts")],
+      plannedFixCount: 1,
+      skippedDiagnostics: [],
+    },
+    progressEvents: [
+      {
+        kind: "running-oxlint",
+        targetDirectoryPath,
+      },
+      {
+        diagnosticCount: 1,
+        kind: "collected-diagnostics",
+      },
+      {
+        kind: "planning-start",
+        operationCount: 1,
+      },
+      {
+        description: "Rename UserProfile to IUserProfile",
+        kind: "planning-operation",
+        operationCount: 1,
+        operationId: "operation-1",
+        operationIndex: 1,
+      },
+      {
+        dryRun: false,
+        fileCount: 1,
+        kind: "applying-file-changes",
+        moveCount: 0,
+        textEditCount: 2,
+      },
+      {
+        appliedFileCount: 1,
+        changedFileCount: 1,
+        kind: "complete",
+        plannedFixCount: 1,
+        skippedDiagnosticCount: 0,
+      },
+    ],
+  });
+
+  try {
+    const exitCode = await runTypescriptAiPolicyCli(
+      ["node", "typescript-ai-policy", "fix-semantic", targetDirectoryPath],
+      harness.dependencies,
+    );
+
+    expect(exitCode).toBe(0);
+    expect(harness.applyCalls).toEqual([
+      {
+        dryRun: false,
+        onProgress: harness.applyCalls[0]?.onProgress,
+        oxlintConfigPath: FIXTURE_RUNTIME_PATHS.oxlintConfigPath,
+        oxlintExecutablePath: FIXTURE_RUNTIME_PATHS.oxlintExecutablePath,
+        targetDirectoryPath,
+        tsgoExecutablePath: FIXTURE_RUNTIME_PATHS.tsgoExecutablePath,
+      },
+    ]);
+    expect(harness.stdout.join("")).toBe(`running oxlint...
+semantic-fix diagnostics: 1
+planning semantic fixes: 1 candidate operation(s)
+planning semantic fix 1/1: Rename UserProfile to IUserProfile
+applying changes: 2 text edit(s) and 0 file move(s) across 1 file(s)
+semantic fix complete: 1 plan(s), 1 changed file(s), 0 skipped diagnostic(s)
+backend: tsgo-lsp+native
+planned fixes: 1
+applied files: 1
+changed files:
+- models.ts
+`);
+    expect(harness.stderr).toEqual([]);
+  } finally {
+    await rm(targetDirectoryPath, { force: true, recursive: true });
+  }
+});
+
+it("passes the dry-run flag through the fix-semantic subcommand", async () => {
+  const targetDirectoryPath = await mkdtemp(join(tmpdir(), "typescript-ai-policy-cli-"));
+  const harness = createTestHarness({
+    applyResult: {
+      appliedFileCount: 0,
+      backendName: "tsgo-lsp+native",
+      changedFilePaths: [join(targetDirectoryPath, "__tests__/useAccount.test.ts")],
+      plannedFixCount: 1,
+      skippedDiagnostics: [
+        {
+          filePath: join(targetDirectoryPath, "stories.tsx"),
+          reason: "No safe semantic fix is available for this diagnostic.",
+          ruleCode: "@alexgorbatchev/story-export-contract",
+        },
+      ],
+    },
+    progressEvents: [
+      {
+        kind: "running-oxlint",
+        targetDirectoryPath,
+      },
+      {
+        diagnosticCount: 2,
+        kind: "collected-diagnostics",
+      },
+      {
+        kind: "planning-start",
+        operationCount: 1,
+      },
+      {
+        description: "Move useAccount.test.ts to __tests__/useAccount.test.ts",
+        kind: "planning-operation",
+        operationCount: 1,
+        operationId: "operation-1",
+        operationIndex: 1,
+      },
+      {
+        dryRun: true,
+        fileCount: 1,
+        kind: "applying-file-changes",
+        moveCount: 1,
+        textEditCount: 1,
+      },
+      {
+        appliedFileCount: 0,
+        changedFileCount: 1,
+        kind: "complete",
+        plannedFixCount: 1,
+        skippedDiagnosticCount: 1,
+      },
+    ],
+  });
+
+  try {
+    const exitCode = await runTypescriptAiPolicyCli(
+      ["node", "typescript-ai-policy", "fix-semantic", targetDirectoryPath, "--dry-run"],
+      harness.dependencies,
+    );
+
+    expect(exitCode).toBe(0);
+    expect(harness.applyCalls).toEqual([
+      {
+        dryRun: true,
+        onProgress: harness.applyCalls[0]?.onProgress,
+        oxlintConfigPath: FIXTURE_RUNTIME_PATHS.oxlintConfigPath,
+        oxlintExecutablePath: FIXTURE_RUNTIME_PATHS.oxlintExecutablePath,
+        targetDirectoryPath,
+        tsgoExecutablePath: FIXTURE_RUNTIME_PATHS.tsgoExecutablePath,
+      },
+    ]);
+    expect(harness.stdout.join("")).toBe(`running oxlint...
+semantic-fix diagnostics: 2
+planning semantic fixes: 1 candidate operation(s)
+planning semantic fix 1/1: Move useAccount.test.ts to __tests__/useAccount.test.ts
+dry run: 1 text edit(s) and 1 file move(s) across 1 file(s)
+semantic fix complete: 1 plan(s), 1 changed file(s), 1 skipped diagnostic(s)
+backend: tsgo-lsp+native
+planned fixes: 1
+applied files: 0
+changed files:
+- __tests__/useAccount.test.ts
+skipped diagnostics:
+- [@alexgorbatchev/story-export-contract] stories.tsx: No safe semantic fix is available for this diagnostic.
+`);
+    expect(harness.stderr).toEqual([]);
+  } finally {
+    await rm(targetDirectoryPath, { force: true, recursive: true });
+  }
+});
+
+it("prints CLI help when no subcommand is provided", async () => {
+  const harness = createTestHarness();
+
+  const exitCode = await runTypescriptAiPolicyCli(["node", "typescript-ai-policy"], harness.dependencies);
+
+  expect(exitCode).toBe(1);
+  expect(harness.stdout).toEqual([]);
+  expect(harness.stderr.join("")).toMatchInlineSnapshot(`
+    "Usage: typescript-ai-policy [options] [command]
+
+    Options:
+      -h, --help                                 display help for command
+
+    Commands:
+      fix-semantic [options] <target-directory>  Apply safe semantic fixes for supported policy diagnostics
+      help [command]                             display help for command
+    "
+  `);
+});
+
+it("reports invalid target-directory arguments through the package CLI", async () => {
+  const harness = createTestHarness();
+  const missingDirectoryPath = join(tmpdir(), "typescript-ai-policy-cli-does-not-exist");
+
+  const exitCode = await runTypescriptAiPolicyCli(
+    ["node", "typescript-ai-policy", "fix-semantic", missingDirectoryPath],
+    harness.dependencies,
+  );
+
+  expect(exitCode).toBe(1);
+  expect(harness.stdout).toEqual([]);
+  expect(harness.stderr.join("")).toMatchInlineSnapshot(`
+    "error: command-argument value '${missingDirectoryPath}' is invalid for argument 'target-directory'. Target directory does not exist: ${missingDirectoryPath}
+
+    Usage: typescript-ai-policy fix-semantic [options] <target-directory>
+
+    Apply safe semantic fixes for supported policy diagnostics
+
+    Arguments:
+      target-directory  Target directory to lint and fix
+
+    Options:
+      --dry-run         Print planned fix scope without mutating files
+      -h, --help        display help for command
+    "
+  `);
+});

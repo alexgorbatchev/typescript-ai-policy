@@ -23,7 +23,7 @@ If you want a loose collection of optional style rules, this package is the wron
 - shared Oxlint config
 - custom `@alexgorbatchev/*` rules aimed at common LLM failure modes
 - diagnostics written as direct repair instructions
-- a semantic-fix CLI for a small set of safe structural fixes
+- the `typescript-ai-policy` CLI with a `fix-semantic` command for a small set of safe structural fixes
 
 Upstream Oxlint, TypeScript, and Jest rules stay enabled as baseline correctness guardrails.
 
@@ -33,15 +33,15 @@ Upstream Oxlint, TypeScript, and Jest rules stay enabled as baseline correctness
 bun add -d @alexgorbatchev/typescript-ai-policy oxfmt oxlint
 ```
 
-If you want the semantic-fix CLI, install its optional peer dependencies too:
+If you want to use the `typescript-ai-policy fix-semantic` command, install its optional peer dependencies too:
 
 ```bash
 bun add -d typescript @typescript/native-preview
 ```
 
-The published package ships compiled `.js` runtime files plus `.d.ts` declarations. The installed semantic-fix CLI runs
-through Node.js, so Bun is not required just to execute the package-installed bin, but the CLI still expects its
-optional peer dependencies to be installed in the consuming project.
+The published package ships compiled `.js` runtime files plus `.d.ts` declarations. The installed `typescript-ai-policy`
+CLI runs through Node.js, so Bun is not required just to execute the package-installed bin, but the `fix-semantic`
+command still expects its optional peer dependencies to be installed in the consuming project.
 
 ## Quick start
 
@@ -153,18 +153,18 @@ feature/
     └── useAccount.test.ts
 ```
 
-## Semantic-fix tooling
+## CLI tooling
 
-The package includes a semantic-fix CLI backed by `tsgo --lsp --stdio`.
+The package includes the `typescript-ai-policy` CLI. Its `fix-semantic` command is backed by `tsgo --lsp --stdio`.
 
 Package-installed usage:
 
-- `bun run typescript-ai-policy-fix-semantic -- <target-directory>` — run Oxlint with this package's policy config, collect supported diagnostics, and apply semantic fixes to the target directory.
-- `bun run typescript-ai-policy-fix-semantic -- <target-directory> --dry-run` — print the planned semantic-fix scope without mutating files.
+- `bun run typescript-ai-policy -- fix-semantic <target-directory>` — run Oxlint with this package's policy config, collect supported diagnostics, and apply semantic fixes to the target directory.
+- `bun run typescript-ai-policy -- fix-semantic <target-directory> --dry-run` — print the planned semantic-fix scope without mutating files.
 
 Repository-local development usage:
 
-- `bun run fix:semantic -- <target-directory>` — run the same semantic fixer from this repository checkout while developing the package itself.
+- `bun run fix:semantic -- <target-directory>` — run the same `fix-semantic` command from this repository checkout while developing the package itself.
 
 The repository-local development command still uses Bun to execute the TypeScript source directly. The published npm
 package uses the compiled Node.js bin instead.
