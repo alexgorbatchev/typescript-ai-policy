@@ -1,0 +1,17 @@
+import type { Meta, StoryObj } from "@storybook/react";
+import { Main } from "../main";
+
+const meta: Meta<typeof Main> = {
+  component: Main,
+  title: "outside-configured-component-globs-invalid/main",
+};
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+const Default: Story = {
+  play: async () => {},
+};
+
+export { Default as Main };

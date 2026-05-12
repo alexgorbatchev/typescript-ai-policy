@@ -4,6 +4,14 @@ import oxlintConfig from "../oxlint.config.ts";
 
 describe("oxlint.config", () => {
   it("exports the shared lint defaults", () => {
-    expect(oxlintConfig).toEqual(createOxlintConfig());
+    expect(oxlintConfig).toEqual(
+      createOxlintConfig(() => ({
+        settings: {
+          "@alexgorbatchev": {
+            componentGlobs: ["__repository-placeholder__/**/*.tsx"],
+          },
+        },
+      })),
+    );
   });
 });

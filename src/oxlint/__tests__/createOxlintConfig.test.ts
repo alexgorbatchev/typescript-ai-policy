@@ -8,13 +8,45 @@ type ExplicitJsPlugin = {
   specifier: string;
 };
 
+const COMPONENT_GLOBS = ["src/ui/components/**/*", "src/main.tsx"];
+
+function readValidUserConfig() {
+  return {
+    settings: {
+      "@alexgorbatchev": {
+        componentGlobs: COMPONENT_GLOBS,
+      },
+    },
+  };
+}
+
 function assertIsExplicitJsPlugin(value: ExternalPluginEntry | undefined): asserts value is ExplicitJsPlugin {
   assert(value && typeof value !== "string", "Expected an explicit JS plugin specifier object.");
 }
 
 describe("createOxlintConfig", () => {
-  it("returns the shared lint defaults when no callback is provided", () => {
-    const oxlintConfig = createOxlintConfig();
+  it("fails hard when componentGlobs is not configured", () => {
+    expect(() => createOxlintConfig()).toThrow(
+      'Shared oxlint config requires settings["@alexgorbatchev"].componentGlobs to be a non-empty array. Configure the component-owned TSX files explicitly before using @alexgorbatchev/typescript-ai-policy.',
+    );
+  });
+
+  it("fails hard when componentGlobs is empty", () => {
+    expect(() =>
+      createOxlintConfig(() => ({
+        settings: {
+          "@alexgorbatchev": {
+            componentGlobs: [],
+          },
+        },
+      })),
+    ).toThrow(
+      'Shared oxlint config requires settings["@alexgorbatchev"].componentGlobs to be a non-empty array. Configure the component-owned TSX files explicitly before using @alexgorbatchev/typescript-ai-policy.',
+    );
+  });
+
+  it("returns the shared lint defaults when componentGlobs is configured", () => {
+    const oxlintConfig = createOxlintConfig(readValidUserConfig);
     const jsPlugin = oxlintConfig.jsPlugins?.[0];
 
     expect(oxlintConfig.plugins).toEqual(["unicorn", "typescript", "oxc", "react", "jest"]);
@@ -94,6 +126,8 @@ describe("createOxlintConfig", () => {
     expect(oxlintConfig.overrides).toContainEqual({
       files: ["**/*.tsx"],
       rules: {
+        "@alexgorbatchev/no-classname-style-props-outside-component-globs": "error",
+        "@alexgorbatchev/no-intrinsic-elements-outside-component-globs": "error",
         "@alexgorbatchev/testid-naming-convention": "error",
         "@alexgorbatchev/require-component-root-testid": "error",
         "@alexgorbatchev/component-file-contract": "error",
@@ -128,6 +162,7 @@ describe("createOxlintConfig", () => {
 
   it("allows additive user config without weakening shared rules", () => {
     const oxlintConfig = createOxlintConfig(() => ({
+      ...readValidUserConfig(),
       ignorePatterns: ["coverage"],
       rules: {
         "no-var": "error",
@@ -164,6 +199,7 @@ describe("createOxlintConfig", () => {
   it("fails hard when a consumer tries to redefine a shared top-level rule", () => {
     expect(() =>
       createOxlintConfig(() => ({
+        ...readValidUserConfig(),
         rules: {
           eqeqeq: "warn",
         },
@@ -176,6 +212,7 @@ describe("createOxlintConfig", () => {
   it("fails hard when a consumer tries to redefine a shared override rule", () => {
     expect(() =>
       createOxlintConfig(() => ({
+        ...readValidUserConfig(),
         overrides: [
           {
             files: ["**/*.ts"],

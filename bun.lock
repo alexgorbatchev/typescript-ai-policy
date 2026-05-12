@@ -6,6 +6,7 @@
       "name": "@alexgorbatchev/typescript-ai-policy",
       "dependencies": {
         "commander": "^13.1.0",
+        "minimatch": "^10.2.5",
       },
       "devDependencies": {
         "@types/bun": "latest",

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
+import { minimatch } from "minimatch";
 import type { NodeWithParent, TSESTree } from "@typescript-eslint/types";
 import type {
   AstClassLike,
@@ -23,6 +24,14 @@ type FirstMatchingDirectoryResult = {
 
 export function normalizeFilename(filename: string): string {
   return filename.replaceAll("\\", "/");
+}
+
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function normalizeGlobPattern(globPattern: string): string {
+  return normalizeFilename(globPattern).replace(/^\.\//u, "");
 }
 
 export function getPathSegments(filename: string): string[] {
@@ -294,6 +303,48 @@ export function readPackageRelativePath(filename: string): string | null {
   }
 
   return normalizeFilename(relative(packageRootPath, resolve(filename)));
+}
+
+export function readConfigRelativePath(filename: string): string {
+  const packageRelativePath = readPackageRelativePath(filename);
+  if (packageRelativePath !== null) {
+    return packageRelativePath;
+  }
+
+  return normalizeFilename(relative(process.cwd(), resolve(filename)));
+}
+
+export function readConfiguredComponentGlobs(settings: Readonly<Record<string, unknown>>): string[] {
+  const pluginSettings = settings["@alexgorbatchev"];
+  if (!isRecord(pluginSettings)) {
+    return [];
+  }
+
+  const componentGlobs = Reflect.get(pluginSettings, "componentGlobs");
+  if (!Array.isArray(componentGlobs)) {
+    return [];
+  }
+
+  return componentGlobs
+    .filter((globPattern): globPattern is string => typeof globPattern === "string")
+    .map(normalizeGlobPattern)
+    .filter((globPattern) => globPattern.length > 0);
+}
+
+export function isInsideConfiguredComponentGlob(filename: string, componentGlobs: readonly string[]): boolean {
+  const configRelativePath = readConfigRelativePath(filename);
+
+  return componentGlobs.some((componentGlob) =>
+    minimatch(configRelativePath, componentGlob, {
+      dot: true,
+      nocomment: true,
+      nonegate: true,
+    }),
+  );
+}
+
+export function isStoryOrTestTsxFile(filename: string): boolean {
+  return isStoryFile(filename) || /(^|\/)[^/]+\.test\.tsx$/u.test(normalizeFilename(filename));
 }
 
 export function findDescendantFilePath(rootDirectoryPath: string, expectedBaseName: string): string | null {

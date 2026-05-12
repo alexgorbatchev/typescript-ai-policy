@@ -1,6 +1,18 @@
 import { describe, it } from "bun:test";
 import { expectLintTargetFailure, expectLintTargetSuccess } from "./expectLintTargetResult.ts";
 import { runLintTargetFixture } from "./runLintTargetFixture.ts";
+import { runLintTargetFixtureWithConsumerConfig } from "./runLintTargetFixtureWithConsumerConfig.ts";
+
+const FIXTURE_CONFIG_HEADER = {
+  configPath: "<fixture-root>/oxlint.config.ts",
+  targetPath: "<fixture-root>",
+};
+
+const COMPONENT_GLOB_SETTINGS = {
+  "@alexgorbatchev": {
+    componentGlobs: ["src/**/*.tsx"],
+  },
+};
 
 describe("fixture lint-target integration", () => {
   it("reports fixture exports that leak outside fixture entrypoints", () => {
@@ -54,39 +66,49 @@ describe("fixture lint-target integration", () => {
   });
 
   it("reports alternate fixture import paths in stories", () => {
-    const lintTargetResult = runLintTargetFixture(
+    const lintTargetResult = runLintTargetFixtureWithConsumerConfig(
       "fixture-import-path-convention/alternate-fixtures-path-in-story-invalid",
+      COMPONENT_GLOB_SETTINGS,
     );
 
-    expectLintTargetFailure(lintTargetResult, [
-      {
-        column: 10,
-        filePath: "src/accounts/stories/AccountPanel.stories.tsx",
-        line: 3,
-        message:
-          'Change this import so "fixture_accountPanel" comes from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree.',
-        ruleId: "@alexgorbatchev(fixture-import-path-convention)",
-        severity: "error",
-      },
-    ]);
+    expectLintTargetFailure(
+      lintTargetResult,
+      [
+        {
+          column: 10,
+          filePath: "src/accounts/stories/AccountPanel.stories.tsx",
+          line: 3,
+          message:
+            'Change this import so "fixture_accountPanel" comes from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree.',
+          ruleId: "@alexgorbatchev(fixture-import-path-convention)",
+          severity: "error",
+        },
+      ],
+      FIXTURE_CONFIG_HEADER,
+    );
   });
 
   it("reports inline fixture bindings in stories", () => {
-    const lintTargetResult = runLintTargetFixture(
+    const lintTargetResult = runLintTargetFixtureWithConsumerConfig(
       "no-inline-fixture-bindings-in-tests/inline-fixture-binding-in-story-invalid",
+      COMPONENT_GLOB_SETTINGS,
     );
 
-    expectLintTargetFailure(lintTargetResult, [
-      {
-        column: 7,
-        filePath: "src/accounts/stories/AccountPanel.stories.tsx",
-        line: 13,
-        message:
-          'Delete the inline "fixture_accountPanel" declaration from this file and import it from a relative "fixtures" module under the same "__tests__/" or "stories/" tree instead.',
-        ruleId: "@alexgorbatchev(no-inline-fixture-bindings-in-tests)",
-        severity: "error",
-      },
-    ]);
+    expectLintTargetFailure(
+      lintTargetResult,
+      [
+        {
+          column: 7,
+          filePath: "src/accounts/stories/AccountPanel.stories.tsx",
+          line: 13,
+          message:
+            'Delete the inline "fixture_accountPanel" declaration from this file and import it from a relative "fixtures" module under the same "__tests__/" or "stories/" tree instead.',
+          ruleId: "@alexgorbatchev(no-inline-fixture-bindings-in-tests)",
+          severity: "error",
+        },
+      ],
+      FIXTURE_CONFIG_HEADER,
+    );
   });
 
   it("allows nested tests to import fixtures from the sibling support tree", () => {

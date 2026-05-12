@@ -5,6 +5,36 @@ import { assertNoRuleCollisions } from "./assertNoRuleCollisions.ts";
 
 export type OxlintConfigCallback = () => OxlintConfig;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function assertConfiguredComponentGlobs(config: OxlintConfig): void {
+  const settings = config.settings;
+  if (!isRecord(settings)) {
+    throw new Error(
+      'Shared oxlint config requires settings["@alexgorbatchev"].componentGlobs to be a non-empty array. Configure the component-owned TSX files explicitly before using @alexgorbatchev/typescript-ai-policy.',
+    );
+  }
+
+  const pluginSettings = settings["@alexgorbatchev"];
+  if (!isRecord(pluginSettings)) {
+    throw new Error(
+      'Shared oxlint config requires settings["@alexgorbatchev"].componentGlobs to be a non-empty array. Configure the component-owned TSX files explicitly before using @alexgorbatchev/typescript-ai-policy.',
+    );
+  }
+
+  const componentGlobs = Reflect.get(pluginSettings, "componentGlobs");
+  if (
+    !Array.isArray(componentGlobs) ||
+    !componentGlobs.some((globPattern) => typeof globPattern === "string" && globPattern.length > 0)
+  ) {
+    throw new Error(
+      'Shared oxlint config requires settings["@alexgorbatchev"].componentGlobs to be a non-empty array. Configure the component-owned TSX files explicitly before using @alexgorbatchev/typescript-ai-policy.',
+    );
+  }
+}
+
 function readJsPluginSpecifier(): string {
   const pluginRelativePath = import.meta.url.endsWith("/createOxlintConfig.ts") ? "./plugin.ts" : "./oxlint-plugin.js";
 
@@ -65,6 +95,8 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
     {
       files: ["**/*.tsx"],
       rules: {
+        "@alexgorbatchev/no-classname-style-props-outside-component-globs": "error",
+        "@alexgorbatchev/no-intrinsic-elements-outside-component-globs": "error",
         "@alexgorbatchev/testid-naming-convention": "error",
         "@alexgorbatchev/require-component-root-testid": "error",
         "@alexgorbatchev/component-file-contract": "error",
@@ -182,5 +214,8 @@ export default function createOxlintConfig(callback?: OxlintConfigCallback): Oxl
 
   assertNoRuleCollisions(userConfig, DEFAULT_OXLINT_CONFIG);
 
-  return defineConfig(mergeConfig(userConfig, DEFAULT_OXLINT_CONFIG));
+  const mergedConfig = defineConfig(mergeConfig(userConfig, DEFAULT_OXLINT_CONFIG));
+  assertConfiguredComponentGlobs(mergedConfig);
+
+  return mergedConfig;
 }

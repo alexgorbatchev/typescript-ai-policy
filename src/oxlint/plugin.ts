@@ -43,6 +43,8 @@ import fixtureImportPathConventionRule from "./rules/fixture-import-path-convent
 import noLocalTypeDeclarationsInFixtureFilesRule from "./rules/no-local-type-declarations-in-fixture-files.ts";
 import singleFixtureEntrypointRule from "./rules/single-fixture-entrypoint.ts";
 import noLintDisableCommentsRule from "./rules/no-lint-disable-comments.ts";
+import noClassNameStylePropsOutsideComponentGlobsRule from "./rules/no-classname-style-props-outside-component-globs.ts";
+import noIntrinsicElementsOutsideComponentGlobsRule from "./rules/no-intrinsic-elements-outside-component-globs.ts";
 
 type PluginMeta = {
   name: string;
@@ -107,6 +109,8 @@ const plugin: OxlintPlugin = {
     "no-local-type-declarations-in-fixture-files": noLocalTypeDeclarationsInFixtureFilesRule,
     "single-fixture-entrypoint": singleFixtureEntrypointRule,
     "no-lint-disable-comments": noLintDisableCommentsRule,
+    "no-classname-style-props-outside-component-globs": noClassNameStylePropsOutsideComponentGlobsRule,
+    "no-intrinsic-elements-outside-component-globs": noIntrinsicElementsOutsideComponentGlobsRule,
   },
 };
 

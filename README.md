@@ -132,6 +132,10 @@ The policy enforces **role directories**, not one hardcoded feature tree.
 That means component and hook ownership files may live in different parent folders, but some roles still have strict
 placement rules:
 
+- `createOxlintConfig(...)` requires `settings["@alexgorbatchev"].componentGlobs` to be a non-empty array
+- non-story, non-test `.tsx` files must not render raw intrinsic JSX such as `<div>`, `<span>`, or `<p>` unless the
+  file path matches one of those globs
+- direct `className` and `style` props are only allowed in files matched by those globs
 - story files live under sibling `stories/` directories
 - test files live under sibling `__tests__/` directories
 - fixture entrypoints and fixture directories live under `stories/` or `__tests__/`
@@ -152,6 +156,25 @@ feature/
 └── __tests__/
     └── useAccount.test.ts
 ```
+
+Required component-glob config:
+
+```ts
+import createOxlintConfig from "@alexgorbatchev/typescript-ai-policy/oxlint";
+
+export default createOxlintConfig(() => ({
+  settings: {
+    "@alexgorbatchev": {
+      componentGlobs: ["src/ui/components/**/*", "src/email/templates/**/*", "src/main.tsx"],
+    },
+  },
+}));
+```
+
+Use forward slashes in the glob patterns. `createOxlintConfig(...)` throws if `componentGlobs` is missing or empty.
+With that setting in place, routes, pages, feature views, and other non-story, non-test `.tsx` files must render
+imported components instead of raw DOM tags, and they must not pass direct `className` or `style` props. Raw
+intrinsic JSX and direct styling props stay inside files matched by `componentGlobs`.
 
 ## CLI tooling
 

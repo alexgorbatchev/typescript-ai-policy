@@ -65,6 +65,7 @@
     "typescript": "^6"
   },
   "dependencies": {
-    "commander": "^13.1.0"
+    "commander": "^13.1.0",
+    "minimatch": "^10.2.5"
   }
 }

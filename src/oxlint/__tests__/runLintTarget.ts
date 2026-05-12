@@ -45,9 +45,22 @@ type SplitLintTargetOutputResult = {
 const OUTPUT_TEXT_DECODER = new TextDecoder();
 const REPOSITORY_ROOT_PATH = resolve(import.meta.dir, "../../..");
 const LINT_TARGET_SCRIPT_PATH = join(REPOSITORY_ROOT_PATH, "scripts", "lint-target.sh");
+const OXLINT_BINARY_PATH = join(REPOSITORY_ROOT_PATH, "node_modules", ".bin", "oxlint");
 
 function decodeProcessOutput(output: Uint8Array): string {
   return OUTPUT_TEXT_DECODER.decode(output).replace(/\r\n/gu, "\n");
+}
+
+function joinProcessOutputs(stdout: string, stderr: string): string {
+  if (stdout.length === 0) {
+    return stderr;
+  }
+
+  if (stderr.length === 0) {
+    return stdout;
+  }
+
+  return `${stdout}\n${stderr}`;
 }
 
 function normalizeLintTargetOutput(output: string, fixtureRepositoryPath: string): string {
@@ -58,6 +71,10 @@ function normalizeLintTargetOutput(output: string, fixtureRepositoryPath: string
     .replaceAll(canonicalFixtureRepositoryPath, "<fixture-root>")
     .replaceAll(fixtureRepositoryPath, "<fixture-root>")
     .trimEnd();
+}
+
+function normalizeLintTargetPath(path: string, fixtureRepositoryPath: string): string {
+  return normalizeLintTargetOutput(path, fixtureRepositoryPath);
 }
 
 function splitLintTargetOutput(output: string): SplitLintTargetOutputResult {
@@ -106,10 +123,9 @@ export function runLintTarget(fixtureRepositoryPath: string): LintTargetResult {
     stdout: "pipe",
   });
 
-  const rawOutput = normalizeLintTargetOutput(
-    `${decodeProcessOutput(lintTargetProcess.stdout)}${decodeProcessOutput(lintTargetProcess.stderr)}`,
-    fixtureRepositoryPath,
-  );
+  const stdout = decodeProcessOutput(lintTargetProcess.stdout);
+  const stderr = decodeProcessOutput(lintTargetProcess.stderr);
+  const rawOutput = normalizeLintTargetOutput(joinProcessOutputs(stdout, stderr), fixtureRepositoryPath);
   const { headerLines, jsonText } = splitLintTargetOutput(rawOutput);
   const oxlintJsonOutput = JSON.parse(jsonText) as OxlintJsonOutput;
 
@@ -118,6 +134,35 @@ export function runLintTarget(fixtureRepositoryPath: string): LintTargetResult {
     header: {
       configPath: readHeaderValue(headerLines[1], "config"),
       targetPath: readHeaderValue(headerLines[2], "target"),
+    },
+    issues: readIssues(oxlintJsonOutput),
+    rawOutput,
+  };
+}
+
+export function runLintTargetWithConfigPath(fixtureRepositoryPath: string, configPath: string): LintTargetResult {
+  const lintTargetProcess = Bun.spawnSync({
+    cmd: [OXLINT_BINARY_PATH, "--config", configPath, "--disable-nested-config", "--format", "json", "."],
+    cwd: fixtureRepositoryPath,
+    stderr: "pipe",
+    stdout: "pipe",
+  });
+
+  const stdout = decodeProcessOutput(lintTargetProcess.stdout);
+  const stderr = decodeProcessOutput(lintTargetProcess.stderr);
+  const rawOutput = normalizeLintTargetOutput(joinProcessOutputs(stdout, stderr), fixtureRepositoryPath);
+  const normalizedStdout = normalizeLintTargetOutput(stdout, fixtureRepositoryPath);
+  if (normalizedStdout.length === 0) {
+    throw new Error(`Could not find Oxlint JSON output in direct-config lint-target output:\n${rawOutput}`);
+  }
+
+  const oxlintJsonOutput = JSON.parse(normalizedStdout) as OxlintJsonOutput;
+
+  return {
+    exitCode: lintTargetProcess.exitCode,
+    header: {
+      configPath: normalizeLintTargetPath(configPath, fixtureRepositoryPath),
+      targetPath: "<fixture-root>",
     },
     issues: readIssues(oxlintJsonOutput),
     rawOutput,
