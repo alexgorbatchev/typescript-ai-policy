@@ -6,6 +6,8 @@ const testIdNamingConventionRule: RuleModule = {
     type: "suggestion" as const,
     docs: {
       description: "Enforce React test ids to use ComponentName for roots and ComponentName--thing for children",
+      guidance:
+        "Name root test ids after the owning component in PascalCase. Name descendant test ids as `ComponentName--part-name` and do not invent other separators or casing.",
     },
     messages: {
       invalidTestId:

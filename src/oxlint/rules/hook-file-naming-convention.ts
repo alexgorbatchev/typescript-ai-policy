@@ -123,6 +123,8 @@ const hookFileNamingConventionRule: RuleModule = {
     docs: {
       description:
         "Require hook ownership filenames to match their exported hook name in either camelCase or kebab-case `use*` form",
+      guidance:
+        "Name hook files after the exported hook using the `use...` contract. Do not use filenames that hide or contradict hook ownership.",
     },
     schema: [],
     messages: {

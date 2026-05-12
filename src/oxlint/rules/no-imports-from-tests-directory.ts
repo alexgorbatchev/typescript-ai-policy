@@ -32,6 +32,8 @@ const noImportsFromTestsDirectoryRule: RuleModule = {
     docs: {
       description:
         'Disallow files outside "__tests__" from importing, requiring, or re-exporting modules from a "__tests__" directory',
+      guidance:
+        "Keep runtime code out of `__tests__` imports. Move reusable code to owned runtime modules and import it from there.",
     },
     schema: [],
     messages: {

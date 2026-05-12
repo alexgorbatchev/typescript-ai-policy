@@ -218,6 +218,8 @@ const storyExportContractRule: RuleModule = {
     docs: {
       description:
         "Require Storybook story exports to use `const StoryName: Story = { ... }` bindings, enforce the single-vs-multiple export contract, and require a `play` property on every exported story",
+      guidance:
+        "Keep story exports limited to the approved Storybook surface. Remove helper exports and move support code out of story files.",
     },
     schema: [],
     messages: {

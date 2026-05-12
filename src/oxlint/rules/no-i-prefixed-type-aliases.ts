@@ -14,6 +14,7 @@ const noIPrefixedTypeAliasesRule: RuleModule = {
     docs: {
       description:
         'Disallow repository-owned type alias names that start with an "I" followed by another capital letter',
+      guidance: "Reserve the `I` prefix for interfaces only. Rename `type` aliases to semantic names without `I[A-Z]`.",
     },
     schema: [],
     messages: {

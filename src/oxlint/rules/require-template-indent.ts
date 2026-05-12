@@ -68,6 +68,8 @@ const requireTemplateIndentRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Require multiline template literals to keep their content indented with the surrounding code",
+      guidance:
+        "Indent multiline template literal content to match the surrounding code. Do not outdent raw template lines.",
     },
     schema: [],
     fixable: "code" as const,

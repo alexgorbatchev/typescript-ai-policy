@@ -136,6 +136,8 @@ const hookFileContractRule: RuleModule = {
     docs: {
       description:
         "Require hook ownership files to export exactly one direct named hook function and allow only type-only secondary exports",
+      guidance:
+        "Use hook files only for the hook contract they own. Keep unrelated exports, components, and file roles out of hook ownership files.",
     },
     schema: [],
     messages: {

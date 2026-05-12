@@ -38,6 +38,8 @@ const interfaceNamingConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: 'Enforce repository-owned interface names to use the "I" prefix followed by PascalCase',
+      guidance:
+        "Prefix repository-owned interfaces with `I` and use PascalCase after the prefix. Rename nonconforming interfaces instead of weakening the contract.",
     },
     schema: [],
     messages: {

@@ -9,6 +9,8 @@ const componentFileLocationConventionRule: RuleModule = {
     docs: {
       description:
         'Require non-hook, non-test ".tsx" files to live under a "components", "templates", or "layouts" directory',
+      guidance:
+        "Keep component ownership files in the allowed location for their role. Move misplaced component files into the canonical component-owned area.",
     },
     schema: [],
     messages: {

@@ -42,6 +42,8 @@ const hooksDirectoryFileConventionRule: RuleModule = {
     docs: {
       description:
         'Restrict "hooks" directories to direct-child hook ownership files, exempt support basenames, and sibling "__tests__" trees',
+      guidance:
+        "Keep hook directories limited to hook files and approved support files. Move unrelated roles out of hook-owned directories.",
     },
     schema: [],
     messages: {

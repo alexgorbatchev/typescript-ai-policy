@@ -194,6 +194,8 @@ const componentFileNamingConventionRule: RuleModule = {
     docs: {
       description:
         "Require component ownership filenames to match their exported PascalCase component name, or multipart family root name, in either PascalCase or kebab-case form",
+      guidance:
+        "Name component files after the component they export. Do not use ad-hoc filenames that hide ownership.",
     },
     schema: [],
     messages: {

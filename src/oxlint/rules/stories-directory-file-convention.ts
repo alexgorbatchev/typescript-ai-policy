@@ -21,6 +21,8 @@ const storiesDirectoryFileConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Restrict stories directory contents to story files, helpers, and fixtures",
+      guidance:
+        "Keep `stories/` directories limited to story files, approved helpers, and fixture support. Move unrelated files out of the story area.",
     },
     schema: [],
     messages: {

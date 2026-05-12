@@ -29,6 +29,8 @@ const testFileLocationConventionRule: RuleModule = {
     docs: {
       description:
         'Require non-.spec test files to live under a sibling "__tests__/" directory and use the .test.ts/.test.tsx suffix',
+      guidance:
+        "Keep committed tests under `__tests__/` and name them `*.test.ts` or `*.test.tsx`. Move misplaced test files into the canonical test area.",
     },
     schema: [],
     messages: {

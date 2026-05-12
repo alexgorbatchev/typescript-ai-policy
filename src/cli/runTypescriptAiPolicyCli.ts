@@ -1,11 +1,13 @@
 import { CommanderError } from "commander";
 import { createTypescriptAiPolicyCli } from "./createTypescriptAiPolicyCli.ts";
 import { applySemanticFixes } from "../semantic-fixes/applySemanticFixes.ts";
+import { readPublishedRuleGuidanceOutput } from "../oxlint/readPublishedRuleGuidanceOutput.ts";
 import { readSemanticFixRuntimePaths } from "../semantic-fixes/readSemanticFixRuntimePaths.ts";
 import type { TypescriptAiPolicyCliDependencies } from "./types.ts";
 
 const defaultDependencies: TypescriptAiPolicyCliDependencies = {
   applySemanticFixes,
+  readPublishedRuleGuidanceOutput,
   readSemanticFixRuntimePaths,
   writeStderr(text: string) {
     process.stderr.write(text);

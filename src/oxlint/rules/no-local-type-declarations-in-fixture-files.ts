@@ -13,6 +13,8 @@ const noLocalTypeDeclarationsInFixtureFilesRule: RuleModule = {
     docs: {
       description:
         'Disallow local type aliases, interfaces, and enums anywhere in nested fixture files under "__tests__/" or "stories/"',
+      guidance:
+        "Do not declare new local types inside fixture files. Move shared contracts to their owning domain modules and import them.",
     },
     schema: [],
     messages: {

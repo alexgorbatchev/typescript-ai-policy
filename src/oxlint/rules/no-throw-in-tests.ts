@@ -6,6 +6,8 @@ const noThrowInTestsRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: 'Ban "throw new Error(...)" inside committed test files',
+      guidance:
+        "Assert failures with matchers and helpers instead of throwing manually. Remove direct `throw` statements from committed tests.",
     },
     schema: [],
     messages: {

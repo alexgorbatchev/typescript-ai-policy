@@ -7,6 +7,8 @@ const fixtureExportNamingConventionRule: RuleModule = {
     docs: {
       description:
         "Enforce fixture_ and factory_ lowerCamelCase export names in the __tests__/fixtures or stories/fixtures entrypoint",
+      guidance:
+        "Name fixture exports with the repository fixture prefixes. Use `fixture_...` for data and `factory_...` for factories.",
     },
     schema: [],
     messages: {

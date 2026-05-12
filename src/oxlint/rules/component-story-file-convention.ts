@@ -67,6 +67,8 @@ const componentStoryFileConventionRule: RuleModule = {
     docs: {
       description:
         'Require every component ownership file to have a matching "basename.stories.tsx" file under a sibling "stories/" directory',
+      guidance:
+        "Place each component story alongside its owned component in the canonical story role. Do not scatter story files outside the expected component/story relationship.",
     },
     schema: [],
     messages: {

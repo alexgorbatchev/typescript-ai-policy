@@ -36,6 +36,25 @@ The fixture rules are the clearest example of this coupling. Together they defin
 Disabling one of those rules is not an isolated relaxation; it changes assumptions used by the rest of the fixture
 workflow.
 
+## Agent guidance output
+
+Each local `@alexgorbatchev/*` rule exposes an authoritative `meta.docs.guidance` string in its own rule module in
+addition to its description and lint messages.
+
+Use the package CLI to print those guidance strings for AI agents as a wrapped Markdown bullet list or as JSON:
+
+```bash
+bun run typescript-ai-policy -- guidance
+```
+
+```bash
+bun run typescript-ai-policy -- guidance --json
+```
+
+The published guidance output resolves config-dependent placeholders such as `componentGlobs` from the package's bundled
+placeholder config. Treat that output as the package-level contract, then reconcile it with the consuming repository's
+actual `settings["@alexgorbatchev"].componentGlobs` before applying file-specific repairs.
+
 ## Enforcement model
 
 The shared config intentionally applies the policy in stages so Oxlint does not waste time running file-specific rules
@@ -56,11 +75,14 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/require-template-indent`
 3. **React component ownership rules** run on all `**/*.tsx` files unless a narrower file-role override disables
    them:
+   - `@alexgorbatchev/no-intrinsic-elements-outside-component-globs`
+   - `@alexgorbatchev/no-classname-style-props-outside-component-globs`
    - `@alexgorbatchev/testid-naming-convention`
    - `@alexgorbatchev/require-component-root-testid`
    - `@alexgorbatchev/component-file-contract`
    - `@alexgorbatchev/component-file-naming-convention`
    - `@alexgorbatchev/component-story-file-convention`
+   - `createOxlintConfig(...)` requires `settings["@alexgorbatchev"].componentGlobs` to be present and non-empty
 4. **Storybook file rules** run only on `**/*.stories.tsx`:
    - story files explicitly turn off the component-ownership rules (`@alexgorbatchev/testid-naming-convention`, `@alexgorbatchev/require-component-root-testid`, `@alexgorbatchev/component-file-contract`, `@alexgorbatchev/component-file-naming-convention`, and `@alexgorbatchev/component-story-file-convention`) because `*.stories.tsx` is a story-file role even when the file is misplaced and should be reported by story-specific rules instead of component-ownership rules
    - `@alexgorbatchev/story-file-location-convention`
@@ -100,7 +122,9 @@ This staged configuration is part of the contract. The global rules only protect
 requirements: tests must live under `__tests__/`, fixture exports must stay under `__tests__/` or `stories/`, and
 story files must live under `stories/`. Component and hook ownership rules no longer require canonical parent folder
 names such as `components/`, `templates/`, `layouts/`, or `hooks/`, but they still enforce ownership, naming, and
-matching story or test files once a file clearly has that role.
+matching story or test files once a file clearly has that role. Consumers must declare the component-owned TSX surface
+through `settings["@alexgorbatchev"].componentGlobs`, and those matched files are the only place where raw intrinsic
+JSX and direct styling props are allowed.
 
 ## Enabled rules
 
@@ -478,6 +502,23 @@ export { USER_STATUS } from "./constants";
 
 ## React component policies
 
+### Configured component globs
+
+The shared config requires this setting:
+
+```ts
+settings: {
+  "@alexgorbatchev": {
+    componentGlobs: ["src/ui/components/**/*", "src/email/templates/**/*", "src/main.tsx"],
+  },
+}
+```
+
+Globs are package-relative POSIX-style paths. Use forward slashes in the patterns. `createOxlintConfig(...)` throws if
+`componentGlobs` is missing or empty. The two `*-outside-component-globs` rules apply to non-story, non-test
+`**/*.tsx` files and treat files matched by those globs as the only place where raw intrinsic JSX and direct
+`className` / `style` props are allowed.
+
 ### `@alexgorbatchev/testid-naming-convention`
 
 **Policy:** In non-story `.tsx` files, React test ids must always be scoped to the file's component name: root ids use
@@ -527,6 +568,62 @@ import { createElement } from "react";
 
 export function SignalPanel() {
   return createElement("section", { "data-testid": "SignalPanel" });
+}
+```
+
+### `@alexgorbatchev/no-intrinsic-elements-outside-component-globs`
+
+**Policy:** With required `settings["@alexgorbatchev"].componentGlobs` configured, non-story, non-test `.tsx` files whose
+paths do not match those globs must not render intrinsic JSX elements such as `<div>`, `<span>`, or lowercase custom
+elements. Move the raw DOM markup into a file matched by `componentGlobs` and render an imported component instead.
+
+**Good**
+
+```tsx
+export function DashboardRoute() {
+  return <DashboardShell />;
+}
+```
+
+```tsx
+export function DashboardShell() {
+  return <div data-testid="DashboardShell" />;
+}
+```
+
+**Bad**
+
+```tsx
+export function DashboardRoute() {
+  return <div data-testid="DashboardRoute" />;
+}
+```
+
+### `@alexgorbatchev/no-classname-style-props-outside-component-globs`
+
+**Policy:** With required `settings["@alexgorbatchev"].componentGlobs` configured, non-story, non-test `.tsx` files whose
+paths do not match those globs must not pass direct `className` or `style` props. Put those styling decisions inside a
+file matched by `componentGlobs` instead.
+
+**Good**
+
+```tsx
+export function DashboardRoute() {
+  return <DashboardShell tone="compact" />;
+}
+```
+
+```tsx
+export function DashboardShell() {
+  return <div className="dashboard-shell" />;
+}
+```
+
+**Bad**
+
+```tsx
+export function DashboardRoute() {
+  return <DashboardShell className="dashboard-shell" />;
 }
 ```
 

@@ -30,6 +30,8 @@ const noNonRunningTestsRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Ban non-running test modifiers that suppress or gate test execution",
+      guidance:
+        "Keep every committed test runnable by default. Remove `.skip`, conditional gating, and other non-running test modifiers.",
     },
     schema: [],
     messages: {

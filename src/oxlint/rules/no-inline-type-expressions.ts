@@ -129,6 +129,8 @@ const noInlineTypeExpressionsRule: RuleModule = {
     docs: {
       description:
         "Disallow inline type expressions outside type declarations; require named type declarations or inference instead, except for nullable or undefinable wrappers around a single existing type",
+      guidance:
+        "Do not write inline structural type expressions at the use site when inference or a named declaration can carry the contract. Extract the contract to an owned named type when an explicit type is required.",
     },
     schema: [],
     messages: {

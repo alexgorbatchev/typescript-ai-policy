@@ -5,6 +5,8 @@ const noLintDisableCommentsRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Disallow inline lint-disable comments for eslint and oxlint",
+      guidance:
+        "Fix policy violations in code instead of silencing the linter. Do not commit eslint or oxlint disable comments.",
     },
     schema: [],
     messages: {

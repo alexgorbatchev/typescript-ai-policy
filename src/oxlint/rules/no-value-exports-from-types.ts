@@ -21,6 +21,8 @@ const noValueExportsFromTypesRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: 'Disallow value exports from files whose filename is "types"',
+      guidance:
+        "Keep `types.ts` type-only. Move values, functions, and runtime objects to owned implementation modules.",
     },
     schema: [],
     messages: {

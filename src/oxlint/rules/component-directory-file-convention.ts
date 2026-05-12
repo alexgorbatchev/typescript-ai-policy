@@ -36,6 +36,8 @@ const componentDirectoryFileConventionRule: RuleModule = {
     docs: {
       description:
         'Restrict "components", "templates", and "layouts" directories to direct-child component files, direct-child support files (`constants.ts`, `index.ts`, `types.ts`), and sibling "stories/" trees',
+      guidance:
+        "Keep component directories limited to files that belong to the component surface. Move unrelated file roles out of component directories.",
     },
     schema: [],
     messages: {

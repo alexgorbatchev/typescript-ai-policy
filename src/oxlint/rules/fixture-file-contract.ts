@@ -7,6 +7,8 @@ const fixtureFileContractRule: RuleModule = {
     docs: {
       description:
         'Only allow direct const fixture exports and function factory exports in nested "fixtures.ts" or "fixtures.tsx" entrypoints under "__tests__/" or "stories/"',
+      guidance:
+        "Use `fixtures.ts`, `fixtures.tsx`, or fixture support files only for shared fixture data and factories. Keep test execution logic and unrelated exports out of fixture entrypoints.",
     },
     schema: [],
     messages: {

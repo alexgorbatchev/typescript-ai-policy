@@ -6,6 +6,8 @@ const noInlineFixtureBindingsInTestsRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Disallow inline fixture_ and factory_ bindings inside test and story files",
+      guidance:
+        "Define shared fixtures in fixture support files and import them into tests or stories. Do not declare `fixture_` or `factory_` bindings inline inside consumer files.",
     },
     schema: [],
     messages: {

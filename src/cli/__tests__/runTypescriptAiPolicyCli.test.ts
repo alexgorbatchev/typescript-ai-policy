@@ -19,12 +19,16 @@ const FIXTURE_RUNTIME_PATHS = {
 type TestHarness = {
   applyCalls: ApplySemanticFixesOptions[];
   dependencies: TypescriptAiPolicyCliDependencies;
+  guidanceJsonOutput: string;
+  guidanceOutput: string;
   stderr: string[];
   stdout: string[];
 };
 
 type TestHarnessOptions = {
   applyResult?: ApplySemanticFixesResult;
+  guidanceJsonOutput?: string;
+  guidanceOutput?: string;
   progressEvents?: readonly ApplySemanticFixesProgressEvent[];
 };
 
@@ -32,6 +36,8 @@ function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
   const applyCalls: ApplySemanticFixesOptions[] = [];
   const stdout: string[] = [];
   const stderr: string[] = [];
+  const guidanceJsonOutput = options.guidanceJsonOutput ?? "[]\n";
+  const guidanceOutput = options.guidanceOutput ?? "";
   const applyResult: ApplySemanticFixesResult = options.applyResult ?? {
     appliedFileCount: 0,
     backendName: "tsgo-lsp+native",
@@ -56,6 +62,15 @@ function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
       readSemanticFixRuntimePaths() {
         return FIXTURE_RUNTIME_PATHS;
       },
+      readPublishedRuleGuidanceOutput(options) {
+        const isJsonOutput = options?.json === true;
+        const guidanceOutputByMode = new Map([
+          [false, guidanceOutput],
+          [true, guidanceJsonOutput],
+        ]);
+
+        return guidanceOutputByMode.get(isJsonOutput) ?? guidanceOutput;
+      },
       writeStderr(text: string) {
         stderr.push(text);
       },
@@ -63,6 +78,8 @@ function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
         stdout.push(text);
       },
     },
+    guidanceJsonOutput,
+    guidanceOutput,
     stderr,
     stdout,
   };
@@ -255,9 +272,38 @@ it("prints CLI help when no subcommand is provided", async () => {
 
     Commands:
       fix-semantic [options] <target-directory>  Apply safe semantic fixes for supported policy diagnostics
+      guidance [options]                         Print authoritative rule guidance for AI agents
       help [command]                             display help for command
     "
   `);
+});
+
+it("prints authoritative rule guidance through the package CLI", async () => {
+  const harness = createTestHarness({
+    guidanceOutput: `- Use JSX. Do not call React.createElement directly in application code. Keep\n  rendering declarative.\n`,
+  });
+
+  const exitCode = await runTypescriptAiPolicyCli(["node", "typescript-ai-policy", "guidance"], harness.dependencies);
+
+  expect(exitCode).toBe(0);
+  expect(harness.stdout.join("")).toBe(harness.guidanceOutput);
+  expect(harness.stderr).toEqual([]);
+});
+
+it("prints authoritative rule guidance as JSON through the package CLI", async () => {
+  const harness = createTestHarness({
+    guidanceJsonOutput:
+      '[{"ruleName":"@alexgorbatchev/no-react-create-element","guidance":"Use JSX. Do not call React.createElement directly."}]\n',
+  });
+
+  const exitCode = await runTypescriptAiPolicyCli(
+    ["node", "typescript-ai-policy", "guidance", "--json"],
+    harness.dependencies,
+  );
+
+  expect(exitCode).toBe(0);
+  expect(harness.stdout.join("")).toBe(harness.guidanceJsonOutput);
+  expect(harness.stderr).toEqual([]);
 });
 
 it("reports invalid target-directory arguments through the package CLI", async () => {

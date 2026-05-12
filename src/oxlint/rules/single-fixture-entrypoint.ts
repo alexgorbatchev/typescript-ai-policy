@@ -100,6 +100,8 @@ const singleFixtureEntrypointRule: RuleModule = {
     docs: {
       description:
         'Allow only one fixture entrypoint shape per fixture-support directory under "__tests__" or "stories" so imports from "./fixtures" stay unambiguous',
+      guidance:
+        "Keep each fixture area behind a single entrypoint. Consolidate scattered fixture exports so consumers import from one canonical fixture module.",
     },
     schema: [],
     messages: {

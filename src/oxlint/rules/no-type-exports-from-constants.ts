@@ -18,6 +18,8 @@ const noTypeExportsFromConstantsRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: 'Disallow exporting type-only API from files whose filename is "constants"',
+      guidance:
+        "Export values only from `constants.ts`. Move types and interfaces to owned type modules instead of leaking them through constants files.",
     },
     schema: [],
     messages: {

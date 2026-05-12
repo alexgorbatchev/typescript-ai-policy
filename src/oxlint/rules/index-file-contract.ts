@@ -124,6 +124,8 @@ const indexFileContractRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: 'Require "index.ts" files to contain re-exports only and forbid "index.tsx" barrels',
+      guidance:
+        "Use `index.ts` only as a boundary barrel. Re-export the owned public surface and do not place unrelated implementation logic there.",
     },
     schema: [],
     messages: {

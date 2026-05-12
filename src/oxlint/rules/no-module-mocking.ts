@@ -49,6 +49,8 @@ const noModuleMockingRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Disallow module-mocking APIs across common test interfaces; use dependency injection instead",
+      guidance:
+        "Do not mock whole modules. Inject dependencies or pass collaborators explicitly so tests exercise real module wiring.",
     },
     schema: [],
     messages: {

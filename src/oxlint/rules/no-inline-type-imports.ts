@@ -6,6 +6,8 @@ const noInlineTypeImportsRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Disallow inline type imports, preferring explicit top-level type imports.",
+      guidance:
+        "Hoist type imports to explicit top-level `import type` declarations. Do not hide imported types inside inline `import()` expressions.",
     },
     schema: [],
     messages: {

@@ -7,6 +7,8 @@ const noFixtureExportsOutsideFixtureEntrypointRule: RuleModule = {
     docs: {
       description:
         'Disallow exporting fixture_ or factory_ bindings outside nested "fixtures.ts" or "fixtures.tsx" entrypoints under "__tests__/" or "stories/"',
+      guidance:
+        "Do not export fixture helpers outside fixture entrypoints under `__tests__` or `stories`. Move shared fixtures into the canonical fixture area.",
     },
     schema: [],
     messages: {

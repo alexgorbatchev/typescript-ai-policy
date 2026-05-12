@@ -8,6 +8,8 @@ const noTestFileExportsRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Ban exports from .test.ts and .test.tsx files",
+      guidance:
+        "Treat `.test.ts` and `.test.tsx` files as private test leaves. Remove exports and move shared helpers into non-test support modules.",
     },
     schema: [],
     messages: {

@@ -29,6 +29,8 @@ const storyFileLocationConventionRule: RuleModule = {
     docs: {
       description:
         'Require Storybook files to live under a sibling "stories/" directory and match a sibling component ownership file basename',
+      guidance:
+        "Keep `*.stories.tsx` files under `stories/`. Move misplaced story files into the canonical story directory.",
     },
     schema: [],
     messages: {

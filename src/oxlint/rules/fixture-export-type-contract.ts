@@ -106,6 +106,8 @@ const fixtureExportTypeContractRule: RuleModule = {
     docs: {
       description:
         "Require __tests__/fixtures and stories/fixtures exports to use imported types and ban explicit any/unknown type contracts",
+      guidance:
+        "Give fixture exports explicit types that expose the intended contract. Do not rely on anonymous or implicit fixture shapes.",
     },
     schema: [],
     messages: {

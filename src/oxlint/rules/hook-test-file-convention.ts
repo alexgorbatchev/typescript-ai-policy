@@ -28,6 +28,8 @@ const hookTestFileConventionRule: RuleModule = {
     docs: {
       description:
         'Require every hook ownership file to have a matching "basename.test.ts" or ".test.tsx" file under a sibling "__tests__/" directory',
+      guidance:
+        "Place hook tests in the canonical adjacent `__tests__` role. Do not leave hook tests beside runtime hook files or in unrelated folders.",
     },
     schema: [],
     messages: {

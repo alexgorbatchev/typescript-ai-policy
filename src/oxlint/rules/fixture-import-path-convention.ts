@@ -30,6 +30,8 @@ const fixtureImportPathConventionRule: RuleModule = {
     docs: {
       description:
         'Require test and story files to import fixture_ and factory_ bindings only as named imports from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree',
+      guidance:
+        "Import fixtures through the canonical fixture entrypoint path. Do not reach into private fixture implementation files.",
     },
     schema: [],
     messages: {

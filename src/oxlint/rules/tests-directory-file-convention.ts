@@ -21,6 +21,8 @@ const testsDirectoryFileConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Restrict __tests__ directory contents to tests, helpers, and fixtures",
+      guidance:
+        "Keep `__tests__` directories limited to test files, approved helpers, and fixtures. Move runtime modules and unrelated files out of test directories.",
     },
     schema: [],
     messages: {

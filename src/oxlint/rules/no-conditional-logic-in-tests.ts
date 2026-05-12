@@ -6,6 +6,8 @@ const noConditionalLogicInTestsRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Ban conditional control flow inside committed test files",
+      guidance:
+        "Write tests as straight-line assertions. Replace branching with explicit fixtures, separate test cases, or `assert()`-based narrowing that always executes.",
     },
     schema: [],
     messages: {

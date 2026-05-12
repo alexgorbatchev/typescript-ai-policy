@@ -70,6 +70,8 @@ const requireComponentRootTestIdRule: RuleModule = {
     docs: {
       description:
         "Enforce direct exported DOM roots to use ComponentName and child test ids to use ComponentName--thing, while allowing exported components to delegate their root rendering to another component",
+      guidance:
+        "Put a `data-testid` on the root element returned by every ownership component. Use the component name itself as that root id.",
     },
     messages: {
       invalidChildTestId:

@@ -62,6 +62,8 @@ const storyMetaTypeAnnotationRule: RuleModule = {
     docs: {
       description:
         'Require Storybook files to default-export a top-level const meta binding typed as "Meta<typeof ComponentName>" and ban meta object assertions',
+      guidance:
+        "Annotate Storybook meta with the required typed form. Do not leave story meta untyped or loosely typed.",
     },
     schema: [],
     messages: {

@@ -20,6 +20,8 @@ const noTypeImportsFromConstantsRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: 'Disallow type imports from modules whose filename is "constants"',
+      guidance:
+        "Keep `constants.ts` value-only. Import types from their owning domain modules instead of routing type imports through `constants.ts`.",
     },
     schema: [],
     messages: {

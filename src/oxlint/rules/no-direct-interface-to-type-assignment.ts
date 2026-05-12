@@ -9,6 +9,8 @@ const noDirectInterfaceToTypeAssignmentRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Disallow assigning interfaces directly to type aliases",
+      guidance:
+        "Do not alias an interface directly with `type Alias = Interface`. Reuse the interface name or define a real type shape with its own purpose.",
     },
     schema: [],
     messages: {

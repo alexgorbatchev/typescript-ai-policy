@@ -23,7 +23,7 @@ If you want a loose collection of optional style rules, this package is the wron
 - shared Oxlint config
 - custom `@alexgorbatchev/*` rules aimed at common LLM failure modes
 - diagnostics written as direct repair instructions
-- the `typescript-ai-policy` CLI with a `fix-semantic` command for a small set of safe structural fixes
+- the `typescript-ai-policy` CLI with `fix-semantic` and `guidance` commands
 
 Upstream Oxlint, TypeScript, and Jest rules stay enabled as baseline correctness guardrails.
 
@@ -40,8 +40,9 @@ bun add -d typescript @typescript/native-preview
 ```
 
 The published package ships compiled `.js` runtime files plus `.d.ts` declarations. The installed `typescript-ai-policy`
-CLI runs through Node.js, so Bun is not required just to execute the package-installed bin, but the `fix-semantic`
-command still expects its optional peer dependencies to be installed in the consuming project.
+CLI runs through Node.js, so Bun is not required just to execute the package-installed bin. The `fix-semantic` command
+still expects its optional peer dependencies to be installed in the consuming project, while `guidance` only reads the
+published policy metadata.
 
 ## Quick start
 
@@ -178,15 +179,26 @@ intrinsic JSX and direct styling props stay inside files matched by `componentGl
 
 ## CLI tooling
 
-The package includes the `typescript-ai-policy` CLI. Its `fix-semantic` command is backed by `tsgo --lsp --stdio`.
+The package includes the `typescript-ai-policy` CLI. Its `fix-semantic` command is backed by `tsgo --lsp --stdio`, and
+its `guidance` command prints authoritative repair guidance for the local `@alexgorbatchev/*` rules as a wrapped
+Markdown bullet list or as JSON.
 
 Package-installed usage:
 
+- `bun run typescript-ai-policy -- guidance` — print the published rule guidance that the package exposes for AI agents as a wrapped Markdown bullet list.
+- `bun run typescript-ai-policy -- guidance --json` — print the same published rule guidance as JSON objects with `ruleName` and resolved `guidance` fields.
 - `bun run typescript-ai-policy -- fix-semantic <target-directory>` — run Oxlint with this package's policy config, collect supported diagnostics, and apply semantic fixes to the target directory.
 - `bun run typescript-ai-policy -- fix-semantic <target-directory> --dry-run` — print the planned semantic-fix scope without mutating files.
 
+The published `guidance` output resolves config-dependent placeholders such as `componentGlobs` from the package's
+bundled placeholder config. Agents should still inspect the consuming repository's actual `oxlint.config.ts` before
+applying file-specific guidance in another codebase.
+
 Repository-local development usage:
 
+- `bun run cli -- guidance` — run the repository-local CLI entrypoint directly from TypeScript source.
+- `bun run cli -- guidance --json` — print the same repository-local guidance output as JSON.
+- `bun run cli -- fix-semantic <target-directory>` — run the repository-local CLI entrypoint for semantic fixes.
 - `bun run fix:semantic -- <target-directory>` — run the same `fix-semantic` command from this repository checkout while developing the package itself.
 
 The repository-local development command still uses Bun to execute the TypeScript source directly. The published npm

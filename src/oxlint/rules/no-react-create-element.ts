@@ -5,6 +5,7 @@ const noReactCreateElementRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description: "Ban React createElement in regular application code; use JSX instead",
+      guidance: "Write JSX. Do not call `React.createElement` directly in application code.",
     },
     schema: [],
     messages: {

@@ -237,6 +237,8 @@ const componentFileContractRule: RuleModule = {
     docs: {
       description:
         "Require component ownership files to export exactly one named runtime component or one multipart component family and allow only type-only secondary exports",
+      guidance:
+        "Use ownership component files only for the component contract they own. Remove unrelated exports and keep the file focused on the component entrypoint.",
     },
     schema: [],
     messages: {

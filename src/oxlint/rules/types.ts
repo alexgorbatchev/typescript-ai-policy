@@ -1,6 +1,19 @@
 import type { TSESLint, TSESTree } from "@typescript-eslint/utils";
 
-export type RuleModule = TSESLint.RuleModule<string, readonly unknown[]>;
+type RuleDocs = {
+  description: string;
+  guidance: string;
+  frozen?: boolean;
+  url?: string;
+};
+
+type RuleMetaData = Omit<TSESLint.RuleMetaData<string>, "docs"> & {
+  docs: RuleDocs;
+};
+
+export type RuleModule = Omit<TSESLint.RuleModule<string, readonly unknown[]>, "meta"> & {
+  meta: RuleMetaData;
+};
 export type RuleContext = Readonly<TSESLint.RuleContext<string, readonly unknown[]>>;
 export type RuleFixer = TSESLint.RuleFixer;
 export type RuleListener = TSESLint.RuleListener;

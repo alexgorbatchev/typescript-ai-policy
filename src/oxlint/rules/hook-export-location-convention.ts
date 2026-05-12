@@ -127,6 +127,8 @@ const hookExportLocationConventionRule: RuleModule = {
     docs: {
       description:
         'Require exported runtime bindings whose name starts with "use" to live in direct-child "hooks/use*.ts" or "hooks/use*.tsx" ownership files',
+      guidance:
+        "Export hooks from the canonical hook ownership location. Do not leak hook exports from unrelated modules.",
     },
     schema: [],
     messages: {
