@@ -88,15 +88,20 @@ these TypeScript config entrypoints.
 
 At a glance, the shared policy enforces:
 
-- one runtime React component per ownership file
-- one runtime hook per ownership file
+- baseline guardrails such as strict equality and no `any`
+- component ownership files that export exactly one main component or one multipart component family, plus type-only secondary API
+- hook ownership files that export exactly one main `use*` hook, plus type-only secondary API
+- JSX-only React component code instead of `React.createElement(...)`
 - matching Storybook files for component ownership files under sibling `stories/` directories
 - matching test files for hook ownership files under sibling `__tests__/` directories
-- typed Storybook meta with package-relative titles and typed stories with `play` functions
-- deterministic component test ids such as `ComponentName` and `ComponentName--child`
-- strict boundaries between runtime code, test code, story code, and fixture code
+- typed Storybook meta with package-relative titles, typed story exports, and required `play` functions
+- deterministic component test ids such as `ComponentName` and `ComponentName--child`, plus required root test ids for exported ownership components
+- configured `componentGlobs` as the only `.tsx` surface allowed to render raw intrinsic JSX or pass direct `className` / `style` props
+- strict boundaries between runtime code, test code, story code, and fixture code, including no imports from `__tests__/` into runtime code and no type imports from `constants.ts`
+- test-file discipline: no skipped or focused tests, no conditional logic, no `throw`, no module mocking, no test-file exports, and no inline fixture bindings
+- fixture discipline: canonical location, single entrypoint, constrained export naming and export types, no local type declarations, and canonical fixture import paths
 - explicit type/value ownership rules for files such as `index.ts`, `constants.ts`, and `types.ts`
-- strict naming and structural conventions for interfaces and type aliases
+- strict type-contract rules: `I*` interfaces only, no `I*` type aliases, no direct interface-to-type passthrough aliases, no inline type imports or inline structural type expressions, and indented multiline template literals
 - a policy stance that inline lint-disable comments are not an acceptable escape hatch for fixing violations
 
 ## Lint-disable comments are not a valid repair strategy
