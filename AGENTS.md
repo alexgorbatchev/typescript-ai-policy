@@ -116,6 +116,7 @@ Do not write vague messages that merely describe the AST pattern.
 When changing the policy surface:
 
 - update the relevant README / AGENTS documentation in the same change
+- keep `README.md`'s `## What it enforces` section in sync with the actual enabled rule surface whenever rules are added, removed, renamed, re-scoped, or behaviorally changed
 - keep examples aligned with the enforced contract
 - treat rule removal or relaxation as a policy change, not as a small local tweak
 - call out interactions with other rules when a contract is coupled across multiple checks
