@@ -120,6 +120,9 @@ When changing the policy surface:
 - keep examples aligned with the enforced contract
 - treat rule removal or relaxation as a policy change, not as a small local tweak
 - call out interactions with other rules when a contract is coupled across multiple checks
+- keep the sibling registry skills in `../ai-registry/skills/` synchronized whenever published guidance, React contracts, Storybook contracts, test contracts, fixture contracts, or TypeScript ownership/type contracts change here
+- the sync set currently includes `storybook`, `react-development`, `react-testing`, `typescript-code-quality`, and `typescript-testing`
+- when updating those sibling skills, validate the changed skills and rebuild `../ai-registry` so the generated registry outputs stay aligned with this package's published guidance
 
 ## Whole-policy compatibility requirement
 
