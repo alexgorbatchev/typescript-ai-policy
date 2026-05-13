@@ -4,12 +4,14 @@ import { applySemanticFixes } from "../semantic-fixes/applySemanticFixes.ts";
 import { readPublishedRuleGuidanceOutput } from "../oxlint/readPublishedRuleGuidanceOutput.ts";
 import { readSemanticFixRuntimePaths } from "../semantic-fixes/readSemanticFixRuntimePaths.ts";
 import { printPackageUsageNoticeOnce } from "../shared/packageUsageNotice.ts";
+import { runCheck } from "./runCheck.ts";
 import type { TypescriptAiPolicyCliDependencies } from "./types.ts";
 
 const defaultDependencies: TypescriptAiPolicyCliDependencies = {
   applySemanticFixes,
   readPublishedRuleGuidanceOutput,
   readSemanticFixRuntimePaths,
+  runCheck,
   writeStderr(text: string) {
     process.stderr.write(text);
   },

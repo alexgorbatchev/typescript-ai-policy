@@ -179,6 +179,13 @@ With that config in place, routes, pages, feature views, and other non-story, no
 imported components instead of raw DOM tags, and they must not pass direct `className` or `style` props. Raw
 intrinsic JSX and direct styling props stay inside canonical component ownership areas.
 
+In a consuming repository, use `typescript-ai-policy check` through your package manager's local binary runner to
+execute the shared formatter and linter checks against that repo.
+
+When a consuming harness supports environment injection, configure that harness to run shell commands with `AGENT=1`
+so `typescript-ai-policy check` emits unix-formatted `oxlint` output automatically for agent workflows and more
+token-efficient lint output.
+
 ## CLI tooling
 
 The package includes the `typescript-ai-policy` CLI. Its `fix-semantic` command is backed by `tsgo --lsp --stdio`, and
@@ -187,6 +194,7 @@ Markdown bullet list or as JSON.
 
 Package-installed usage:
 
+- `bun run typescript-ai-policy -- check` — run the package formatter and linter checks in the consuming repository. When the consuming harness is configured to inject `AGENT=1`, the `oxlint` step uses unix formatting automatically for agent workflows and more token-efficient output.
 - `bun run typescript-ai-policy -- guidance` — print the published rule guidance that the package exposes for AI agents as a wrapped Markdown bullet list.
 - `bun run typescript-ai-policy -- guidance --json` — print the same published rule guidance as JSON objects with `ruleName` and resolved `guidance` fields.
 - `bun run typescript-ai-policy -- fix-semantic <target-directory>` — run Oxlint with this package's policy config, collect supported diagnostics, and apply semantic fixes to the target directory.

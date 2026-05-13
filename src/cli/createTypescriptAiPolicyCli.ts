@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { createCheckCommand } from "./commands/createCheckCommand.ts";
 import { createGuidanceCommand } from "./commands/createGuidanceCommand.ts";
 import { createFixSemanticCommand } from "./commands/createFixSemanticCommand.ts";
 import type { CliWrite, TypescriptAiPolicyCliDependencies } from "./types.ts";
@@ -19,12 +20,15 @@ export function createTypescriptAiPolicyCli(dependencies: TypescriptAiPolicyCliD
   });
   program.exitOverride();
 
+  const checkCommand = createCheckCommand(dependencies);
   const fixSemanticCommand = createFixSemanticCommand(dependencies);
   const guidanceCommand = createGuidanceCommand(dependencies);
 
+  checkCommand.copyInheritedSettings(program);
   fixSemanticCommand.copyInheritedSettings(program);
   guidanceCommand.copyInheritedSettings(program);
 
+  program.addCommand(checkCommand);
   program.addCommand(fixSemanticCommand);
   return program.addCommand(guidanceCommand);
 }

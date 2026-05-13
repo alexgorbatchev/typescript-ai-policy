@@ -13,6 +13,7 @@ export type TypescriptAiPolicyCliDependencies = {
   applySemanticFixes: (options: ApplySemanticFixesOptions) => Promise<ApplySemanticFixesResult>;
   readPublishedRuleGuidanceOutput: (options?: GuidanceOutputOptions) => string;
   readSemanticFixRuntimePaths: () => SemanticFixRuntimePaths;
+  runCheck: () => Promise<void>;
   writeStderr: (text: string) => void;
   writeStdout: (text: string) => void;
 };

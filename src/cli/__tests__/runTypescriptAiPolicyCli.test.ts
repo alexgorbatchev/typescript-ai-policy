@@ -27,6 +27,7 @@ type TestHarness = {
   dependencies: TypescriptAiPolicyCliDependencies;
   guidanceJsonOutput: string;
   guidanceOutput: string;
+  readRunCheckCalls: () => number;
   stderr: string[];
   stdout: string[];
 };
@@ -44,6 +45,7 @@ function readExpectedCliOutput(text: string): string {
 
 function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
   const applyCalls: ApplySemanticFixesOptions[] = [];
+  let runCheckCalls = 0;
   const stdout: string[] = [];
   const stderr: string[] = [];
   const guidanceJsonOutput = options.guidanceJsonOutput ?? "[]\n";
@@ -81,6 +83,9 @@ function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
 
         return guidanceOutputByMode.get(isJsonOutput) ?? guidanceOutput;
       },
+      async runCheck() {
+        runCheckCalls += 1;
+      },
       writeStderr(text: string) {
         stderr.push(text);
       },
@@ -90,6 +95,9 @@ function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
     },
     guidanceJsonOutput,
     guidanceOutput,
+    readRunCheckCalls() {
+      return runCheckCalls;
+    },
     stderr,
     stdout,
   };
@@ -293,6 +301,7 @@ it("prints CLI help when no subcommand is provided", async () => {
         -h, --help                                 display help for command
 
       Commands:
+        check                                      Run formatter and linter checks
         fix-semantic [options] <target-directory>  Apply safe semantic fixes for supported policy diagnostics
         guidance [options]                         Print authoritative rule guidance for AI agents
         help [command]                             display help for command
@@ -312,6 +321,17 @@ it("prints authoritative rule guidance through the package CLI", async () => {
 
   expect(exitCode).toBe(0);
   expect(harness.stdout.join("")).toBe(harness.guidanceOutput);
+  expect(harness.stderr).toEqual([readPackageUsageNotice()]);
+});
+
+it("runs the check subcommand through the package CLI", async () => {
+  const harness = createTestHarness();
+
+  const exitCode = await runTypescriptAiPolicyCli(["node", "typescript-ai-policy", "check"], harness.dependencies);
+
+  expect(exitCode).toBe(0);
+  expect(harness.readRunCheckCalls()).toBe(1);
+  expect(harness.stdout).toEqual([]);
   expect(harness.stderr).toEqual([readPackageUsageNotice()]);
 });
 
