@@ -177,10 +177,11 @@ export default createOxlintConfig(() => ({
 }));
 ```
 
-Use forward slashes in the glob patterns. `createOxlintConfig(...)` throws if `componentGlobs` is missing or empty.
-With that setting in place, routes, pages, feature views, and other non-story, non-test `.tsx` files must render
-imported components instead of raw DOM tags, and they must not pass direct `className` or `style` props. Raw
-intrinsic JSX and direct styling props stay inside files matched by `componentGlobs`.
+Use forward slashes in the glob patterns. Configure `componentGlobs` with the narrowest possible owned paths and avoid
+catch-all patterns that sweep in non-component `.tsx` files. `createOxlintConfig(...)` throws if `componentGlobs` is
+missing or empty. With that setting in place, routes, pages, feature views, and other non-story, non-test `.tsx`
+files must render imported components instead of raw DOM tags, and they must not pass direct `className` or `style`
+props. Raw intrinsic JSX and direct styling props stay inside files matched by `componentGlobs`.
 
 ## CLI tooling
 

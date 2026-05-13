@@ -552,10 +552,11 @@ settings: {
 }
 ```
 
-Globs are package-relative POSIX-style paths. Use forward slashes in the patterns. `createOxlintConfig(...)` throws if
-`componentGlobs` is missing or empty. The two `*-outside-component-globs` rules apply to non-story, non-test
-`**/*.tsx` files and treat files matched by those globs as the only place where raw intrinsic JSX and direct
-`className` / `style` props are allowed.
+Globs are package-relative POSIX-style paths. Use forward slashes in the patterns. Configure `componentGlobs` with the
+narrowest possible owned paths and avoid catch-all patterns that sweep in non-component `.tsx` files.
+`createOxlintConfig(...)` throws if `componentGlobs` is missing or empty. The two `*-outside-component-globs` rules
+apply to non-story, non-test `**/*.tsx` files and treat files matched by those globs as the only place where raw
+intrinsic JSX and direct `className` / `style` props are allowed.
 
 ### `@alexgorbatchev/testid-naming-convention`
 
