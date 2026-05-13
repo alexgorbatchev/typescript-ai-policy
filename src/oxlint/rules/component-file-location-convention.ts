@@ -1,7 +1,11 @@
+import {
+  COMPONENT_OWNERSHIP_DIRECTORY_NAMES,
+  getExtension,
+  hasPathSegment,
+  isInTestsDirectory,
+  readProgramReportNode,
+} from "./helpers.ts";
 import type { RuleModule } from "./types.ts";
-import { getExtension, hasPathSegment, isInTestsDirectory, readProgramReportNode } from "./helpers.ts";
-
-const COMPONENT_DIRECTORY_NAMES = new Set(["components", "templates", "layouts"]);
 
 const componentFileLocationConventionRule: RuleModule = {
   meta: {
@@ -29,7 +33,9 @@ const componentFileLocationConventionRule: RuleModule = {
           return;
         }
 
-        if ([...COMPONENT_DIRECTORY_NAMES].some((directoryName) => hasPathSegment(context.filename, directoryName))) {
+        if (
+          COMPONENT_OWNERSHIP_DIRECTORY_NAMES.some((directoryName) => hasPathSegment(context.filename, directoryName))
+        ) {
           return;
         }
 

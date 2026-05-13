@@ -1,29 +1,30 @@
 import type { RuleModule } from "./types.ts";
 import {
+  COMPONENT_OWNERSHIP_DIRECTORY_NAMES,
+  COMPONENT_OWNERSHIP_SUPPORT_FILES,
   getBaseName,
   getExtension,
   isExemptSupportBasename,
+  isInStoriesSubtree,
+  isTestsDirectoryPath,
   readPathFromFirstMatchingDirectory,
   readProgramReportNode,
 } from "./helpers.ts";
-
-const COMPONENT_DIRECTORY_NAMES = new Set(["components", "templates", "layouts"]);
-const COMPONENT_ALLOWED_SUPPORT_FILES = new Set(["constants.ts", "index.ts", "types.ts"]);
 
 function isAllowedComponentDirectoryRelativePath(relativePath: string, filename: string): boolean {
   if (!relativePath) {
     return false;
   }
 
-  if (relativePath.startsWith("stories/")) {
+  if (isInStoriesSubtree(relativePath)) {
     return true;
   }
 
-  if (relativePath.includes("/")) {
+  if (isTestsDirectoryPath(relativePath)) {
     return false;
   }
 
-  if (COMPONENT_ALLOWED_SUPPORT_FILES.has(getBaseName(filename))) {
+  if (COMPONENT_OWNERSHIP_SUPPORT_FILES.has(getBaseName(filename))) {
     return true;
   }
 
@@ -35,20 +36,23 @@ const componentDirectoryFileConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Restrict "components", "templates", and "layouts" directories to direct-child component files, direct-child support files (`constants.ts`, `index.ts`, `types.ts`), and sibling "stories/" trees',
+        'Restrict "components", "templates", and "layouts" directories to component ownership files, nested component-area subdirectories, support files (`constants.ts`, `index.ts`, `types.ts`), and sibling "stories/" trees',
       guidance:
         "Keep component directories limited to files that belong to the component surface. Move unrelated file roles out of component directories.",
     },
     schema: [],
     messages: {
       invalidComponentDirectoryFile:
-        'Move or rename "{{ relativePath }}". A "{{ directoryName }}/" directory may contain only direct-child component ".tsx" files, direct-child "constants.ts", "index.ts", or "types.ts" files, or a direct-child "stories/" tree.',
+        'Move or rename "{{ relativePath }}". A "{{ directoryName }}/" directory may contain only component ".tsx" files, nested component-area subdirectories, "constants.ts", "index.ts", or "types.ts" support files, or a sibling "stories/" tree.',
     },
   },
   create(context) {
     return {
       Program(node) {
-        const componentDirectoryMatch = readPathFromFirstMatchingDirectory(context.filename, COMPONENT_DIRECTORY_NAMES);
+        const componentDirectoryMatch = readPathFromFirstMatchingDirectory(
+          context.filename,
+          COMPONENT_OWNERSHIP_DIRECTORY_NAMES,
+        );
         if (!componentDirectoryMatch) {
           return;
         }

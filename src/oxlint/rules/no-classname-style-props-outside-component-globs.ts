@@ -1,28 +1,26 @@
-import { isInsideConfiguredComponentGlob, isStoryOrTestTsxFile, readConfiguredComponentGlobs } from "./helpers.ts";
+import { isInComponentOwnershipDirectory, isStoryOrTestTsxFile } from "./helpers.ts";
 import type { RuleModule } from "./types.ts";
 
 const noClassNameStylePropsOutsideComponentGlobsRuleModule: RuleModule = {
   meta: {
     type: "problem",
     docs: {
-      description: "Ban className and style props outside configured component globs in TSX files",
+      description: "Ban className and style props outside canonical component areas in TSX files",
       guidance:
-        "Keep `className` and `style` props only in component-owned TSX files matched by your configured `componentGlobs`. Configure those globs with the narrowest possible owned paths and avoid catch-all patterns.",
+        "Keep `className` and `style` props only in component-owned TSX files inside canonical component areas. Expose variants or styling APIs instead of passing styling props outside that surface.",
     },
     schema: [],
     messages: {
       noClassNameOrStylePropOutsideComponentDirectory:
-        "Move styling into a component matched by componentGlobs. Expose necessary variants instead of passing styling props here.",
+        "Move styling into a component ownership file. Expose necessary variants instead of passing styling props here.",
     },
   },
   create(context) {
-    const componentGlobs = readConfiguredComponentGlobs(context.settings);
-    if (componentGlobs.length === 0 || isStoryOrTestTsxFile(context.filename)) {
+    if (isStoryOrTestTsxFile(context.filename)) {
       return {};
     }
 
-    const isConfiguredComponentFile = isInsideConfiguredComponentGlob(context.filename, componentGlobs);
-    if (isConfiguredComponentFile) {
+    if (isInComponentOwnershipDirectory(context.filename)) {
       return {};
     }
 

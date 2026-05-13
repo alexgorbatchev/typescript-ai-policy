@@ -1,6 +1,5 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import { minimatch } from "minimatch";
 import type { NodeWithParent, TSESTree } from "@typescript-eslint/types";
 import type {
   AstClassLike,
@@ -15,6 +14,12 @@ import type {
 const NON_OWNERSHIP_SUPPORT_BASENAMES = new Set(["index", "types", "constants", "helpers"]);
 const STRICT_AREA_ALLOWED_SUPPORT_FILES = new Set(["index.ts", "types.ts"]);
 const PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH = new Map<string, string | null>();
+
+export const COMPONENT_OWNERSHIP_DIRECTORY_NAMES = ["components", "templates", "layouts"] as const;
+export const COMPONENT_OWNERSHIP_DIRECTORY_GLOBS = COMPONENT_OWNERSHIP_DIRECTORY_NAMES.map(
+  (directoryName) => `**/${directoryName}/**/*`,
+);
+export const COMPONENT_OWNERSHIP_SUPPORT_FILES = new Set(["constants.ts", "index.ts", "types.ts"]);
 
 type DirectoryNames = ReadonlySet<string> | readonly string[];
 type FirstMatchingDirectoryResult = {
@@ -120,6 +125,18 @@ export function readPathFromFirstMatchingDirectory(
   }
 
   return null;
+}
+
+export function readPathFromComponentOwnershipDirectory(filename: string): FirstMatchingDirectoryResult | null {
+  return readPathFromFirstMatchingDirectory(filename, COMPONENT_OWNERSHIP_DIRECTORY_NAMES);
+}
+
+export function isInComponentOwnershipDirectory(filename: string): boolean {
+  return readPathFromComponentOwnershipDirectory(filename) !== null;
+}
+
+export function isInStoriesSubtree(path: string): boolean {
+  return path === "stories" || path.startsWith("stories/") || path.includes("/stories/");
 }
 
 export function isDirectChildOfDirectory(filename: string, expectedDirectoryName: string): boolean {
@@ -312,35 +329,6 @@ export function readConfigRelativePath(filename: string): string {
   }
 
   return normalizeFilename(relative(process.cwd(), resolve(filename)));
-}
-
-export function readConfiguredComponentGlobs(settings: Readonly<Record<string, unknown>>): string[] {
-  const pluginSettings = settings["@alexgorbatchev"];
-  if (!isRecord(pluginSettings)) {
-    return [];
-  }
-
-  const componentGlobs = Reflect.get(pluginSettings, "componentGlobs");
-  if (!Array.isArray(componentGlobs)) {
-    return [];
-  }
-
-  return componentGlobs
-    .filter((globPattern): globPattern is string => typeof globPattern === "string")
-    .map(normalizeGlobPattern)
-    .filter((globPattern) => globPattern.length > 0);
-}
-
-export function isInsideConfiguredComponentGlob(filename: string, componentGlobs: readonly string[]): boolean {
-  const configRelativePath = readConfigRelativePath(filename);
-
-  return componentGlobs.some((componentGlob) =>
-    minimatch(configRelativePath, componentGlob, {
-      dot: true,
-      nocomment: true,
-      nonegate: true,
-    }),
-  );
 }
 
 export function isStoryOrTestTsxFile(filename: string): boolean {

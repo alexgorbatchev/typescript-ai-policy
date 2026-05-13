@@ -11,7 +11,7 @@ RuleTester.itOnly = it.only;
 const ruleTester = new RuleTester();
 
 ruleTester.run(
-  "component-directory-file-convention restricts component area contents to direct-child ownership files, support basenames, and sibling stories",
+  "component-directory-file-convention restricts component area contents to ownership files, nested component subdirectories, support basenames, and sibling stories",
   componentDirectoryFileConventionRuleModule,
   {
     valid: [
@@ -33,6 +33,16 @@ ruleTester.run(
       {
         code: `export const ACCOUNT_PANEL_KIND = 'primary';`,
         filename: "src/accounts/components/constants.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export function AccountPanel() { return <section />; }`,
+        filename: "src/accounts/components/internal/AccountPanel.tsx",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export function Welcome() { return <section />; }`,
+        filename: "src/accounts/templates/email/Welcome.tsx",
         languageOptions: languageOpts,
       },
       {
@@ -92,36 +102,6 @@ ruleTester.run(
             data: {
               directoryName: "components",
               relativePath: "helpers.tsx",
-            },
-          },
-        ],
-        output: null,
-      },
-      {
-        code: `export function AccountPanel() { return <section />; }`,
-        filename: "src/accounts/components/internal/AccountPanel.tsx",
-        languageOptions: languageOpts,
-        errors: [
-          {
-            messageId: "invalidComponentDirectoryFile",
-            data: {
-              directoryName: "components",
-              relativePath: "internal/AccountPanel.tsx",
-            },
-          },
-        ],
-        output: null,
-      },
-      {
-        code: `export function Welcome() { return <section />; }`,
-        filename: "src/accounts/templates/email/Welcome.tsx",
-        languageOptions: languageOpts,
-        errors: [
-          {
-            messageId: "invalidComponentDirectoryFile",
-            data: {
-              directoryName: "templates",
-              relativePath: "email/Welcome.tsx",
             },
           },
         ],

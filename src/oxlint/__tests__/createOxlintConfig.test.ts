@@ -13,16 +13,8 @@ type ExplicitJsPlugin = {
   specifier: string;
 };
 
-const COMPONENT_GLOBS = ["src/ui/components/**/*", "src/main.tsx"];
-
 function readValidUserConfig() {
-  return {
-    settings: {
-      "@alexgorbatchev": {
-        componentGlobs: COMPONENT_GLOBS,
-      },
-    },
-  };
+  return {};
 }
 
 function assertIsExplicitJsPlugin(value: ExternalPluginEntry | undefined): asserts value is ExplicitJsPlugin {
@@ -35,34 +27,31 @@ describe("createOxlintConfig", () => {
     setPackageUsageNoticeWriterForTests(() => {});
   });
 
-  it("fails hard when componentGlobs is not configured", () => {
+  it("returns the shared lint defaults without requiring consumer component settings", () => {
     const stderr: string[] = [];
 
     setPackageUsageNoticeWriterForTests((text: string) => {
       stderr.push(text);
     });
 
-    expect(() => createOxlintConfig()).toThrow(
-      'Shared oxlint config requires settings["@alexgorbatchev"].componentGlobs to be a non-empty array. Configure the component-owned TSX files explicitly before using @alexgorbatchev/typescript-ai-policy.',
-    );
+    expect(createOxlintConfig()).toEqual(createOxlintConfig(readValidUserConfig));
     expect(stderr).toEqual([readPackageUsageNotice()]);
   });
 
-  it("fails hard when componentGlobs is empty", () => {
-    expect(() =>
-      createOxlintConfig(() => ({
-        settings: {
-          "@alexgorbatchev": {
-            componentGlobs: [],
-          },
-        },
-      })),
-    ).toThrow(
-      'Shared oxlint config requires settings["@alexgorbatchev"].componentGlobs to be a non-empty array. Configure the component-owned TSX files explicitly before using @alexgorbatchev/typescript-ai-policy.',
-    );
+  it("returns the shared lint defaults without consumer component settings", () => {
+    const stderr: string[] = [];
+
+    setPackageUsageNoticeWriterForTests((text: string) => {
+      stderr.push(text);
+    });
+
+    const oxlintConfig = createOxlintConfig(readValidUserConfig);
+
+    expect(oxlintConfig).toEqual(createOxlintConfig());
+    expect(stderr).toEqual([readPackageUsageNotice()]);
   });
 
-  it("returns the shared lint defaults when componentGlobs is configured", () => {
+  it("returns the shared lint defaults", () => {
     const stderr: string[] = [];
 
     setPackageUsageNoticeWriterForTests((text: string) => {
@@ -84,6 +73,7 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-react-create-element": "error",
       "@alexgorbatchev/no-imports-from-tests-directory": "error",
       "@alexgorbatchev/no-type-imports-from-constants": "error",
+      "@alexgorbatchev/hook-export-location-convention": "error",
       "@alexgorbatchev/test-file-location-convention": "error",
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "@alexgorbatchev/no-lint-disable-comments": "error",
@@ -91,8 +81,21 @@ describe("createOxlintConfig", () => {
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/stories/**/*.tsx"],
+      rules: {
+        "@alexgorbatchev/component-file-location-convention": "off",
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/component-file-contract": "off",
+        "@alexgorbatchev/component-file-naming-convention": "off",
+        "@alexgorbatchev/component-story-file-convention": "off",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
       files: ["**/*.stories.tsx"],
       rules: {
+        "@alexgorbatchev/component-file-location-convention": "off",
         "@alexgorbatchev/testid-naming-convention": "off",
         "@alexgorbatchev/require-component-root-testid": "off",
         "@alexgorbatchev/component-file-contract": "off",
@@ -108,8 +111,21 @@ describe("createOxlintConfig", () => {
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/__tests__/**/*.tsx"],
+      rules: {
+        "@alexgorbatchev/component-file-location-convention": "off",
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/component-file-contract": "off",
+        "@alexgorbatchev/component-file-naming-convention": "off",
+        "@alexgorbatchev/component-story-file-convention": "off",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
       files: ["**/*.test.tsx"],
       rules: {
+        "@alexgorbatchev/component-file-location-convention": "off",
         "@alexgorbatchev/testid-naming-convention": "off",
         "@alexgorbatchev/require-component-root-testid": "off",
         "@alexgorbatchev/component-file-contract": "off",
@@ -154,9 +170,24 @@ describe("createOxlintConfig", () => {
         "@alexgorbatchev/no-intrinsic-elements-outside-component-globs": "error",
         "@alexgorbatchev/testid-naming-convention": "error",
         "@alexgorbatchev/require-component-root-testid": "error",
+        "@alexgorbatchev/component-file-location-convention": "error",
         "@alexgorbatchev/component-file-contract": "error",
         "@alexgorbatchev/component-file-naming-convention": "error",
         "@alexgorbatchev/component-story-file-convention": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/components/**/*", "**/templates/**/*", "**/layouts/**/*"],
+      rules: {
+        "@alexgorbatchev/component-directory-file-convention": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/stories/**/*"],
+      rules: {
+        "@alexgorbatchev/stories-directory-file-convention": "error",
       },
     });
 
@@ -166,6 +197,21 @@ describe("createOxlintConfig", () => {
         "@alexgorbatchev/hook-file-contract": "error",
         "@alexgorbatchev/hook-file-naming-convention": "error",
         "@alexgorbatchev/hook-test-file-convention": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/hooks/**/*"],
+      rules: {
+        "@alexgorbatchev/hooks-directory-file-convention": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/__tests__/**"],
+      rules: {
+        "@alexgorbatchev/no-module-mocking": "error",
+        "@alexgorbatchev/tests-directory-file-convention": "error",
       },
     });
 
@@ -220,6 +266,7 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-react-create-element": "error",
       "@alexgorbatchev/no-imports-from-tests-directory": "error",
       "@alexgorbatchev/no-type-imports-from-constants": "error",
+      "@alexgorbatchev/hook-export-location-convention": "error",
       "@alexgorbatchev/test-file-location-convention": "error",
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "@alexgorbatchev/no-lint-disable-comments": "error",

@@ -1,5 +1,5 @@
 import type { TSESTree } from "@typescript-eslint/utils";
-import { isInsideConfiguredComponentGlob, isStoryOrTestTsxFile, readConfiguredComponentGlobs } from "./helpers.ts";
+import { isInComponentOwnershipDirectory, isStoryOrTestTsxFile } from "./helpers.ts";
 import type { RuleModule } from "./types.ts";
 
 function isIntrinsicJsxIdentifier(node: TSESTree.JSXIdentifier): boolean {
@@ -23,24 +23,22 @@ const noIntrinsicElementsOutsideComponentGlobsRuleModule: RuleModule = {
   meta: {
     type: "problem",
     docs: {
-      description: "Ban intrinsic JSX elements outside configured component globs in TSX files",
+      description: "Ban intrinsic JSX elements outside canonical component areas in TSX files",
       guidance:
-        "Keep raw intrinsic JSX only in component-owned TSX files matched by your configured `componentGlobs`. Configure those globs with the narrowest possible owned paths and avoid catch-all patterns.",
+        "Keep raw intrinsic JSX only in component-owned TSX files inside canonical component areas. Outside that surface, compose imported components instead of writing DOM markup directly.",
     },
     schema: [],
     messages: {
       noIntrinsicElementOutsideComponentDirectory:
-        "Replace intrinsic JSX elements with imported components outside configured component globs. Keep raw DOM markup only in files matched by componentGlobs.",
+        "Replace intrinsic JSX elements with imported components outside canonical component areas. Keep raw DOM markup only inside component ownership files.",
     },
   },
   create(context) {
-    const componentGlobs = readConfiguredComponentGlobs(context.settings);
-    if (componentGlobs.length === 0 || isStoryOrTestTsxFile(context.filename)) {
+    if (isStoryOrTestTsxFile(context.filename)) {
       return {};
     }
 
-    const isConfiguredComponentFile = isInsideConfiguredComponentGlob(context.filename, componentGlobs);
-    if (isConfiguredComponentFile) {
+    if (isInComponentOwnershipDirectory(context.filename)) {
       return {};
     }
 

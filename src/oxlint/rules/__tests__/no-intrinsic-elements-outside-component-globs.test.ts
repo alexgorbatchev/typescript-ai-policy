@@ -11,14 +11,8 @@ RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
 
-const settings = {
-  "@alexgorbatchev": {
-    componentGlobs: ["src/ui/components/**/*", "src/email/templates/**/*", "src/main.tsx"],
-  },
-};
-
 ruleTester.run(
-  "no-intrinsic-elements-outside-component-globs blocks intrinsic JSX outside configured component globs",
+  "no-intrinsic-elements-outside-component-globs blocks intrinsic JSX outside canonical component areas",
   noIntrinsicElementsOutsideComponentGlobsRuleModule,
   {
     valid: [
@@ -30,17 +24,15 @@ ruleTester.run(
         `,
         filename: "src/ui/components/Button.tsx",
         languageOptions: languageOpts,
-        settings,
       },
       {
         code: `
-          export function Main() {
+          export function Layout() {
             return <div />;
           }
         `,
-        filename: "src/main.tsx",
+        filename: "src/email/templates/marketing/Layout.tsx",
         languageOptions: languageOpts,
-        settings,
       },
       {
         code: `
@@ -50,7 +42,6 @@ ruleTester.run(
         `,
         filename: "src/app/stories/AppShell.stories.tsx",
         languageOptions: languageOpts,
-        settings,
       },
       {
         code: `
@@ -60,7 +51,6 @@ ruleTester.run(
         `,
         filename: "src/app/__tests__/AppShell.test.tsx",
         languageOptions: languageOpts,
-        settings,
       },
       {
         code: `
@@ -70,7 +60,6 @@ ruleTester.run(
         `,
         filename: "src/routes/WelcomeEmail.tsx",
         languageOptions: languageOpts,
-        settings,
       },
     ],
     invalid: [
@@ -82,7 +71,22 @@ ruleTester.run(
         `,
         filename: "src/app/AppShell.tsx",
         languageOptions: languageOpts,
-        settings,
+        errors: [
+          {
+            messageId: "noIntrinsicElementOutsideComponentDirectory",
+            type: AST_NODE_TYPES.JSXIdentifier,
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          export function Main() {
+            return <div />;
+          }
+        `,
+        filename: "src/main.tsx",
+        languageOptions: languageOpts,
         errors: [
           {
             messageId: "noIntrinsicElementOutsideComponentDirectory",
