@@ -151,6 +151,8 @@ Available scripts:
 
 ```bash
 bun run check
+bun run cli -- guidance
+bun run cli -- guidance --json
 ./scripts/lint-target.sh /Users/alex/development/projects/date-maker
 bun run lint:target -- /Users/alex/development/projects/date-maker
 ```
@@ -168,6 +170,22 @@ bun run lint:target -- /Users/alex/development/projects/date-maker
 - disabling nested target configs via `--disable-nested-config` so results are not mixed with the target project's own Oxlint config
 - changing into the target directory first, which avoids an Oxlint crash when linting a path outside the current working root
 - forwarding any extra Oxlint CLI flags after the target path
+
+## Authoritative agent guidance
+
+When you need the full published repair guidance for the local `@alexgorbatchev/*` policy surface, do **not** infer it from a subset of rule files or from README summaries alone.
+
+Use the repository-local CLI instead:
+
+```bash
+bun run cli -- guidance
+bun run cli -- guidance --json
+```
+
+- use the wrapped Markdown output for human review
+- use `--json` when another tool or agent needs structured rule-name-to-guidance data
+- treat this CLI output as the authoritative aggregate guidance for agents in this repository
+- when applying that guidance to another repository, reconcile any config-dependent placeholders such as `componentGlobs` against the consuming repository's actual `oxlint.config.ts`
 
 ## Release workflow
 

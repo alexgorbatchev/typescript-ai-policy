@@ -69,6 +69,22 @@ When adding or changing rules here:
 12. If a rule applies to a path-glob-addressable file role such as `index.ts`, `constants.ts`, or `types.ts`, require narrow `overrides[].files` activation in `../oxlint.config.ts` instead of global `rules`.
 13. If a rule is fixable, implement it with standard ESLint fixer callbacks.
 
+## Authoritative agent guidance output
+
+Each local rule's `meta.docs.guidance` contributes to the package's authoritative aggregate agent guidance output.
+
+When you need to inspect the full published guidance surface for agents, use the repository-local CLI instead of inferring it from a subset of rule files:
+
+```bash
+bun run cli -- guidance
+bun run cli -- guidance --json
+```
+
+- use the wrapped Markdown output for human review
+- use `--json` when another tool or agent needs structured rule-name-to-guidance data
+- treat this CLI output as the authoritative aggregate guidance for the local `@alexgorbatchev/*` rules
+- when guidance refers to config-dependent placeholders such as `componentGlobs`, reconcile them against the consuming repository's actual `oxlint.config.ts`
+
 ## Mandatory red/green workflow for policy changes
 
 **Every policy change in this directory must be developed red/green. No exceptions.**
