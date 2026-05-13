@@ -19,7 +19,7 @@ const componentFileLocationConventionRule: RuleModule = {
     schema: [],
     messages: {
       unexpectedComponentFileLocation:
-        'Move this ".tsx" file under a "components", "templates", or "layouts" directory. Files inside "hooks/" and "__tests__/" are exempt from this placement rule.',
+        'Move this ".tsx" ownership file under a "components", "templates", or "layouts" directory. Keep non-component file roles out of the component ownership surface.',
     },
   },
   create(context) {

@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
@@ -10,6 +10,30 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
+
+const EXPECTED_STORY_EXPORT_CONTRACT_GUIDANCE =
+  "Keep story exports limited to the approved Storybook surface. Move helper bindings and support code out of story files.";
+
+const EXPECTED_STORY_EXPORT_CONTRACT_MESSAGES = {
+  invalidMultiStoryExportShape:
+    "Export multiple stories directly from their declarations. Do not re-export local story bindings through an export list.",
+  invalidSingleStoryExportShape:
+    "Use the single-story export shape for single-story files. Export one `Default` binding and re-export it as the sibling component name.",
+  missingStoryExport:
+    "Export at least one story object after the default meta. Keep story files focused on the approved Storybook surface.",
+  missingStoryPlay:
+    "Add a `play` property to this story object. Use stories as the required interaction-test surface for the sibling component.",
+  missingStoryTypeAnnotation: "Annotate this story binding as `: Story`. Do not rely on inference for story objects.",
+  unexpectedStoryTypeAssertion:
+    "Replace this story assertion with a const type annotation. Keep story types on the binding, not on the object expression.",
+  unexportedStoryBinding:
+    "Export this story binding. Story objects in story files must be part of the public Storybook surface.",
+};
+
+it("uses the approved story export guidance and messages", () => {
+  expect(storyExportContractRuleModule.meta.docs?.guidance).toBe(EXPECTED_STORY_EXPORT_CONTRACT_GUIDANCE);
+  expect(storyExportContractRuleModule.meta.messages).toEqual(EXPECTED_STORY_EXPORT_CONTRACT_MESSAGES);
+});
 
 ruleTester.run("story-export-contract enforces story export shapes and play functions", storyExportContractRuleModule, {
   valid: [

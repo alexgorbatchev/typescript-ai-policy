@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
@@ -10,6 +10,14 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
+const EXPECTED_COMPONENT_FILE_LOCATION_MESSAGE =
+  'Move this ".tsx" ownership file under a "components", "templates", or "layouts" directory. Keep non-component file roles out of the component ownership surface.';
+
+it("uses the approved component ownership repair message", () => {
+  expect(componentFileLocationConventionRuleModule.meta.messages?.unexpectedComponentFileLocation).toBe(
+    EXPECTED_COMPONENT_FILE_LOCATION_MESSAGE,
+  );
+});
 
 ruleTester.run(
   "component-file-location-convention requires non-hook, non-test tsx files to live in component areas",

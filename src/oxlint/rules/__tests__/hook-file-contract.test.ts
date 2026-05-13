@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
@@ -10,6 +10,23 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
+
+const EXPECTED_HOOK_FILE_CONTRACT_GUIDANCE =
+  "Use hook files only for the hook contract they own. Keep unrelated runtime exports and file roles out of hook ownership files.";
+
+const EXPECTED_HOOK_FILE_CONTRACT_MESSAGES = {
+  invalidMainHookExport:
+    "Export the main hook as a direct named function declaration. Do not wrap it or bind it to a const.",
+  missingMainHookExport:
+    "Export exactly one direct named runtime hook from this file. Keep type-only exports separate from the ownership export.",
+  unexpectedAdditionalRuntimeExport:
+    "Move this runtime export to its own ownership file. Keep each hook ownership file focused on one hook contract.",
+};
+
+it("uses the approved hook file contract guidance and messages", () => {
+  expect(hookFileContractRuleModule.meta.docs?.guidance).toBe(EXPECTED_HOOK_FILE_CONTRACT_GUIDANCE);
+  expect(hookFileContractRuleModule.meta.messages).toEqual(EXPECTED_HOOK_FILE_CONTRACT_MESSAGES);
+});
 
 ruleTester.run(
   "hook-file-contract enforces one direct named runtime hook export per ownership file",

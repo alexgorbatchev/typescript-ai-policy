@@ -130,12 +130,12 @@ const noInlineTypeExpressionsRule: RuleModule = {
       description:
         "Disallow inline type expressions outside type declarations; require named type declarations or inference instead, except for nullable or undefinable wrappers around a single existing type",
       guidance:
-        "Do not write inline structural type expressions at the use site when inference or a named declaration can carry the contract. Extract the contract to an owned named type when an explicit type is required.",
+        "Do not write inline structural type expressions at the use site. Reuse a named type, extract one, or rely on inference.",
     },
     schema: [],
     messages: {
       unexpectedInlineTypeExpression:
-        "Do not define an inline {{ kind }} here. First, reuse an existing named type declaration if one already models this contract. If no suitable named type exists, extract this contract into a named type declaration and reference that declaration. Only remove the annotation and let TypeScript infer the type when the type is already obvious from context.",
+        "Do not define an inline {{ kind }} here. Reuse a named type, extract one, or remove the annotation if inference already carries the contract.",
     },
   },
   create(context) {

@@ -238,18 +238,18 @@ const componentFileContractRule: RuleModule = {
       description:
         "Require component ownership files to export exactly one named runtime component or one multipart component family and allow only type-only secondary exports",
       guidance:
-        "Use ownership component files only for the component contract they own. Remove unrelated exports and keep the file focused on the component entrypoint.",
+        "Use component ownership files only for the component contract they own. Keep unrelated runtime exports out of the file.",
     },
     schema: [],
     messages: {
       missingMainComponentExport:
-        "Export exactly one main runtime component from this file. Component ownership files must use one direct named export plus optional type-only exports.",
+        "Export exactly one direct named runtime component from this file. Keep type-only exports separate from the ownership export.",
       invalidMainComponentExport:
-        "Replace this export with a valid component ownership export. Use `export function ComponentName() {}` for plain components, or `export const ComponentName = wrapper(function ComponentName() {})` for wrapped components.",
+        "Export the main component directly from its declaration. Use a named function export or a direct named wrapped const export.",
       invalidIndirectComponentExport:
-        "Export this component directly from its declaration. Component ownership files must use `export function ComponentName() {}` or a direct named wrapped `export const` binding, not an `export { ComponentName }` list.",
+        "Export the component directly from its declaration. Do not re-export the main component through an export list.",
       unexpectedAdditionalRuntimeExport:
-        "Extract this runtime export to its own ownership file. Component ownership files may export only one main runtime component, or one multipart component family whose members share the base component name, plus unrestricted type-only API.",
+        "Move this runtime export to its own ownership file. Keep each component ownership file focused on one component contract or one multipart family.",
     },
   },
   create(context) {

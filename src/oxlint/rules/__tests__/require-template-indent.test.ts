@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
 import requireTemplateIndentRuleModule from "../require-template-indent.ts";
@@ -9,6 +9,17 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const requireTemplateIndentRuleTester = new RuleTester();
+
+const EXPECTED_REQUIRE_TEMPLATE_INDENT_GUIDANCE =
+  "Indent multiline template literal content to match the surrounding code. Normalize indentation explicitly when the resulting string must be left-aligned.";
+
+const EXPECTED_REQUIRE_TEMPLATE_INDENT_MESSAGE =
+  "Indent this multiline template literal to match the surrounding code. Normalize indentation in code instead of relying on under-indented source text.";
+
+it("uses the approved template indent guidance and message", () => {
+  expect(requireTemplateIndentRuleModule.meta.docs?.guidance).toBe(EXPECTED_REQUIRE_TEMPLATE_INDENT_GUIDANCE);
+  expect(requireTemplateIndentRuleModule.meta.messages?.badIndent).toBe(EXPECTED_REQUIRE_TEMPLATE_INDENT_MESSAGE);
+});
 
 requireTemplateIndentRuleTester.run(
   "require-template-indent keeps multiline template literals aligned with surrounding code",

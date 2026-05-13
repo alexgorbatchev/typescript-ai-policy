@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
@@ -10,6 +10,25 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
+
+const EXPECTED_COMPONENT_FILE_CONTRACT_GUIDANCE =
+  "Use component ownership files only for the component contract they own. Keep unrelated runtime exports out of the file.";
+
+const EXPECTED_COMPONENT_FILE_CONTRACT_MESSAGES = {
+  invalidIndirectComponentExport:
+    "Export the component directly from its declaration. Do not re-export the main component through an export list.",
+  invalidMainComponentExport:
+    "Export the main component directly from its declaration. Use a named function export or a direct named wrapped const export.",
+  missingMainComponentExport:
+    "Export exactly one direct named runtime component from this file. Keep type-only exports separate from the ownership export.",
+  unexpectedAdditionalRuntimeExport:
+    "Move this runtime export to its own ownership file. Keep each component ownership file focused on one component contract or one multipart family.",
+};
+
+it("uses the approved component file contract guidance and messages", () => {
+  expect(componentFileContractRuleModule.meta.docs?.guidance).toBe(EXPECTED_COMPONENT_FILE_CONTRACT_GUIDANCE);
+  expect(componentFileContractRuleModule.meta.messages).toEqual(EXPECTED_COMPONENT_FILE_CONTRACT_MESSAGES);
+});
 
 ruleTester.run(
   "component-file-contract enforces one direct named runtime component export or one multipart component family per ownership file",

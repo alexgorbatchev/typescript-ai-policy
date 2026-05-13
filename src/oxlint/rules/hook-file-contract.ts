@@ -137,16 +137,16 @@ const hookFileContractRule: RuleModule = {
       description:
         "Require hook ownership files to export exactly one direct named hook function and allow only type-only secondary exports",
       guidance:
-        "Use hook files only for the hook contract they own. Keep unrelated exports, components, and file roles out of hook ownership files.",
+        "Use hook files only for the hook contract they own. Keep unrelated runtime exports and file roles out of hook ownership files.",
     },
     schema: [],
     messages: {
       missingMainHookExport:
-        "Export exactly one main runtime hook from this file. Hook ownership files must use one direct named `export function useThing()` export plus optional type-only exports.",
+        "Export exactly one direct named runtime hook from this file. Keep type-only exports separate from the ownership export.",
       invalidMainHookExport:
-        "Replace this export with a plain named hook function declaration. Hook ownership files must use `export function useThing() {}` and must not wrap or const-bind the main hook export.",
+        "Export the main hook as a direct named function declaration. Do not wrap it or bind it to a const.",
       unexpectedAdditionalRuntimeExport:
-        "Remove this additional runtime export. Hook ownership files may export only one main runtime hook plus unrestricted type-only API.",
+        "Move this runtime export to its own ownership file. Keep each hook ownership file focused on one hook contract.",
     },
   },
   create(context) {

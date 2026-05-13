@@ -47,7 +47,7 @@ describe("component lint-target integration", () => {
           filePath: "src/accounts/AccountPanel.tsx",
           line: 1,
           message:
-            'Move this ".tsx" file under a "components", "templates", or "layouts" directory. Files inside "hooks/" and "__tests__/" are exempt from this placement rule.',
+            'Move this ".tsx" ownership file under a "components", "templates", or "layouts" directory. Keep non-component file roles out of the component ownership surface.',
           ruleId: "@alexgorbatchev(component-file-location-convention)",
           severity: "error",
         },

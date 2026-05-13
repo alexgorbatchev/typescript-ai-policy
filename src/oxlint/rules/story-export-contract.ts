@@ -219,24 +219,24 @@ const storyExportContractRule: RuleModule = {
       description:
         "Require Storybook story exports to use `const StoryName: Story = { ... }` bindings, enforce the single-vs-multiple export contract, and require a `play` property on every exported story",
       guidance:
-        "Keep story exports limited to the approved Storybook surface. Remove helper exports and move support code out of story files.",
+        "Keep story exports limited to the approved Storybook surface. Move helper bindings and support code out of story files.",
     },
     schema: [],
     messages: {
       missingStoryExport:
-        "Add at least one exported story object after the default meta. Component story files must export Storybook stories for the sibling component.",
+        "Export at least one story object after the default meta. Keep story files focused on the approved Storybook surface.",
       unexportedStoryBinding:
-        "Export this story binding. Story objects in `*.stories.tsx` files must be exported so Storybook can load them.",
+        "Export this story binding. Story objects in story files must be part of the public Storybook surface.",
       missingStoryTypeAnnotation:
-        "Annotate this story binding as `: Story`. Story objects must use a type annotation instead of inference.",
+        "Annotate this story binding as `: Story`. Do not rely on inference for story objects.",
       unexpectedStoryTypeAssertion:
-        "Replace this story object assertion with a const type annotation: `const StoryName: Story = { ... };`.",
+        "Replace this story assertion with a const type annotation. Keep story types on the binding, not on the object expression.",
       missingStoryPlay:
-        "Add a `play` property to this story object. Component stories are the required interaction-test surface for the sibling component.",
+        "Add a `play` property to this story object. Use stories as the required interaction-test surface for the sibling component.",
       invalidSingleStoryExportShape:
-        "Use the single-story export shape exactly: `const Default: Story = { ... }; export { Default as {{ componentName }} };`.",
+        "Use the single-story export shape for single-story files. Export one `Default` binding and re-export it as the sibling component name.",
       invalidMultiStoryExportShape:
-        "When a story file exports multiple stories, export each one directly as `export const StoryName: Story = { ... };`. Do not re-export local story bindings through an export list.",
+        "Export multiple stories directly from their declarations. Do not re-export local story bindings through an export list.",
     },
   },
   create(context) {

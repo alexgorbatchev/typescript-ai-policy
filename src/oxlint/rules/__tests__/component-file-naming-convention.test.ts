@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
@@ -10,6 +10,23 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
+
+const EXPECTED_COMPONENT_FILE_NAMING_GUIDANCE =
+  "Name component ownership files after the component they export. Keep non-component file roles out of the component ownership surface.";
+
+const EXPECTED_COMPONENT_FILE_NAMING_MESSAGES = {
+  invalidComponentExportName:
+    "Rename this exported component to PascalCase. Component ownership exports must use PascalCase names.",
+  invalidComponentFileName:
+    "Rename this file so its basename maps deterministically to the exported component name. Keep non-component file roles out of the component ownership surface.",
+  mismatchedComponentFileName:
+    "Rename this file or the exported component so they match exactly. Use the PascalCase or kebab-case form of the component name.",
+};
+
+it("uses the approved component file naming guidance and messages", () => {
+  expect(componentFileNamingConventionRuleModule.meta.docs?.guidance).toBe(EXPECTED_COMPONENT_FILE_NAMING_GUIDANCE);
+  expect(componentFileNamingConventionRuleModule.meta.messages).toEqual(EXPECTED_COMPONENT_FILE_NAMING_MESSAGES);
+});
 
 ruleTester.run(
   "component-file-naming-convention requires PascalCase exports and matching PascalCase or kebab-case filenames",
@@ -58,11 +75,7 @@ ruleTester.run(
           {
             messageId: "mismatchedComponentFileName",
             type: AST_NODE_TYPES.Identifier,
-            data: {
-              exportedName: "button",
-              pascalFilename: "button.tsx",
-              kebabFilename: "button.tsx",
-            },
+            data: {},
           },
         ],
         output: null,
@@ -93,11 +106,7 @@ ruleTester.run(
           {
             messageId: "mismatchedComponentFileName",
             type: AST_NODE_TYPES.Identifier,
-            data: {
-              exportedName: "AccountCard",
-              pascalFilename: "AccountCard.tsx",
-              kebabFilename: "account-card.tsx",
-            },
+            data: {},
           },
         ],
         output: null,
@@ -110,11 +119,7 @@ ruleTester.run(
           {
             messageId: "mismatchedComponentFileName",
             type: AST_NODE_TYPES.Identifier,
-            data: {
-              exportedName: "AccountCard",
-              pascalFilename: "AccountCard.tsx",
-              kebabFilename: "account-card.tsx",
-            },
+            data: {},
           },
         ],
         output: null,

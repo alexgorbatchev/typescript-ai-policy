@@ -195,16 +195,16 @@ const componentFileNamingConventionRule: RuleModule = {
       description:
         "Require component ownership filenames to match their exported PascalCase component name, or multipart family root name, in either PascalCase or kebab-case form",
       guidance:
-        "Name component files after the component they export. Do not use ad-hoc filenames that hide ownership.",
+        "Name component ownership files after the component they export. Keep non-component file roles out of the component ownership surface.",
     },
     schema: [],
     messages: {
       invalidComponentFileName:
-        'Rename this file so its basename can map deterministically to the exported component name. Use "ComponentName.tsx" or "component-name.tsx"; if this is not a component ownership file and does not need JSX syntax, rename it to a ".ts" file instead.',
+        "Rename this file so its basename maps deterministically to the exported component name. Keep non-component file roles out of the component ownership surface.",
       invalidComponentExportName:
-        "Rename the exported component to PascalCase. Component ownership files must export a PascalCase component name.",
+        "Rename this exported component to PascalCase. Component ownership exports must use PascalCase names.",
       mismatchedComponentFileName:
-        'Rename this file or the exported component so they match exactly. "{{ exportedName }}" must live in either "{{ pascalFilename }}" or "{{ kebabFilename }}".',
+        "Rename this file or the exported component so they match exactly. Use the PascalCase or kebab-case form of the component name.",
     },
   },
   create(context) {

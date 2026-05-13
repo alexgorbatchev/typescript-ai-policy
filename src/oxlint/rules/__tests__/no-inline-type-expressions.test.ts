@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
 import noInlineTypeExpressionsRuleModule from "../no-inline-type-expressions.ts";
@@ -9,6 +9,19 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const noInlineTypeExpressionsRuleTester = new RuleTester();
+
+const EXPECTED_NO_INLINE_TYPE_EXPRESSIONS_GUIDANCE =
+  "Do not write inline structural type expressions at the use site. Reuse a named type, extract one, or rely on inference.";
+
+const EXPECTED_NO_INLINE_TYPE_EXPRESSIONS_MESSAGE =
+  "Do not define an inline {{ kind }} here. Reuse a named type, extract one, or remove the annotation if inference already carries the contract.";
+
+it("uses the approved inline type expression guidance and message", () => {
+  expect(noInlineTypeExpressionsRuleModule.meta.docs?.guidance).toBe(EXPECTED_NO_INLINE_TYPE_EXPRESSIONS_GUIDANCE);
+  expect(noInlineTypeExpressionsRuleModule.meta.messages?.unexpectedInlineTypeExpression).toBe(
+    EXPECTED_NO_INLINE_TYPE_EXPRESSIONS_MESSAGE,
+  );
+});
 
 noInlineTypeExpressionsRuleTester.run(
   "no-inline-type-expressions requires use-site type annotations to use named declarations or inference",

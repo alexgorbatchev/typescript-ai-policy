@@ -17,7 +17,7 @@ it("prints authoritative published rule guidance for every local rule", () => {
       casing.
     - Write JSX. Do not call \`React.createElement\` directly in application code.
     - Put a \`data-testid\` on the root element returned by every ownership component.
-      Use the component name itself as that root id.
+      Use the component name as that root id.
     - Keep every committed test runnable by default. Remove \`.skip\`, conditional
       gating, and other non-running test modifiers.
     - Write tests as straight-line assertions. Replace branching with explicit
@@ -25,8 +25,9 @@ it("prints authoritative published rule guidance for every local rule", () => {
       executes.
     - Assert failures with matchers and helpers instead of throwing manually. Remove
       direct \`throw\` statements from committed tests.
-    - Indent multiline template literal content to match the surrounding code. Do
-      not outdent raw template lines.
+    - Indent multiline template literal content to match the surrounding code.
+      Normalize indentation explicitly when the resulting string must be
+      left-aligned.
     - Do not mock whole modules. Inject dependencies or pass collaborators
       explicitly so tests exercise real module wiring.
     - Treat \`.test.ts\` and \`.test.tsx\` files as private test leaves. Remove exports
@@ -50,19 +51,18 @@ it("prints authoritative published rule guidance for every local rule", () => {
     - Do not keep functions whose whole body only returns a forwarded property read
       when the function name merely restates that property. Inline the property
       access at the call site or move real ownership logic into the function.
-    - Do not write inline structural type expressions at the use site when inference
-      or a named declaration can carry the contract. Extract the contract to an
-      owned named type when an explicit type is required.
+    - Do not write inline structural type expressions at the use site. Reuse a named
+      type, extract one, or rely on inference.
     - Hoist type imports to explicit top-level \`import type\` declarations. Do not
       hide imported types inside inline \`import()\` expressions.
     - Keep component ownership files in the allowed location for their role. Move
       misplaced component files into the canonical component-owned area.
     - Keep component directories limited to files that belong to the component
       surface. Move unrelated file roles out of component directories.
-    - Use ownership component files only for the component contract they own. Remove
-      unrelated exports and keep the file focused on the component entrypoint.
-    - Name component files after the component they export. Do not use ad-hoc
-      filenames that hide ownership.
+    - Use component ownership files only for the component contract they own. Keep
+      unrelated runtime exports out of the file.
+    - Name component ownership files after the component they export. Keep
+      non-component file roles out of the component ownership surface.
     - Place each component story alongside its owned component in the canonical
       story role. Do not scatter story files outside the expected component/story
       relationship.
@@ -70,18 +70,18 @@ it("prints authoritative published rule guidance for every local rule", () => {
       fixture support. Move unrelated files out of the story area.
     - Keep \`*.stories.tsx\` files under \`stories/\`. Move misplaced story files into
       the canonical story directory.
-    - Annotate Storybook meta with the required typed form. Do not leave story meta
-      untyped or loosely typed.
+    - Bind Storybook meta to a typed top-level const and default-export that
+      identifier. Do not type story meta with object assertions.
     - Set each story title from the owned component path and role. Do not invent
       ad-hoc Storybook titles.
-    - Keep story exports limited to the approved Storybook surface. Remove helper
-      exports and move support code out of story files.
+    - Keep story exports limited to the approved Storybook surface. Move helper
+      bindings and support code out of story files.
     - Export hooks from the canonical hook ownership location. Do not leak hook
       exports from unrelated modules.
     - Keep hook directories limited to hook files and approved support files. Move
       unrelated roles out of hook-owned directories.
-    - Use hook files only for the hook contract they own. Keep unrelated exports,
-      components, and file roles out of hook ownership files.
+    - Use hook files only for the hook contract they own. Keep unrelated runtime
+      exports and file roles out of hook ownership files.
     - Name hook files after the exported hook using the \`use...\` contract. Do not
       use filenames that hide or contradict hook ownership.
     - Place hook tests in the canonical adjacent \`__tests__\` role. Do not leave hook

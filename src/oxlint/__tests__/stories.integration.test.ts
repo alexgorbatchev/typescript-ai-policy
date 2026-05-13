@@ -33,7 +33,7 @@ describe("story lint-target integration", () => {
           filePath: "src/accounts/components/stories/AccountPanel.stories.tsx",
           line: 13,
           message:
-            "Add a `play` property to this story object. Component stories are the required interaction-test surface for the sibling component.",
+            "Add a `play` property to this story object. Use stories as the required interaction-test surface for the sibling component.",
           ruleId: "@alexgorbatchev(story-export-contract)",
           severity: "error",
         },

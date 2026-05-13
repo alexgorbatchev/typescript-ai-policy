@@ -69,13 +69,13 @@ const requireTemplateIndentRule: RuleModule = {
     docs: {
       description: "Require multiline template literals to keep their content indented with the surrounding code",
       guidance:
-        "Indent multiline template literal content to match the surrounding code. Do not outdent raw template lines.",
+        "Indent multiline template literal content to match the surrounding code. Normalize indentation explicitly when the resulting string must be left-aligned.",
     },
     schema: [],
     fixable: "code" as const,
     messages: {
       badIndent:
-        'Indent this multiline template literal to match the surrounding code. If indentation is significant, normalize the string explicitly with "@alexgorbatchev/dedent-string" instead of relying on under-indented source text.',
+        "Indent this multiline template literal to match the surrounding code. Normalize indentation in code instead of relying on under-indented source text.",
     },
   },
   create(context) {

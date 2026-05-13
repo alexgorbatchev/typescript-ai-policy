@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
@@ -10,6 +10,26 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const requireComponentRootTestIdRuleTester = new RuleTester();
+
+const EXPECTED_COMPONENT_ROOT_TEST_ID_GUIDANCE =
+  "Put a `data-testid` on the root element returned by every ownership component. Use the component name as that root id.";
+
+const EXPECTED_COMPONENT_ROOT_TEST_ID_MESSAGES = {
+  exportedFragmentRoot:
+    "Return a DOM element as the exported component root. Do not use a fragment as the root render surface.",
+  exportedOtherRoot: "Render a DOM element as the exported component root. Do not return a non-DOM root shape here.",
+  invalidChildTestId:
+    'Rename this child test id to the "{{ componentName }}--thing" form. Keep child ids namespaced under the owning component root id.',
+  invalidLocalRootTestId:
+    "Rename this root test id to match the local component name exactly. Keep local component roots aligned with their component name.",
+  missingExportedRootTestId:
+    "Add the component root test id to the exported root element. Use the component name as the root id.",
+};
+
+it("uses the approved component root test id guidance and messages", () => {
+  expect(requireComponentRootTestIdRuleModule.meta.docs?.guidance).toBe(EXPECTED_COMPONENT_ROOT_TEST_ID_GUIDANCE);
+  expect(requireComponentRootTestIdRuleModule.meta.messages).toEqual(EXPECTED_COMPONENT_ROOT_TEST_ID_MESSAGES);
+});
 
 requireComponentRootTestIdRuleTester.run(
   "require-component-root-testid enforces exported root and child test id contracts",

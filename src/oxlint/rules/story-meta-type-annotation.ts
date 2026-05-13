@@ -63,16 +63,16 @@ const storyMetaTypeAnnotationRule: RuleModule = {
       description:
         'Require Storybook files to default-export a top-level const meta binding typed as "Meta<typeof ComponentName>" and ban meta object assertions',
       guidance:
-        "Annotate Storybook meta with the required typed form. Do not leave story meta untyped or loosely typed.",
+        "Bind Storybook meta to a typed top-level const and default-export that identifier. Do not type story meta with object assertions.",
     },
     schema: [],
     messages: {
       invalidMetaBinding:
-        "Bind the default Storybook meta as a top-level const object and export that identifier: `const meta: Meta<typeof ComponentName> = { ... }; export default meta;`.",
+        "Bind Storybook meta to a top-level const and default-export that identifier. Use a typed meta binding instead of exporting the object inline.",
       missingMetaTypeAnnotation:
-        "Annotate the meta binding as `Meta<typeof ComponentName>`. Storybook meta objects must use a type annotation on the const binding instead of inference.",
+        "Annotate the meta binding as `Meta<typeof Component>`. Do not rely on inference for story meta.",
       unexpectedMetaTypeAssertion:
-        "Replace this meta object assertion with a const type annotation: `const meta: Meta<typeof ComponentName> = { ... };`.",
+        "Replace this meta assertion with a const type annotation. Keep story meta typed on the binding, not on the object expression.",
     },
   },
   create(context) {

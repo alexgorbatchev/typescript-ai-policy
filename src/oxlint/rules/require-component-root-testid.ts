@@ -71,19 +71,19 @@ const requireComponentRootTestIdRule: RuleModule = {
       description:
         "Enforce direct exported DOM roots to use ComponentName and child test ids to use ComponentName--thing, while allowing exported components to delegate their root rendering to another component",
       guidance:
-        "Put a `data-testid` on the root element returned by every ownership component. Use the component name itself as that root id.",
+        "Put a `data-testid` on the root element returned by every ownership component. Use the component name as that root id.",
     },
     messages: {
       invalidChildTestId:
-        'Rename this child test id to the "{{ componentName }}--thing" form, for example "{{ componentName }}--label". Received "{{ candidate }}".',
+        'Rename this child test id to the "{{ componentName }}--thing" form. Keep child ids namespaced under the owning component root id.',
       exportedFragmentRoot:
-        'Exported component "{{ componentName }}" must return a DOM element as its root, not a fragment. Wrap the fragment in an element with data-testid="{{ componentName }}".',
+        "Return a DOM element as the exported component root. Do not use a fragment as the root render surface.",
       exportedOtherRoot:
-        'Exported component "{{ componentName }}" must render a DOM element as its root with data-testid="{{ componentName }}". Returning {{ summary }} is not allowed.',
+        "Render a DOM element as the exported component root. Do not return a non-DOM root shape here.",
       missingExportedRootTestId:
-        'Add data-testid="{{ componentName }}" or testId="{{ componentName }}" to the exported component\'s root element.',
+        "Add the component root test id to the exported root element. Use the component name as the root id.",
       invalidLocalRootTestId:
-        'Rename the root test id of component "{{ componentName }}" to exactly "{{ componentName }}". Received "{{ candidate }}".',
+        "Rename this root test id to match the local component name exactly. Keep local component roots aligned with their component name.",
     },
     schema: [],
   },
