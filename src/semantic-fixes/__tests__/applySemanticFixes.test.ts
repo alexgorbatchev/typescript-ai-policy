@@ -1,3 +1,4 @@
+import dedentString from "@alexgorbatchev/dedent-string";
 import { expect, it } from "bun:test";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
@@ -9,6 +10,10 @@ type ProjectFile = {
   content: string;
   filePath: string;
 };
+
+function readProjectFileContent(text: string): string {
+  return `${dedentString(text)}\n`;
+}
 
 async function writeProjectFiles(projectPath: string, projectFiles: readonly ProjectFile[]): Promise<void> {
   for (const projectFile of projectFiles) {
@@ -36,37 +41,40 @@ function readOptions(targetDirectoryPath: string) {
 it("applies interface naming fixes through the tsgo LSP backend", async () => {
   const projectPath = await createProject([
     {
-      content: `{
-  "compilerOptions": {
-    "module": "Preserve",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "strict": true,
-    "target": "ESNext",
-    "verbatimModuleSyntax": true
-  }
-}
-`,
+      content: readProjectFileContent(`
+        {
+          "compilerOptions": {
+            "module": "Preserve",
+            "moduleResolution": "bundler",
+            "noEmit": true,
+            "strict": true,
+            "target": "ESNext",
+            "verbatimModuleSyntax": true
+          }
+        }
+      `),
       filePath: "tsconfig.json",
     },
     {
-      content: `export interface UserProfile {
-  id: string;
-}
+      content: readProjectFileContent(`
+        export interface UserProfile {
+          id: string;
+        }
 
-export function readProfileId(profile: UserProfile): string {
-  return profile.id;
-}
-`,
+        export function readProfileId(profile: UserProfile): string {
+          return profile.id;
+        }
+      `),
       filePath: "models.ts",
     },
     {
-      content: `import type { UserProfile } from "./models";
+      content: readProjectFileContent(`
+        import type { UserProfile } from "./models";
 
-export function formatProfile(profile: UserProfile): string {
-  return profile.id;
-}
-`,
+        export function formatProfile(profile: UserProfile): string {
+          return profile.id;
+        }
+      `),
       filePath: "consumer.ts",
     },
   ]);
@@ -81,20 +89,26 @@ export function formatProfile(profile: UserProfile): string {
       plannedFixCount: 1,
       skippedDiagnostics: [],
     });
-    expect(await readFile(join(projectPath, "models.ts"), "utf8")).toBe(`export interface IUserProfile {
-  id: string;
-}
+    expect(await readFile(join(projectPath, "models.ts"), "utf8")).toBe(
+      readProjectFileContent(`
+      export interface IUserProfile {
+        id: string;
+      }
 
-export function readProfileId(profile: IUserProfile): string {
-  return profile.id;
-}
-`);
-    expect(await readFile(join(projectPath, "consumer.ts"), "utf8")).toBe(`import type { IUserProfile } from "./models";
+      export function readProfileId(profile: IUserProfile): string {
+        return profile.id;
+      }
+    `),
+    );
+    expect(await readFile(join(projectPath, "consumer.ts"), "utf8")).toBe(
+      readProjectFileContent(`
+      import type { IUserProfile } from "./models";
 
-export function formatProfile(profile: IUserProfile): string {
-  return profile.id;
-}
-`);
+      export function formatProfile(profile: IUserProfile): string {
+        return profile.id;
+      }
+    `),
+    );
   } finally {
     await rm(projectPath, { force: true, recursive: true });
   }
@@ -103,37 +117,40 @@ export function formatProfile(profile: IUserProfile): string {
 it("applies type-alias prefix fixes through the tsgo LSP backend", async () => {
   const projectPath = await createProject([
     {
-      content: `{
-  "compilerOptions": {
-    "module": "Preserve",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "strict": true,
-    "target": "ESNext",
-    "verbatimModuleSyntax": true
-  }
-}
-`,
+      content: readProjectFileContent(`
+        {
+          "compilerOptions": {
+            "module": "Preserve",
+            "moduleResolution": "bundler",
+            "noEmit": true,
+            "strict": true,
+            "target": "ESNext",
+            "verbatimModuleSyntax": true
+          }
+        }
+      `),
       filePath: "tsconfig.json",
     },
     {
-      content: `export type IUserProfile = {
-  id: string;
-};
+      content: readProjectFileContent(`
+        export type IUserProfile = {
+          id: string;
+        };
 
-export function readProfileId(profile: IUserProfile): string {
-  return profile.id;
-}
-`,
+        export function readProfileId(profile: IUserProfile): string {
+          return profile.id;
+        }
+      `),
       filePath: "models.ts",
     },
     {
-      content: `import type { IUserProfile } from "./models";
+      content: readProjectFileContent(`
+        import type { IUserProfile } from "./models";
 
-export function formatProfile(profile: IUserProfile): string {
-  return profile.id;
-}
-`,
+        export function formatProfile(profile: IUserProfile): string {
+          return profile.id;
+        }
+      `),
       filePath: "consumer.ts",
     },
   ]);
@@ -148,20 +165,26 @@ export function formatProfile(profile: IUserProfile): string {
       plannedFixCount: 1,
       skippedDiagnostics: [],
     });
-    expect(await readFile(join(projectPath, "models.ts"), "utf8")).toBe(`export type UserProfile = {
-  id: string;
-};
+    expect(await readFile(join(projectPath, "models.ts"), "utf8")).toBe(
+      readProjectFileContent(`
+      export type UserProfile = {
+        id: string;
+      };
 
-export function readProfileId(profile: UserProfile): string {
-  return profile.id;
-}
-`);
-    expect(await readFile(join(projectPath, "consumer.ts"), "utf8")).toBe(`import type { UserProfile } from "./models";
+      export function readProfileId(profile: UserProfile): string {
+        return profile.id;
+      }
+    `),
+    );
+    expect(await readFile(join(projectPath, "consumer.ts"), "utf8")).toBe(
+      readProjectFileContent(`
+      import type { UserProfile } from "./models";
 
-export function formatProfile(profile: UserProfile): string {
-  return profile.id;
-}
-`);
+      export function formatProfile(profile: UserProfile): string {
+        return profile.id;
+      }
+    `),
+    );
   } finally {
     await rm(projectPath, { force: true, recursive: true });
   }
@@ -170,37 +193,40 @@ export function formatProfile(profile: UserProfile): string {
 it("reports progress while planning and applying semantic fixes", async () => {
   const projectPath = await createProject([
     {
-      content: `{
-  "compilerOptions": {
-    "module": "Preserve",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "strict": true,
-    "target": "ESNext",
-    "verbatimModuleSyntax": true
-  }
-}
-`,
+      content: readProjectFileContent(`
+        {
+          "compilerOptions": {
+            "module": "Preserve",
+            "moduleResolution": "bundler",
+            "noEmit": true,
+            "strict": true,
+            "target": "ESNext",
+            "verbatimModuleSyntax": true
+          }
+        }
+      `),
       filePath: "tsconfig.json",
     },
     {
-      content: `export interface UserProfile {
-  id: string;
-}
+      content: readProjectFileContent(`
+        export interface UserProfile {
+          id: string;
+        }
 
-export function readProfileId(profile: UserProfile): string {
-  return profile.id;
-}
-`,
+        export function readProfileId(profile: UserProfile): string {
+          return profile.id;
+        }
+      `),
       filePath: "models.ts",
     },
     {
-      content: `import type { UserProfile } from "./models";
+      content: readProjectFileContent(`
+        import type { UserProfile } from "./models";
 
-export function formatProfile(profile: UserProfile): string {
-  return profile.id;
-}
-`,
+        export function formatProfile(profile: UserProfile): string {
+          return profile.id;
+        }
+      `),
       filePath: "consumer.ts",
     },
   ]);
@@ -258,43 +284,47 @@ export function formatProfile(profile: UserProfile): string {
 it("moves misplaced .test.ts files into a sibling __tests__ directory and rewrites relative imports", async () => {
   const projectPath = await createProject([
     {
-      content: `{
-  "compilerOptions": {
-    "module": "Preserve",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "strict": true,
-    "target": "ESNext",
-    "verbatimModuleSyntax": true
-  }
-}
-`,
+      content: readProjectFileContent(`
+        {
+          "compilerOptions": {
+            "module": "Preserve",
+            "moduleResolution": "bundler",
+            "noEmit": true,
+            "strict": true,
+            "target": "ESNext",
+            "verbatimModuleSyntax": true
+          }
+        }
+      `),
       filePath: "tsconfig.json",
     },
     {
-      content: `export function SignalPanel(): string {
-  return "ready";
-}
-`,
+      content: readProjectFileContent(`
+        export function SignalPanel(): string {
+          return "ready";
+        }
+      `),
       filePath: "widgets/SignalPanel.ts",
     },
     {
-      content: `export function readPanelLabel(): string {
-  return "label";
-}
-`,
+      content: readProjectFileContent(`
+        export function readPanelLabel(): string {
+          return "label";
+        }
+      `),
       filePath: "widgets/readPanelLabel.ts",
     },
     {
-      content: `import { expect, test } from "bun:test";
-import { SignalPanel } from "./SignalPanel";
-import { readPanelLabel } from "./readPanelLabel";
+      content: readProjectFileContent(`
+        import { expect, test } from "bun:test";
+        import { SignalPanel } from "./SignalPanel";
+        import { readPanelLabel } from "./readPanelLabel";
 
-test("renders", () => {
-  expect(SignalPanel()).toBe("ready");
-  expect(readPanelLabel()).toBe("label");
-});
-`,
+        test("renders", () => {
+          expect(SignalPanel()).toBe("ready");
+          expect(readPanelLabel()).toBe("label");
+        });
+      `),
       filePath: "widgets/SignalPanel.test.ts",
     },
   ]);
@@ -309,16 +339,18 @@ test("renders", () => {
       plannedFixCount: 1,
       skippedDiagnostics: [],
     });
-    expect(await readFile(join(projectPath, "widgets/__tests__/SignalPanel.test.ts"), "utf8"))
-      .toBe(`import { expect, test } from "bun:test";
-import { SignalPanel } from "../SignalPanel";
-import { readPanelLabel } from "../readPanelLabel";
+    expect(await readFile(join(projectPath, "widgets/__tests__/SignalPanel.test.ts"), "utf8")).toBe(
+      readProjectFileContent(`
+        import { expect, test } from "bun:test";
+        import { SignalPanel } from "../SignalPanel";
+        import { readPanelLabel } from "../readPanelLabel";
 
-test("renders", () => {
-  expect(SignalPanel()).toBe("ready");
-  expect(readPanelLabel()).toBe("label");
-});
-`);
+        test("renders", () => {
+          expect(SignalPanel()).toBe("ready");
+          expect(readPanelLabel()).toBe("label");
+        });
+      `),
+    );
     await expect(readFile(join(projectPath, "widgets/SignalPanel.test.ts"), "utf8")).rejects.toThrow();
   } finally {
     await rm(projectPath, { force: true, recursive: true });
@@ -328,31 +360,34 @@ test("renders", () => {
 it("skips misplaced .test.ts moves when the canonical __tests__ file already exists", async () => {
   const projectPath = await createProject([
     {
-      content: `{
-  "compilerOptions": {
-    "module": "Preserve",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "strict": true,
-    "target": "ESNext",
-    "verbatimModuleSyntax": true
-  }
-}
-`,
+      content: readProjectFileContent(`
+        {
+          "compilerOptions": {
+            "module": "Preserve",
+            "moduleResolution": "bundler",
+            "noEmit": true,
+            "strict": true,
+            "target": "ESNext",
+            "verbatimModuleSyntax": true
+          }
+        }
+      `),
       filePath: "tsconfig.json",
     },
     {
-      content: `import { test } from "bun:test";
+      content: readProjectFileContent(`
+        import { test } from "bun:test";
 
-test("renders", () => {});
-`,
+        test("renders", () => {});
+      `),
       filePath: "widgets/SignalPanel.test.ts",
     },
     {
-      content: `import { test } from "bun:test";
+      content: readProjectFileContent(`
+        import { test } from "bun:test";
 
-test("canonical", () => {});
-`,
+        test("canonical", () => {});
+      `),
       filePath: "widgets/__tests__/SignalPanel.test.ts",
     },
   ]);
@@ -381,24 +416,26 @@ test("canonical", () => {});
 it("reports dry-run plans without mutating files", async () => {
   const projectPath = await createProject([
     {
-      content: `{
-  "compilerOptions": {
-    "module": "Preserve",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "strict": true,
-    "target": "ESNext",
-    "verbatimModuleSyntax": true
-  }
-}
-`,
+      content: readProjectFileContent(`
+        {
+          "compilerOptions": {
+            "module": "Preserve",
+            "moduleResolution": "bundler",
+            "noEmit": true,
+            "strict": true,
+            "target": "ESNext",
+            "verbatimModuleSyntax": true
+          }
+        }
+      `),
       filePath: "tsconfig.json",
     },
     {
-      content: `export interface UserProfile {
-  id: string;
-}
-`,
+      content: readProjectFileContent(`
+        export interface UserProfile {
+          id: string;
+        }
+      `),
       filePath: "models.ts",
     },
   ]);
@@ -416,10 +453,13 @@ it("reports dry-run plans without mutating files", async () => {
       plannedFixCount: 1,
       skippedDiagnostics: [],
     });
-    expect(await readFile(join(projectPath, "models.ts"), "utf8")).toBe(`export interface UserProfile {
-  id: string;
-}
-`);
+    expect(await readFile(join(projectPath, "models.ts"), "utf8")).toBe(
+      readProjectFileContent(`
+      export interface UserProfile {
+        id: string;
+      }
+    `),
+    );
   } finally {
     await rm(projectPath, { force: true, recursive: true });
   }
@@ -428,24 +468,26 @@ it("reports dry-run plans without mutating files", async () => {
 it("skips interface names that cannot be safely normalized mechanically", async () => {
   const projectPath = await createProject([
     {
-      content: `{
-  "compilerOptions": {
-    "module": "Preserve",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "strict": true,
-    "target": "ESNext",
-    "verbatimModuleSyntax": true
-  }
-}
-`,
+      content: readProjectFileContent(`
+        {
+          "compilerOptions": {
+            "module": "Preserve",
+            "moduleResolution": "bundler",
+            "noEmit": true,
+            "strict": true,
+            "target": "ESNext",
+            "verbatimModuleSyntax": true
+          }
+        }
+      `),
       filePath: "tsconfig.json",
     },
     {
-      content: `export interface user_profile {
-  id: string;
-}
-`,
+      content: readProjectFileContent(`
+        export interface user_profile {
+          id: string;
+        }
+      `),
       filePath: "models.ts",
     },
   ]);
@@ -466,10 +508,13 @@ it("skips interface names that cannot be safely normalized mechanically", async 
         },
       ],
     });
-    expect(await readFile(join(projectPath, "models.ts"), "utf8")).toBe(`export interface user_profile {
-  id: string;
-}
-`);
+    expect(await readFile(join(projectPath, "models.ts"), "utf8")).toBe(
+      readProjectFileContent(`
+      export interface user_profile {
+        id: string;
+      }
+    `),
+    );
   } finally {
     await rm(projectPath, { force: true, recursive: true });
   }

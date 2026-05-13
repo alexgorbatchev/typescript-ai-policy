@@ -1,8 +1,13 @@
+import dedentString from "@alexgorbatchev/dedent-string";
 import { expect, it } from "bun:test";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { applyTextEdits } from "../applyTextEdits.ts";
+
+function readExpectedFileContent(text: string): string {
+  return `${dedentString(text)}\n`;
+}
 
 it("prefers the narrowest overlapping edit when tsgo returns a redundant wider rename span with the same replacement", async () => {
   const projectPath = await mkdtemp(join(tmpdir(), "apply-text-edits-test-"));
@@ -11,10 +16,11 @@ it("prefers the narrowest overlapping edit when tsgo returns a redundant wider r
   try {
     await writeFile(
       filePath,
-      `export function createPluginBundlerPresets(input: PluginBundlerPresetInput = {}): PluginBundlerPresets {
-  return input as unknown as PluginBundlerPresets;
-}
-`,
+      readExpectedFileContent(`
+        export function createPluginBundlerPresets(input: PluginBundlerPresetInput = {}): PluginBundlerPresets {
+          return input as unknown as PluginBundlerPresets;
+        }
+      `),
       "utf8",
     );
 
@@ -45,11 +51,13 @@ it("prefers the narrowest overlapping edit when tsgo returns a redundant wider r
       },
     ]);
 
-    expect(await readFile(filePath, "utf8"))
-      .toBe(`export function createPluginBundlerPresets(input: IPluginBundlerPresetInput = {}): IPluginBundlerPresets {
-  return input as unknown as IPluginBundlerPresets;
-}
-`);
+    expect(await readFile(filePath, "utf8")).toBe(
+      readExpectedFileContent(`
+      export function createPluginBundlerPresets(input: IPluginBundlerPresetInput = {}): IPluginBundlerPresets {
+        return input as unknown as IPluginBundlerPresets;
+      }
+    `),
+    );
   } finally {
     await rm(projectPath, { force: true, recursive: true });
   }
