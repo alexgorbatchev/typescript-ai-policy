@@ -111,11 +111,11 @@ it("prints authoritative published rule guidance for every local rule", () => {
     - Fix policy violations in code instead of silencing the linter. Do not commit
       eslint or oxlint disable comments.
     - Keep \`className\` and \`style\` props only in component-owned TSX files matched
-      by \`componentGlobs\`: __repository-placeholder__/**/*.tsx. Replace styling prop
-      passthrough with owned component variants or styling APIs.
-    - Keep raw intrinsic JSX only in component-owned TSX files matched by
-      \`componentGlobs\`: __repository-placeholder__/**/*.tsx. Outside that surface,
-      compose imported components instead of writing DOM markup directly.
+      by your configured \`componentGlobs\`. Replace styling prop passthrough with
+      owned component variants or styling APIs.
+    - Keep raw intrinsic JSX only in component-owned TSX files matched by your
+      configured \`componentGlobs\`. Outside that surface, compose imported components
+      instead of writing DOM markup directly.
     "
   `);
 });

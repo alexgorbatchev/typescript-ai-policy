@@ -25,7 +25,7 @@ const noIntrinsicElementsOutsideComponentGlobsRuleModule: RuleModule = {
     docs: {
       description: "Ban intrinsic JSX elements outside configured component globs in TSX files",
       guidance:
-        "Keep raw intrinsic JSX only in component-owned TSX files matched by `componentGlobs`: {{componentGlobs}}. Outside that surface, compose imported components instead of writing DOM markup directly.",
+        "Keep raw intrinsic JSX only in component-owned TSX files matched by your configured `componentGlobs`. Outside that surface, compose imported components instead of writing DOM markup directly.",
     },
     schema: [],
     messages: {

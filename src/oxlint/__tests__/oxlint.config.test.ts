@@ -8,7 +8,7 @@ describe("oxlint.config", () => {
       createOxlintConfig(() => ({
         settings: {
           "@alexgorbatchev": {
-            componentGlobs: ["__repository-placeholder__/**/*.tsx"],
+            componentGlobs: ["src/**/*.tsx"],
           },
         },
       })),

@@ -1,6 +1,4 @@
-import oxlintConfig from "./oxlint.config.ts";
 import plugin from "./plugin.ts";
-import { readConfiguredComponentGlobs } from "./rules/helpers.ts";
 
 export type PublishedRuleGuidanceEntry = {
   guidance: string;
@@ -15,10 +13,6 @@ type PublishedRuleGuidanceOutputOptions = {
   json?: boolean;
 };
 
-type GuidanceInterpolationContext = {
-  componentGlobs: readonly string[];
-};
-
 type RuleModuleLike = {
   meta?: {
     docs?: unknown;
@@ -31,15 +25,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isRuleModuleLike(value: unknown): value is RuleModuleLike {
   return isRecord(value);
-}
-
-function readGuidanceInterpolationContext(): GuidanceInterpolationContext {
-  const settings = oxlintConfig.settings;
-  const componentGlobs = isRecord(settings) ? readConfiguredComponentGlobs(settings) : [];
-
-  return {
-    componentGlobs,
-  };
 }
 
 function readRuleGuidanceTemplate(ruleId: string, ruleModule: unknown): string {
@@ -58,13 +43,6 @@ function readRuleGuidanceTemplate(ruleId: string, ruleModule: unknown): string {
   }
 
   return guidance;
-}
-
-function interpolateGuidanceTemplate(
-  guidanceTemplate: string,
-  guidanceInterpolationContext: GuidanceInterpolationContext,
-): string {
-  return guidanceTemplate.replaceAll("{{componentGlobs}}", guidanceInterpolationContext.componentGlobs.join(", "));
 }
 
 function readNormalizedGuidanceWords(guidance: string): string[] {
@@ -120,23 +98,16 @@ function formatPublishedRuleGuidanceMarkdownBullet(publishedRuleGuidanceEntry: P
   return readWrappedMarkdownBulletLines(publishedRuleGuidanceEntry.guidance).join("\n");
 }
 
-function readPublishedRuleGuidanceEntry(
-  ruleId: string,
-  ruleModule: unknown,
-  guidanceInterpolationContext: GuidanceInterpolationContext,
-): PublishedRuleGuidanceEntry {
-  const guidanceTemplate = readRuleGuidanceTemplate(ruleId, ruleModule);
-
+function readPublishedRuleGuidanceEntry(ruleId: string, ruleModule: unknown): PublishedRuleGuidanceEntry {
   return {
-    guidance: interpolateGuidanceTemplate(guidanceTemplate, guidanceInterpolationContext),
+    guidance: readRuleGuidanceTemplate(ruleId, ruleModule),
     ruleName: `@alexgorbatchev/${ruleId}`,
   };
 }
 
 export function readPublishedRuleGuidanceOutput(options: PublishedRuleGuidanceOutputOptions = {}): string {
-  const guidanceInterpolationContext = readGuidanceInterpolationContext();
   const publishedRuleGuidanceEntries = Object.entries(plugin.rules).map(([ruleId, ruleModule]) =>
-    readPublishedRuleGuidanceEntry(ruleId, ruleModule, guidanceInterpolationContext),
+    readPublishedRuleGuidanceEntry(ruleId, ruleModule),
   );
 
   if (options.json) {

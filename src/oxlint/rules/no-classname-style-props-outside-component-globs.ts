@@ -7,7 +7,7 @@ const noClassNameStylePropsOutsideComponentGlobsRuleModule: RuleModule = {
     docs: {
       description: "Ban className and style props outside configured component globs in TSX files",
       guidance:
-        "Keep `className` and `style` props only in component-owned TSX files matched by `componentGlobs`: {{componentGlobs}}. Replace styling prop passthrough with owned component variants or styling APIs.",
+        "Keep `className` and `style` props only in component-owned TSX files matched by your configured `componentGlobs`. Replace styling prop passthrough with owned component variants or styling APIs.",
     },
     schema: [],
     messages: {
