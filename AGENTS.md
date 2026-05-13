@@ -122,6 +122,8 @@ When changing the policy surface:
 - call out interactions with other rules when a contract is coupled across multiple checks
 - keep the sibling registry skills in `../ai-registry/skills/` synchronized whenever published guidance, React contracts, Storybook contracts, test contracts, fixture contracts, or TypeScript ownership/type contracts change here
 - the sync set currently includes `storybook`, `react-development`, `react-testing`, `typescript-code-quality`, and `typescript-testing`
+- write those sibling skills as the prose counterpart to this repository's policy surface, not as optional conditional add-ons; do not gate them with wording like `If the repo uses @alexgorbatchev/typescript-ai-policy, ...`
+- those sibling skills may include additional non-linter guidance, but they must still present the repository's enforced contracts as direct guidance rather than as hypothetical repo-specific branches
 - when updating those sibling skills, validate the changed skills and rebuild `../ai-registry` so the generated registry outputs stay aligned with this package's published guidance
 
 ## Whole-policy compatibility requirement
@@ -188,7 +190,7 @@ bun run cli -- guidance --json
 - use the wrapped Markdown output for human review
 - use `--json` when another tool or agent needs structured rule-name-to-guidance data
 - treat this CLI output as the authoritative aggregate guidance for agents in this repository
-- when applying that guidance to another repository, reconcile any config-dependent placeholders such as `componentGlobs` against the consuming repository's actual `oxlint.config.ts`
+- when applying that guidance to another repository, reconcile the package-level guidance against the consuming repository's actual `oxlint.config.ts`
 
 ## Release workflow
 

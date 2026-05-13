@@ -1,18 +1,14 @@
 import { describe, it } from "bun:test";
-import { expectLintTargetFailure, expectLintTargetSuccess } from "./expectLintTargetResult.ts";
-import { runLintTargetFixture } from "./runLintTargetFixture.ts";
-import { runLintTargetFixtureWithConsumerConfig } from "./runLintTargetFixtureWithConsumerConfig.ts";
+import { expectLintTargetFailure, expectLintTargetSuccess } from "../test-support/expectLintTargetResult.ts";
+import { runLintTargetFixture } from "../test-support/runLintTargetFixture.ts";
+import { runLintTargetFixtureWithConsumerConfig } from "../test-support/runLintTargetFixtureWithConsumerConfig.ts";
 
 const FIXTURE_CONFIG_HEADER = {
   configPath: "<fixture-root>/oxlint.config.ts",
   targetPath: "<fixture-root>",
 };
 
-const COMPONENT_GLOB_SETTINGS = {
-  "@alexgorbatchev": {
-    componentGlobs: ["src/**/*.tsx"],
-  },
-};
+const CONSUMER_SETTINGS = {};
 
 describe("fixture lint-target integration", () => {
   it("reports fixture exports that leak outside fixture entrypoints", () => {
@@ -68,7 +64,7 @@ describe("fixture lint-target integration", () => {
   it("reports alternate fixture import paths in stories", () => {
     const lintTargetResult = runLintTargetFixtureWithConsumerConfig(
       "fixture-import-path-convention/alternate-fixtures-path-in-story-invalid",
-      COMPONENT_GLOB_SETTINGS,
+      CONSUMER_SETTINGS,
     );
 
     expectLintTargetFailure(
@@ -76,7 +72,7 @@ describe("fixture lint-target integration", () => {
       [
         {
           column: 10,
-          filePath: "src/accounts/stories/AccountPanel.stories.tsx",
+          filePath: "src/accounts/components/stories/AccountPanel.stories.tsx",
           line: 3,
           message:
             'Change this import so "fixture_accountPanel" comes from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree.',
@@ -91,7 +87,7 @@ describe("fixture lint-target integration", () => {
   it("reports inline fixture bindings in stories", () => {
     const lintTargetResult = runLintTargetFixtureWithConsumerConfig(
       "no-inline-fixture-bindings-in-tests/inline-fixture-binding-in-story-invalid",
-      COMPONENT_GLOB_SETTINGS,
+      CONSUMER_SETTINGS,
     );
 
     expectLintTargetFailure(
@@ -99,7 +95,7 @@ describe("fixture lint-target integration", () => {
       [
         {
           column: 7,
-          filePath: "src/accounts/stories/AccountPanel.stories.tsx",
+          filePath: "src/accounts/components/stories/AccountPanel.stories.tsx",
           line: 13,
           message:
             'Delete the inline "fixture_accountPanel" declaration from this file and import it from a relative "fixtures" module under the same "__tests__/" or "stories/" tree instead.',
@@ -111,13 +107,13 @@ describe("fixture lint-target integration", () => {
     );
   });
 
-  it("allows nested tests to import fixtures from the sibling support tree", () => {
+  it("allows direct-child tests to import fixtures from the sibling support tree", () => {
     const lintTargetResult = runLintTargetFixture("fixture-import-path-convention/nested-test-valid-relative-fixtures");
 
     expectLintTargetSuccess(lintTargetResult);
   });
 
-  it("reports wrong-tree fixture imports in nested tests", () => {
+  it("reports wrong-tree fixture imports in direct-child tests", () => {
     const lintTargetResult = runLintTargetFixture(
       "fixture-import-path-convention/wrong-tree-fixture-import-in-nested-test-invalid",
     );
@@ -125,7 +121,7 @@ describe("fixture lint-target integration", () => {
     expectLintTargetFailure(lintTargetResult, [
       {
         column: 10,
-        filePath: "src/accounts/__tests__/integration/rows.test.ts",
+        filePath: "src/accounts/__tests__/rows.test.ts",
         line: 2,
         message:
           'Change this import so "fixture_userAccountRows" comes from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree.',

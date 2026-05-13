@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { RouteShell } from "../RouteShell";
+import { RouteShell } from "../layouts/RouteShell";
 
 describe("RouteShell", () => {
   it("creates a wrapper harness", () => {

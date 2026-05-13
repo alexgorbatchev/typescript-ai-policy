@@ -23,6 +23,9 @@ function readJsPluginSpecifier(): string {
 //
 const DEFAULT_OXLINT_CONFIG = defineConfig({
   ignorePatterns: [
+    ".tmp",
+    "**/.tmp",
+    "**/.tmp/**",
     ".cache",
     ".venv",
     "**/.astro",

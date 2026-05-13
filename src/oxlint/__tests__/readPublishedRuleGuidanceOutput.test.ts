@@ -110,12 +110,12 @@ it("prints authoritative published rule guidance for every local rule", () => {
       fixture exports so consumers import from one canonical fixture module.
     - Fix policy violations in code instead of silencing the linter. Do not commit
       eslint or oxlint disable comments.
-    - Keep \`className\` and \`style\` props only in component-owned TSX files matched
-      by your configured \`componentGlobs\`. Configure those globs with the narrowest
-      possible owned paths and avoid catch-all patterns.
-    - Keep raw intrinsic JSX only in component-owned TSX files matched by your
-      configured \`componentGlobs\`. Configure those globs with the narrowest possible
-      owned paths and avoid catch-all patterns.
+    - Keep \`className\` and \`style\` props only in component-owned TSX files inside
+      canonical component areas. Expose variants or styling APIs instead of passing
+      styling props outside that surface.
+    - Keep raw intrinsic JSX only in component-owned TSX files inside canonical
+      component areas. Outside that surface, compose imported components instead of
+      writing DOM markup directly.
     "
   `);
 });

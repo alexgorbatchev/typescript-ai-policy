@@ -1,6 +1,6 @@
 import { describe, it } from "bun:test";
-import { expectLintTargetFailure } from "./expectLintTargetResult.ts";
-import { runLintTargetFixture } from "./runLintTargetFixture.ts";
+import { expectLintTargetFailure } from "../test-support/expectLintTargetResult.ts";
+import { runLintTargetFixture } from "../test-support/runLintTargetFixture.ts";
 
 describe("type-policy lint-target integration", () => {
   it("reports trivial exported forwarding functions through the shared config", () => {

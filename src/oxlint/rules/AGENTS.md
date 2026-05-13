@@ -83,7 +83,7 @@ bun run cli -- guidance --json
 - use the wrapped Markdown output for human review
 - use `--json` when another tool or agent needs structured rule-name-to-guidance data
 - treat this CLI output as the authoritative aggregate guidance for the local `@alexgorbatchev/*` rules
-- when guidance refers to config-dependent placeholders such as `componentGlobs`, reconcile them against the consuming repository's actual `oxlint.config.ts`
+- reconcile the package-level guidance against the consuming repository's actual `oxlint.config.ts` before applying file-specific repairs
 
 ## Mandatory red/green workflow for policy changes
 

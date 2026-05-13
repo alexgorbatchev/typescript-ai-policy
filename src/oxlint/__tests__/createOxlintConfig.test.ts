@@ -248,6 +248,9 @@ describe("createOxlintConfig", () => {
 
     expect(oxlintConfig.ignorePatterns).toEqual([
       "coverage",
+      ".tmp",
+      "**/.tmp",
+      "**/.tmp/**",
       ".cache",
       ".venv",
       "**/.astro",

@@ -1,0 +1,17 @@
+import type { Meta, StoryObj } from "@storybook/react";
+import { RouteShell } from "../RouteShell";
+
+const meta: Meta<typeof RouteShell> = {
+  component: RouteShell,
+  title: "outside-configured-component-globs-invalid/app/layouts/RouteShell",
+};
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+const Default: Story = {
+  play: async () => {},
+};
+
+export { Default as RouteShell };

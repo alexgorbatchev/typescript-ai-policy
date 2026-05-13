@@ -1,5 +1,0 @@
-import { Button } from "../ui/components/Button";
-
-export function RouteShell() {
-  return <Button testId="RouteShell" className="shell" />;
-}
