@@ -47,6 +47,9 @@ it("prints authoritative published rule guidance for every local rule", () => {
       names without \`I[A-Z]\`.
     - Do not alias an interface directly with \`type Alias = Interface\`. Reuse the
       interface name or define a real type shape with its own purpose.
+    - Do not keep functions whose whole body only returns a forwarded property read
+      when the function name merely restates that property. Inline the property
+      access at the call site or move real ownership logic into the function.
     - Do not write inline structural type expressions at the use site when inference
       or a named declaration can carry the contract. Extract the contract to an
       owned named type when an explicit type is required.

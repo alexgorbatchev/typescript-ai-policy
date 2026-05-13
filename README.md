@@ -101,7 +101,7 @@ At a glance, the shared policy enforces:
 - test-file discipline: no skipped or focused tests, no conditional logic, no `throw`, no module mocking, no test-file exports, and no inline fixture bindings
 - fixture discipline: canonical location, single entrypoint, constrained export naming and export types, no local type declarations, and canonical fixture import paths
 - explicit type/value ownership rules for files such as `index.ts`, `constants.ts`, and `types.ts`
-- strict type-contract rules: `I*` interfaces only, no `I*` type aliases, no direct interface-to-type passthrough aliases, no inline type imports or inline structural type expressions, and indented multiline template literals
+- strict type and function-contract rules: `I*` interfaces only, no `I*` type aliases, no direct interface-to-type passthrough aliases, no trivial property-selector forwarding wrappers whose names merely restate the selected property, no inline type imports or inline structural type expressions, and indented multiline template literals
 - a policy stance that inline lint-disable comments are not an acceptable escape hatch for fixing violations
 
 ## Lint-disable comments are not a valid repair strategy

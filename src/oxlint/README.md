@@ -67,9 +67,11 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/test-file-location-convention`
    - `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
    - `@alexgorbatchev/no-lint-disable-comments`
-2. **TypeScript-wide naming, explicit-type, and template-literal rules** run on all `**/*.{ts,tsx,mts,cts}` files:
+2. **TypeScript-wide naming, indirection, explicit-type, and template-literal rules** run on all `**/*.{ts,tsx,mts,cts}` files:
    - `@alexgorbatchev/interface-naming-convention`
    - `@alexgorbatchev/no-i-prefixed-type-aliases`
+   - `@alexgorbatchev/no-trivial-forwarding-function`
+   - `@alexgorbatchev/no-direct-interface-to-type-assignment`
    - `@alexgorbatchev/no-inline-type-expressions`
    - `@alexgorbatchev/no-inline-type-imports`
    - `@alexgorbatchev/require-template-indent`
@@ -306,6 +308,42 @@ export type Id = string;
 
 ```ts
 export type UserProfile = IUserProfile;
+```
+
+## Function indirection policy
+
+### `@alexgorbatchev/no-trivial-forwarding-function`
+
+**Policy:** Do not keep top-level function declarations or variable-assigned function wrappers whose entire body only returns a forwarded property read when the function name merely restates the selected property. Exported status does not justify a wrapper on its own; either inline the property access or give the function real ownership logic. The current rule scope intentionally targets simple property-selector wrappers that forward identifier or rest parameters in declaration order and end with the selected property name.
+
+**Good**
+
+```ts
+export function readComponentEditor(value: string): string {
+  return value.trim();
+}
+```
+
+```ts
+export function readComponentEditor(config: { componentEditor: string }): string {
+  if (config.componentEditor === "") {
+    return "fallback";
+  }
+
+  return config.componentEditor;
+}
+```
+
+**Bad**
+
+```ts
+export function readDevtoolsComponentEditor(): DevtoolsComponentEditor {
+  return readInjectedDevtoolsConfig().componentEditor;
+}
+```
+
+```ts
+export const readUserName = (userId: string): string => fetchUser(userId).name;
 ```
 
 ## Explicit type-expression policies
