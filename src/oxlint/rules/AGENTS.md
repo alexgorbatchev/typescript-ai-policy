@@ -65,9 +65,10 @@ When adding or changing rules here:
 8. Use `messageId` + `data` in `context.report(...)` when the rule defines `meta.messages`. However, **do not include the names of reported things in the message text** (for example node names, identifiers, attribute names, or the reported token's current spelling) because the lint harness already points to the offending syntax.
 9. **Do not suggest escape hatches in rule messages.** Do not offer alternate easy outs, policy workarounds, or mechanically convenient exceptions that let an agent silence the rule without fixing the ownership or placement problem.
 10. **Keep steering messages strict, direct, and grammatical.** Rule messages must be a maximum of 2 short sentences that provide a strict, direct instruction on what to fix.
-11. Put file-scoping exceptions in Oxlint config when possible, not inside rule heuristics.
-12. If a rule applies to a path-glob-addressable file role such as `index.ts`, `constants.ts`, or `types.ts`, require narrow `overrides[].files` activation in `../oxlint.config.ts` instead of global `rules`.
-13. If a rule is fixable, implement it with standard ESLint fixer callbacks.
+11. **Avoid multi-line highlights unless the violating syntax is itself multi-line.** Prefer the most specific violating subnode or token. For declaration-style rules whose natural node spans a full function, class, hook, component, `if` block, JSX element, or other large body, override `loc` so the diagnostic highlights only the first line when that first line fully captures the violation.
+12. Put file-scoping exceptions in Oxlint config when possible, not inside rule heuristics.
+13. If a rule applies to a path-glob-addressable file role such as `index.ts`, `constants.ts`, or `types.ts`, require narrow `overrides[].files` activation in `../oxlint.config.ts` instead of global `rules`.
+14. If a rule is fixable, implement it with standard ESLint fixer callbacks.
 
 ## Authoritative agent guidance output
 

@@ -38,11 +38,17 @@ ruleTester.run(
     ],
     invalid: [
       {
-        code: `export function useAccount() { return null; }`,
+        code: `export function useAccount() {
+  return null;
+}`,
         filename: "src/accounts/useAccount.ts",
         languageOptions: languageOpts,
         errors: [
           {
+            column: 8,
+            endColumn: 31,
+            endLine: 1,
+            line: 1,
             messageId: "misplacedHookExport",
             data: {
               hookName: "useAccount",

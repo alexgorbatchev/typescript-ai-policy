@@ -4,6 +4,7 @@ import type {
   AstExportSpecifier,
   AstProgram,
   AstProgramStatement,
+  AstSourceLocationNode,
   AstVariableDeclaration,
   AstVariableDeclarator,
   RuleModule,
@@ -121,6 +122,28 @@ function readKebabCaseHookName(name: string): string {
   return name.replaceAll(/([a-z0-9])([A-Z])/gu, "$1-$2").toLowerCase();
 }
 
+function readFirstLineReportLocation(node: AstSourceLocationNode, sourceLines: string[]): AstSourceLocationNode["loc"] {
+  const nodeLocation = node.loc;
+
+  if (nodeLocation.start.line === nodeLocation.end.line) {
+    return nodeLocation;
+  }
+
+  const sourceLine = sourceLines[nodeLocation.start.line - 1];
+
+  if (sourceLine === undefined) {
+    return nodeLocation;
+  }
+
+  return {
+    start: nodeLocation.start,
+    end: {
+      line: nodeLocation.start.line,
+      column: sourceLine.length,
+    },
+  };
+}
+
 const hookExportLocationConventionRule: RuleModule = {
   meta: {
     type: "problem" as const,
@@ -137,6 +160,8 @@ const hookExportLocationConventionRule: RuleModule = {
     },
   },
   create(context) {
+    const sourceLines = context.sourceCode.getLines();
+
     if (
       !ALLOWED_HOOK_EXTENSIONS.has(getExtension(context.filename)) ||
       isStrictAreaAllowedSupportFile(context.filename)
@@ -154,6 +179,7 @@ const hookExportLocationConventionRule: RuleModule = {
           const extension = getExtension(context.filename) || ".ts";
 
           context.report({
+            loc: readFirstLineReportLocation(hookExportEntry.node, sourceLines),
             node: hookExportEntry.node,
             messageId: "misplacedHookExport",
             data: {
