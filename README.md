@@ -40,8 +40,8 @@ bun add -d typescript @typescript/native-preview
 ```
 
 The published package ships compiled `.js` runtime files plus `.d.ts` declarations. The installed `typescript-ai-policy`
-CLI runs through Node.js, so Bun is not required just to execute the package-installed bin. The `fix-semantic` command
-still expects its optional peer dependencies to be installed in the consuming project, while `guidance` only reads the
+CLI runs through Bun, so Bun is required to execute the package-installed bin. The `fix-semantic` command still
+expects its optional peer dependencies to be installed in the consuming project, while `guidance` only reads the
 published policy metadata.
 
 ## Quick start
@@ -183,7 +183,7 @@ In a consuming repository, use `typescript-ai-policy check` through your package
 execute the shared formatter and linter checks against that repo.
 
 When a consuming harness supports environment injection, configure that harness to run shell commands with `AGENT=1`
-so `typescript-ai-policy check` emits unix-formatted `oxlint` output automatically for agent workflows and more
+so `typescript-ai-policy check` emits agent-formatted `oxlint` output automatically for agent workflows and more
 token-efficient lint output.
 
 ## CLI tooling
@@ -194,7 +194,7 @@ Markdown bullet list or as JSON.
 
 Package-installed usage:
 
-- `bun run typescript-ai-policy -- check` — run the package formatter and linter checks in the consuming repository. When the consuming harness is configured to inject `AGENT=1`, the `oxlint` step uses unix formatting automatically for agent workflows and more token-efficient output.
+- `bun run typescript-ai-policy -- check` — run the package formatter and linter checks in the consuming repository. When the consuming harness is configured to inject `AGENT=1`, the `oxlint` step uses agent formatting automatically for agent workflows and more token-efficient output.
 - `bun run typescript-ai-policy -- guidance` — print the published rule guidance that the package exposes for AI agents as a wrapped Markdown bullet list.
 - `bun run typescript-ai-policy -- guidance --json` — print the same published rule guidance as JSON objects with `ruleName` and resolved `guidance` fields.
 - `bun run typescript-ai-policy -- fix-semantic <target-directory>` — run Oxlint with this package's policy config, collect supported diagnostics, and apply semantic fixes to the target directory.
@@ -211,8 +211,8 @@ Repository-local development usage:
 - `bun run cli -- fix-semantic <target-directory>` — run the repository-local CLI entrypoint for semantic fixes.
 - `bun run fix:semantic -- <target-directory>` — run the same `fix-semantic` command from this repository checkout while developing the package itself.
 
-The repository-local development command still uses Bun to execute the TypeScript source directly. The published npm
-package uses the compiled Node.js bin instead.
+The repository-local development command uses Bun to execute the TypeScript source directly. The published npm package
+also uses a compiled Bun-targeted bin.
 
 Today the framework applies three conservative semantic fixes:
 

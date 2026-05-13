@@ -1,9 +1,10 @@
 import dedentString from "@alexgorbatchev/dedent-string";
 import { beforeEach, expect, it } from "bun:test";
+import { readFileSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { runTypescriptAiPolicyCli } from "../runTypescriptAiPolicyCli.ts";
+import { resolve } from "node:path";
+import { join } from "node:path";
 import {
   readPackageUsageNotice,
   resetPackageUsageNoticeForTests,
@@ -11,10 +12,10 @@ import {
 } from "../../shared/packageUsageNotice.ts";
 import type {
   ApplySemanticFixesOptions,
-  ApplySemanticFixesResult,
   ApplySemanticFixesProgressEvent,
+  ApplySemanticFixesResult,
 } from "../../semantic-fixes/types.ts";
-import type { TypescriptAiPolicyCliDependencies } from "../types.ts";
+import { runCheck, runTypescriptAiPolicyCli } from "../cli.ts";
 
 const FIXTURE_RUNTIME_PATHS = {
   oxlintConfigPath: "/runtime/oxlint.config.ts",
@@ -30,6 +31,19 @@ type TestHarness = {
   readRunCheckCalls: () => number;
   stderr: string[];
   stdout: string[];
+};
+
+type TypescriptAiPolicyCliDependencies = {
+  applySemanticFixes: (options: ApplySemanticFixesOptions) => Promise<ApplySemanticFixesResult>;
+  readPublishedRuleGuidanceOutput: (options?: { json?: boolean }) => string;
+  readSemanticFixRuntimePaths: () => {
+    oxlintConfigPath: string;
+    oxlintExecutablePath: string;
+    tsgoExecutablePath: string;
+  };
+  runCheck: () => Promise<void>;
+  writeStderr: (text: string) => void;
+  writeStdout: (text: string) => void;
 };
 
 type TestHarnessOptions = {
@@ -103,9 +117,21 @@ function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
   };
 }
 
+function readCliSourceFile(): string {
+  const cliFilePath = resolve(import.meta.dir, "../cli.ts");
+
+  return readFileSync(cliFilePath, "utf8");
+}
+
 beforeEach(() => {
   resetPackageUsageNoticeForTests();
   setPackageUsageNoticeWriterForTests(() => {});
+});
+
+it("uses the Bun env shebang", () => {
+  const cliSourceFile = readCliSourceFile();
+
+  expect(cliSourceFile.startsWith("#!/usr/bin/env bun\n")).toBe(true);
 });
 
 it("runs the fix-semantic subcommand through the package CLI", async () => {
@@ -387,4 +413,55 @@ it("prints the package usage notice only once across repeated CLI invocations", 
   expect(await runTypescriptAiPolicyCli(["node", "typescript-ai-policy", "guidance"], harness.dependencies)).toBe(0);
 
   expect(harness.stderr).toEqual([readPackageUsageNotice()]);
+});
+
+it("runs formatter then linter checks by default", async () => {
+  const commands: Array<readonly string[]> = [];
+
+  await runCheck({
+    env: {},
+    async runCommand(command) {
+      commands.push(command);
+    },
+  });
+
+  expect(commands).toEqual([
+    ["bun", "--bun", "oxfmt", "--check", "."],
+    ["bun", "--bun", "oxlint", "."],
+  ]);
+});
+
+it("runs oxlint with agent format when AGENT=1", async () => {
+  const commands: Array<readonly string[]> = [];
+
+  await runCheck({
+    env: {
+      AGENT: "1",
+    },
+    async runCommand(command) {
+      commands.push(command);
+    },
+  });
+
+  expect(commands).toEqual([
+    ["bun", "--bun", "oxfmt", "--check", "."],
+    ["bun", "--bun", "oxlint", "--format", "agent", "."],
+  ]);
+});
+
+it("stops after the formatter when the formatter fails", async () => {
+  const commands: Array<readonly string[]> = [];
+
+  await expect(
+    runCheck({
+      env: {},
+      async runCommand(command) {
+        commands.push(command);
+
+        return Promise.reject(new Error("formatter failed"));
+      },
+    }),
+  ).rejects.toThrow("formatter failed");
+
+  expect(commands).toEqual([["bun", "--bun", "oxfmt", "--check", "."]]);
 });

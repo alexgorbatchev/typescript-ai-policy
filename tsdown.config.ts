@@ -8,7 +8,7 @@ export default defineConfig({
     resolver: "tsc",
   },
   entry: {
-    "bin/typescript-ai-policy": "src/cli/runTypescriptAiPolicyCliMain.ts",
+    "bin/typescript-ai-policy": "src/cli/cli.ts",
     "oxfmt-config": "src/oxfmt/createOxfmtConfig.ts",
     "oxlint-config": "src/oxlint/createOxlintConfig.ts",
     "oxlint-plugin": "src/oxlint/plugin.ts",
