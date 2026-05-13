@@ -166,7 +166,7 @@ feature/
 Required component-glob config:
 
 ```ts
-import createOxlintConfig from "@alexgorbatchev/typescript-ai-policy/oxlint";
+import createOxlintConfig from "@alexgorbatchev/typescript-ai-policy/oxlint-config";
 
 export default createOxlintConfig(() => ({
   settings: {
