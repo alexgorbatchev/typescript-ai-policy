@@ -1,6 +1,6 @@
 {
   "name": "@alexgorbatchev/typescript-ai-policy",
-  "version": "8.1.0",
+  "version": "8.1.1",
   "description": "Shared TypeScript AI policy configs and Oxlint rules",
   "homepage": "https://github.com/alexgorbatchev/typescript-ai-policy#readme",
   "repository": {
@@ -35,10 +35,10 @@
     }
   },
   "peerDependencies": {
-    "@typescript/native-preview": "^7.0.0-dev.20260330.1",
-    "typescript": "^6",
-    "oxfmt": "^0.42.0",
-    "oxlint": "^1.57.0"
+    "@typescript/native-preview": "^7.0.0-dev.20260513.1",
+    "typescript": "^6.0.3",
+    "oxfmt": "^0.49.0",
+    "oxlint": "^1.64.0"
   },
   "peerDependenciesMeta": {
     "@typescript/native-preview": {
