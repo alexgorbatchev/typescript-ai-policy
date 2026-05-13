@@ -1,8 +1,14 @@
-import { expect, it } from "bun:test";
+import dedentString from "@alexgorbatchev/dedent-string";
+import { beforeEach, expect, it } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { runTypescriptAiPolicyCli } from "../runTypescriptAiPolicyCli.ts";
+import {
+  readPackageUsageNotice,
+  resetPackageUsageNoticeForTests,
+  setPackageUsageNoticeWriterForTests,
+} from "../../shared/packageUsageNotice.ts";
 import type {
   ApplySemanticFixesOptions,
   ApplySemanticFixesResult,
@@ -31,6 +37,10 @@ type TestHarnessOptions = {
   guidanceOutput?: string;
   progressEvents?: readonly ApplySemanticFixesProgressEvent[];
 };
+
+function readExpectedCliOutput(text: string): string {
+  return `${dedentString(text)}\n`;
+}
 
 function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
   const applyCalls: ApplySemanticFixesOptions[] = [];
@@ -84,6 +94,11 @@ function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
     stdout,
   };
 }
+
+beforeEach(() => {
+  resetPackageUsageNoticeForTests();
+  setPackageUsageNoticeWriterForTests(() => {});
+});
 
 it("runs the fix-semantic subcommand through the package CLI", async () => {
   const targetDirectoryPath = await mkdtemp(join(tmpdir(), "typescript-ai-policy-cli-"));
@@ -149,19 +164,22 @@ it("runs the fix-semantic subcommand through the package CLI", async () => {
         tsgoExecutablePath: FIXTURE_RUNTIME_PATHS.tsgoExecutablePath,
       },
     ]);
-    expect(harness.stdout.join("")).toBe(`running oxlint...
-semantic-fix diagnostics: 1
-planning semantic fixes: 1 candidate operation(s)
-planning semantic fix 1/1: Rename UserProfile to IUserProfile
-applying changes: 2 text edit(s) and 0 file move(s) across 1 file(s)
-semantic fix complete: 1 plan(s), 1 changed file(s), 0 skipped diagnostic(s)
-backend: tsgo-lsp+native
-planned fixes: 1
-applied files: 1
-changed files:
-- models.ts
-`);
-    expect(harness.stderr).toEqual([]);
+    expect(harness.stdout.join("")).toBe(
+      readExpectedCliOutput(`
+      running oxlint...
+      semantic-fix diagnostics: 1
+      planning semantic fixes: 1 candidate operation(s)
+      planning semantic fix 1/1: Rename UserProfile to IUserProfile
+      applying changes: 2 text edit(s) and 0 file move(s) across 1 file(s)
+      semantic fix complete: 1 plan(s), 1 changed file(s), 0 skipped diagnostic(s)
+      backend: tsgo-lsp+native
+      planned fixes: 1
+      applied files: 1
+      changed files:
+      - models.ts
+    `),
+    );
+    expect(harness.stderr).toEqual([readPackageUsageNotice()]);
   } finally {
     await rm(targetDirectoryPath, { force: true, recursive: true });
   }
@@ -237,21 +255,24 @@ it("passes the dry-run flag through the fix-semantic subcommand", async () => {
         tsgoExecutablePath: FIXTURE_RUNTIME_PATHS.tsgoExecutablePath,
       },
     ]);
-    expect(harness.stdout.join("")).toBe(`running oxlint...
-semantic-fix diagnostics: 2
-planning semantic fixes: 1 candidate operation(s)
-planning semantic fix 1/1: Move useAccount.test.ts to __tests__/useAccount.test.ts
-dry run: 1 text edit(s) and 1 file move(s) across 1 file(s)
-semantic fix complete: 1 plan(s), 1 changed file(s), 1 skipped diagnostic(s)
-backend: tsgo-lsp+native
-planned fixes: 1
-applied files: 0
-changed files:
-- __tests__/useAccount.test.ts
-skipped diagnostics:
-- [@alexgorbatchev/story-export-contract] stories.tsx: No safe semantic fix is available for this diagnostic.
-`);
-    expect(harness.stderr).toEqual([]);
+    expect(harness.stdout.join("")).toBe(
+      readExpectedCliOutput(`
+      running oxlint...
+      semantic-fix diagnostics: 2
+      planning semantic fixes: 1 candidate operation(s)
+      planning semantic fix 1/1: Move useAccount.test.ts to __tests__/useAccount.test.ts
+      dry run: 1 text edit(s) and 1 file move(s) across 1 file(s)
+      semantic fix complete: 1 plan(s), 1 changed file(s), 1 skipped diagnostic(s)
+      backend: tsgo-lsp+native
+      planned fixes: 1
+      applied files: 0
+      changed files:
+      - __tests__/useAccount.test.ts
+      skipped diagnostics:
+      - [@alexgorbatchev/story-export-contract] stories.tsx: No safe semantic fix is available for this diagnostic.
+    `),
+    );
+    expect(harness.stderr).toEqual([readPackageUsageNotice()]);
   } finally {
     await rm(targetDirectoryPath, { force: true, recursive: true });
   }
@@ -264,30 +285,34 @@ it("prints CLI help when no subcommand is provided", async () => {
 
   expect(exitCode).toBe(1);
   expect(harness.stdout).toEqual([]);
-  expect(harness.stderr.join("")).toMatchInlineSnapshot(`
-    "Usage: typescript-ai-policy [options] [command]
+  expect(harness.stderr.join("")).toBe(
+    `${readPackageUsageNotice()}${readExpectedCliOutput(`
+      Usage: typescript-ai-policy [options] [command]
 
-    Options:
-      -h, --help                                 display help for command
+      Options:
+        -h, --help                                 display help for command
 
-    Commands:
-      fix-semantic [options] <target-directory>  Apply safe semantic fixes for supported policy diagnostics
-      guidance [options]                         Print authoritative rule guidance for AI agents
-      help [command]                             display help for command
-    "
-  `);
+      Commands:
+        fix-semantic [options] <target-directory>  Apply safe semantic fixes for supported policy diagnostics
+        guidance [options]                         Print authoritative rule guidance for AI agents
+        help [command]                             display help for command
+    `)}`,
+  );
 });
 
 it("prints authoritative rule guidance through the package CLI", async () => {
   const harness = createTestHarness({
-    guidanceOutput: `- Use JSX. Do not call React.createElement directly in application code. Keep\n  rendering declarative.\n`,
+    guidanceOutput: readExpectedCliOutput(`
+      - Use JSX. Do not call React.createElement directly in application code. Keep
+        rendering declarative.
+    `),
   });
 
   const exitCode = await runTypescriptAiPolicyCli(["node", "typescript-ai-policy", "guidance"], harness.dependencies);
 
   expect(exitCode).toBe(0);
   expect(harness.stdout.join("")).toBe(harness.guidanceOutput);
-  expect(harness.stderr).toEqual([]);
+  expect(harness.stderr).toEqual([readPackageUsageNotice()]);
 });
 
 it("prints authoritative rule guidance as JSON through the package CLI", async () => {
@@ -303,7 +328,7 @@ it("prints authoritative rule guidance as JSON through the package CLI", async (
 
   expect(exitCode).toBe(0);
   expect(harness.stdout.join("")).toBe(harness.guidanceJsonOutput);
-  expect(harness.stderr).toEqual([]);
+  expect(harness.stderr).toEqual([readPackageUsageNotice()]);
 });
 
 it("reports invalid target-directory arguments through the package CLI", async () => {
@@ -317,19 +342,29 @@ it("reports invalid target-directory arguments through the package CLI", async (
 
   expect(exitCode).toBe(1);
   expect(harness.stdout).toEqual([]);
-  expect(harness.stderr.join("")).toMatchInlineSnapshot(`
-    "error: command-argument value '${missingDirectoryPath}' is invalid for argument 'target-directory'. Target directory does not exist: ${missingDirectoryPath}
+  expect(harness.stderr.join("")).toBe(
+    `${readPackageUsageNotice()}${readExpectedCliOutput(`
+      error: command-argument value '${missingDirectoryPath}' is invalid for argument 'target-directory'. Target directory does not exist: ${missingDirectoryPath}
 
-    Usage: typescript-ai-policy fix-semantic [options] <target-directory>
+      Usage: typescript-ai-policy fix-semantic [options] <target-directory>
 
-    Apply safe semantic fixes for supported policy diagnostics
+      Apply safe semantic fixes for supported policy diagnostics
 
-    Arguments:
-      target-directory  Target directory to lint and fix
+      Arguments:
+        target-directory  Target directory to lint and fix
 
-    Options:
-      --dry-run         Print planned fix scope without mutating files
-      -h, --help        display help for command
-    "
-  `);
+      Options:
+        --dry-run         Print planned fix scope without mutating files
+        -h, --help        display help for command
+    `)}`,
+  );
+});
+
+it("prints the package usage notice only once across repeated CLI invocations", async () => {
+  const harness = createTestHarness();
+
+  expect(await runTypescriptAiPolicyCli(["node", "typescript-ai-policy", "guidance"], harness.dependencies)).toBe(0);
+  expect(await runTypescriptAiPolicyCli(["node", "typescript-ai-policy", "guidance"], harness.dependencies)).toBe(0);
+
+  expect(harness.stderr).toEqual([readPackageUsageNotice()]);
 });

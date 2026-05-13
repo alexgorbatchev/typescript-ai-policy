@@ -1,5 +1,6 @@
 import { defineConfig, type OxfmtConfig } from "oxfmt";
 import { mergeConfig } from "../shared/mergeConfig.ts";
+import { printPackageUsageNoticeOnce } from "../shared/packageUsageNotice.ts";
 
 export type OxfmtConfigCallback = () => OxfmtConfig;
 
@@ -20,6 +21,8 @@ const DEFAULT_OXFMT_CONFIG = defineConfig({
 });
 
 export default function createOxfmtConfig(callback?: OxfmtConfigCallback): OxfmtConfig {
+  printPackageUsageNoticeOnce();
+
   const userConfig = callback?.() ?? defineConfig({});
 
   return defineConfig(mergeConfig(userConfig, DEFAULT_OXFMT_CONFIG));

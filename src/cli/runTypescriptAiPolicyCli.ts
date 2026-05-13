@@ -3,6 +3,7 @@ import { createTypescriptAiPolicyCli } from "./createTypescriptAiPolicyCli.ts";
 import { applySemanticFixes } from "../semantic-fixes/applySemanticFixes.ts";
 import { readPublishedRuleGuidanceOutput } from "../oxlint/readPublishedRuleGuidanceOutput.ts";
 import { readSemanticFixRuntimePaths } from "../semantic-fixes/readSemanticFixRuntimePaths.ts";
+import { printPackageUsageNoticeOnce } from "../shared/packageUsageNotice.ts";
 import type { TypescriptAiPolicyCliDependencies } from "./types.ts";
 
 const defaultDependencies: TypescriptAiPolicyCliDependencies = {
@@ -25,6 +26,8 @@ export async function runTypescriptAiPolicyCli(
   argv: readonly string[],
   dependencies: TypescriptAiPolicyCliDependencies = defaultDependencies,
 ): Promise<number> {
+  printPackageUsageNoticeOnce(dependencies.writeStderr);
+
   const cli = createTypescriptAiPolicyCli(dependencies);
 
   if (argv.length <= 2) {

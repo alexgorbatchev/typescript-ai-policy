@@ -57,6 +57,7 @@
     "prepack": "npm run build"
   },
   "devDependencies": {
+    "@alexgorbatchev/dedent-string": "^1.0.1",
     "@types/bun": "latest",
     "@typescript-eslint/rule-tester": "^8.58.0",
     "@typescript/native-preview": "^7.0.0-dev.20260330.1",
@@ -67,6 +68,7 @@
   },
   "dependencies": {
     "commander": "^13.1.0",
-    "minimatch": "^10.2.5"
+    "minimatch": "^10.2.5",
+    "package-manager-detector": "^1.6.0"
   }
 }

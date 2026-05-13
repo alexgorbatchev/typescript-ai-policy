@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig, type OxlintConfig } from "oxlint";
 import { mergeConfig } from "../shared/mergeConfig.ts";
+import { printPackageUsageNoticeOnce } from "../shared/packageUsageNotice.ts";
 import { assertNoRuleCollisions } from "./assertNoRuleCollisions.ts";
 
 export type OxlintConfigCallback = () => OxlintConfig;
@@ -211,6 +212,8 @@ const DEFAULT_OXLINT_CONFIG = defineConfig({
 });
 
 export default function createOxlintConfig(callback?: OxlintConfigCallback): OxlintConfig {
+  printPackageUsageNoticeOnce();
+
   const userConfig = callback?.() ?? defineConfig({});
 
   assertNoRuleCollisions(userConfig, DEFAULT_OXLINT_CONFIG);

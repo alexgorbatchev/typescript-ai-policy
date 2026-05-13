@@ -1,7 +1,12 @@
 import assert from "node:assert";
-import { describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import type { ExternalPluginEntry } from "oxlint";
 import createOxlintConfig from "../createOxlintConfig.ts";
+import {
+  readPackageUsageNotice,
+  resetPackageUsageNoticeForTests,
+  setPackageUsageNoticeWriterForTests,
+} from "../../shared/packageUsageNotice.ts";
 
 type ExplicitJsPlugin = {
   name: string;
@@ -25,10 +30,22 @@ function assertIsExplicitJsPlugin(value: ExternalPluginEntry | undefined): asser
 }
 
 describe("createOxlintConfig", () => {
+  beforeEach(() => {
+    resetPackageUsageNoticeForTests();
+    setPackageUsageNoticeWriterForTests(() => {});
+  });
+
   it("fails hard when componentGlobs is not configured", () => {
+    const stderr: string[] = [];
+
+    setPackageUsageNoticeWriterForTests((text: string) => {
+      stderr.push(text);
+    });
+
     expect(() => createOxlintConfig()).toThrow(
       'Shared oxlint config requires settings["@alexgorbatchev"].componentGlobs to be a non-empty array. Configure the component-owned TSX files explicitly before using @alexgorbatchev/typescript-ai-policy.',
     );
+    expect(stderr).toEqual([readPackageUsageNotice()]);
   });
 
   it("fails hard when componentGlobs is empty", () => {
@@ -46,6 +63,12 @@ describe("createOxlintConfig", () => {
   });
 
   it("returns the shared lint defaults when componentGlobs is configured", () => {
+    const stderr: string[] = [];
+
+    setPackageUsageNoticeWriterForTests((text: string) => {
+      stderr.push(text);
+    });
+
     const oxlintConfig = createOxlintConfig(readValidUserConfig);
     const jsPlugin = oxlintConfig.jsPlugins?.[0];
 
@@ -159,9 +182,16 @@ describe("createOxlintConfig", () => {
         "@alexgorbatchev/fixture-export-type-contract": "error",
       },
     });
+    expect(stderr).toEqual([readPackageUsageNotice()]);
   });
 
   it("allows additive user config without weakening shared rules", () => {
+    const stderr: string[] = [];
+
+    setPackageUsageNoticeWriterForTests((text: string) => {
+      stderr.push(text);
+    });
+
     const oxlintConfig = createOxlintConfig(() => ({
       ...readValidUserConfig(),
       ignorePatterns: ["coverage"],
@@ -195,9 +225,16 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-lint-disable-comments": "error",
       "typescript/no-explicit-any": "error",
     });
+    expect(stderr).toEqual([readPackageUsageNotice()]);
   });
 
   it("fails hard when a consumer tries to redefine a shared top-level rule", () => {
+    const stderr: string[] = [];
+
+    setPackageUsageNoticeWriterForTests((text: string) => {
+      stderr.push(text);
+    });
+
     expect(() =>
       createOxlintConfig(() => ({
         ...readValidUserConfig(),
@@ -208,9 +245,16 @@ describe("createOxlintConfig", () => {
     ).toThrow(
       "User oxlint config must extend the shared policy instead of redefining existing rules. Remove these rule entries: eqeqeq. If you need to change a shared rule, update @alexgorbatchev/typescript-ai-policy itself instead of overriding it in a consumer config.",
     );
+    expect(stderr).toEqual([readPackageUsageNotice()]);
   });
 
   it("fails hard when a consumer tries to redefine a shared override rule", () => {
+    const stderr: string[] = [];
+
+    setPackageUsageNoticeWriterForTests((text: string) => {
+      stderr.push(text);
+    });
+
     expect(() =>
       createOxlintConfig(() => ({
         ...readValidUserConfig(),
@@ -226,5 +270,19 @@ describe("createOxlintConfig", () => {
     ).toThrow(
       "User oxlint config must extend the shared policy instead of redefining existing rules. Remove these rule entries: @alexgorbatchev/interface-naming-convention. If you need to change a shared rule, update @alexgorbatchev/typescript-ai-policy itself instead of overriding it in a consumer config.",
     );
+    expect(stderr).toEqual([readPackageUsageNotice()]);
+  });
+
+  it("prints the package usage notice only once per process", () => {
+    const stderr: string[] = [];
+
+    setPackageUsageNoticeWriterForTests((text: string) => {
+      stderr.push(text);
+    });
+
+    createOxlintConfig(readValidUserConfig);
+    createOxlintConfig(readValidUserConfig);
+
+    expect(stderr).toEqual([readPackageUsageNotice()]);
   });
 });

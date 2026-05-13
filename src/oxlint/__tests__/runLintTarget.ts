@@ -126,7 +126,8 @@ export function runLintTarget(fixtureRepositoryPath: string): LintTargetResult {
   const stdout = decodeProcessOutput(lintTargetProcess.stdout);
   const stderr = decodeProcessOutput(lintTargetProcess.stderr);
   const rawOutput = normalizeLintTargetOutput(joinProcessOutputs(stdout, stderr), fixtureRepositoryPath);
-  const { headerLines, jsonText } = splitLintTargetOutput(rawOutput);
+  const normalizedStdout = normalizeLintTargetOutput(stdout, fixtureRepositoryPath);
+  const { headerLines, jsonText } = splitLintTargetOutput(normalizedStdout);
   const oxlintJsonOutput = JSON.parse(jsonText) as OxlintJsonOutput;
 
   return {

@@ -46,6 +46,7 @@ import singleFixtureEntrypointRule from "./rules/single-fixture-entrypoint.ts";
 import noLintDisableCommentsRule from "./rules/no-lint-disable-comments.ts";
 import noClassNameStylePropsOutsideComponentGlobsRule from "./rules/no-classname-style-props-outside-component-globs.ts";
 import noIntrinsicElementsOutsideComponentGlobsRule from "./rules/no-intrinsic-elements-outside-component-globs.ts";
+import { printPackageUsageNoticeOnce } from "../shared/packageUsageNotice.ts";
 
 type PluginMeta = {
   name: string;
@@ -60,7 +61,7 @@ type OxlintPlugin = {
 
 // Keep the published plugin type minimal so generated declarations do not inline
 // the entire @typescript-eslint rule type graph into this package's public API.
-const plugin: OxlintPlugin = {
+const pluginImplementation: OxlintPlugin = {
   meta: {
     name: "@alexgorbatchev",
   },
@@ -115,5 +116,13 @@ const plugin: OxlintPlugin = {
     "no-intrinsic-elements-outside-component-globs": noIntrinsicElementsOutsideComponentGlobsRule,
   },
 };
+
+const plugin: OxlintPlugin = new Proxy(pluginImplementation, {
+  get(target, property, receiver) {
+    printPackageUsageNoticeOnce();
+
+    return Reflect.get(target, property, receiver);
+  },
+});
 
 export default plugin;
