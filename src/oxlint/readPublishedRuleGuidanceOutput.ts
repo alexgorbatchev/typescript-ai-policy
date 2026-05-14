@@ -49,23 +49,19 @@ function readNormalizedGuidanceWords(guidance: string): string[] {
   return guidance.trim().split(/\s+/u);
 }
 
-function wrapMarkdownBulletLine(words: readonly string[]): string {
-  return `${MARKDOWN_BULLET_PREFIX}${words.join(" ")}`;
+function formatWrappedMarkdownLine(prefix: string, words: readonly string[]): string {
+  return `${prefix}${words.join(" ")}`;
 }
 
-function wrapMarkdownContinuationLine(words: readonly string[]): string {
-  return `${MARKDOWN_CONTINUATION_PREFIX}${words.join(" ")}`;
-}
-
-function readWrappedMarkdownBulletLines(guidance: string): string[] {
+function readWrappedMarkdownBulletLines(prefix: string, guidance: string): string[] {
   const guidanceWords = readNormalizedGuidanceWords(guidance);
   const wrappedLines: string[] = [];
   let currentLineWords: string[] = [];
 
   for (const guidanceWord of guidanceWords) {
     const nextLineWords = [...currentLineWords, guidanceWord];
-    const currentWrappedLine =
-      wrappedLines.length === 0 ? wrapMarkdownBulletLine(nextLineWords) : wrapMarkdownContinuationLine(nextLineWords);
+    const currentLinePrefix = wrappedLines.length === 0 ? prefix : MARKDOWN_CONTINUATION_PREFIX;
+    const currentWrappedLine = formatWrappedMarkdownLine(currentLinePrefix, nextLineWords);
 
     if (currentWrappedLine.length <= MARKDOWN_BULLET_LINE_LENGTH) {
       currentLineWords = nextLineWords;
@@ -77,25 +73,24 @@ function readWrappedMarkdownBulletLines(guidance: string): string[] {
       continue;
     }
 
-    const completedLine =
-      wrappedLines.length === 0
-        ? wrapMarkdownBulletLine(currentLineWords)
-        : wrapMarkdownContinuationLine(currentLineWords);
+    const completedLinePrefix = wrappedLines.length === 0 ? prefix : MARKDOWN_CONTINUATION_PREFIX;
+    const completedLine = formatWrappedMarkdownLine(completedLinePrefix, currentLineWords);
     wrappedLines.push(completedLine);
     currentLineWords = [guidanceWord];
   }
 
-  const finalLine =
-    wrappedLines.length === 0
-      ? wrapMarkdownBulletLine(currentLineWords)
-      : wrapMarkdownContinuationLine(currentLineWords);
+  const finalLinePrefix = wrappedLines.length === 0 ? prefix : MARKDOWN_CONTINUATION_PREFIX;
+  const finalLine = formatWrappedMarkdownLine(finalLinePrefix, currentLineWords);
   wrappedLines.push(finalLine);
 
   return wrappedLines;
 }
 
 function formatPublishedRuleGuidanceMarkdownBullet(publishedRuleGuidanceEntry: PublishedRuleGuidanceEntry): string {
-  return readWrappedMarkdownBulletLines(publishedRuleGuidanceEntry.guidance).join("\n");
+  return readWrappedMarkdownBulletLines(
+    `${MARKDOWN_BULLET_PREFIX}**${publishedRuleGuidanceEntry.ruleName}**: `,
+    publishedRuleGuidanceEntry.guidance,
+  ).join("\n");
 }
 
 function readPublishedRuleGuidanceEntry(ruleId: string, ruleModule: unknown): PublishedRuleGuidanceEntry {

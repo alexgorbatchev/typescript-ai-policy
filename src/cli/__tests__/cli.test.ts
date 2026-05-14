@@ -338,8 +338,9 @@ it("prints CLI help when no subcommand is provided", async () => {
 it("prints authoritative rule guidance through the package CLI", async () => {
   const harness = createTestHarness({
     guidanceOutput: readExpectedCliOutput(`
-      - Use JSX. Do not call React.createElement directly in application code. Keep
-        rendering declarative.
+      - **@alexgorbatchev/no-react-create-element**: Use JSX. Do not call
+        React.createElement directly in application code. Keep rendering
+        declarative.
     `),
   });
 

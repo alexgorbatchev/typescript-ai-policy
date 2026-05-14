@@ -41,7 +41,8 @@ workflow.
 Each local `@alexgorbatchev/*` rule exposes an authoritative `meta.docs.guidance` string in its own rule module in
 addition to its description and lint messages.
 
-Use the package CLI to print those guidance strings for AI agents as a wrapped Markdown bullet list or as JSON:
+Use the package CLI to print those guidance strings for AI agents as a wrapped Markdown bullet list with bold rule
+names or as JSON:
 
 ```bash
 bun run typescript-ai-policy -- guidance

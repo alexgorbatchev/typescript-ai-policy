@@ -190,12 +190,12 @@ token-efficient lint output.
 
 The package includes the `typescript-ai-policy` CLI. Its `fix-semantic` command is backed by `tsgo --lsp --stdio`, and
 its `guidance` command prints authoritative repair guidance for the local `@alexgorbatchev/*` rules as a wrapped
-Markdown bullet list or as JSON.
+Markdown bullet list with bold rule names or as JSON.
 
 Package-installed usage:
 
 - `bun run typescript-ai-policy -- check` — run the package formatter and linter checks in the consuming repository. When the consuming harness is configured to inject `AGENT=1`, the `oxlint` step uses agent formatting automatically for agent workflows and more token-efficient output.
-- `bun run typescript-ai-policy -- guidance` — print the published rule guidance that the package exposes for AI agents as a wrapped Markdown bullet list.
+- `bun run typescript-ai-policy -- guidance` — print the published rule guidance that the package exposes for AI agents as a wrapped Markdown bullet list with bold rule names.
 - `bun run typescript-ai-policy -- guidance --json` — print the same published rule guidance as JSON objects with `ruleName` and resolved `guidance` fields.
 - `bun run typescript-ai-policy -- fix-semantic <target-directory>` — run Oxlint with this package's policy config, collect supported diagnostics, and apply semantic fixes to the target directory.
 - `bun run typescript-ai-policy -- fix-semantic <target-directory> --dry-run` — print the planned semantic-fix scope without mutating files.
