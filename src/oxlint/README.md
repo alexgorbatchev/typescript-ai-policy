@@ -622,9 +622,9 @@ export function SignalPanel() {
 
 ### `@alexgorbatchev/no-intrinsic-elements-outside-component-globs`
 
-**Policy:** Non-story, non-test `.tsx` files outside canonical component ownership areas must not render intrinsic JSX
-elements such as `<div>`, `<span>`, or lowercase custom elements. Move the raw DOM markup into a component ownership
-file and render an imported component instead.
+**Policy:** Non-story, non-test `.tsx` files outside `components/`, `templates/`, and `layouts/` must not render
+intrinsic JSX elements such as `<div>`, `<span>`, or lowercase custom elements. Move the raw DOM markup into a
+component ownership file under one of those directories and render an imported component instead.
 
 **Good**
 

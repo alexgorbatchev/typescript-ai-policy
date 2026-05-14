@@ -56,7 +56,7 @@ describe("component lint-target integration", () => {
           filePath: "src/accounts/AccountPanel.tsx",
           line: 2,
           message:
-            "Replace intrinsic JSX elements with imported components outside canonical component areas. Keep raw DOM markup only inside component ownership files.",
+            'Raw DOM markup only allowed inside component ownership files in "components/", "templates/", or "layouts/".',
           ruleId: "@alexgorbatchev(no-intrinsic-elements-outside-component-globs)",
           severity: "error",
         },

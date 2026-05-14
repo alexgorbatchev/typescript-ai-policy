@@ -1,6 +1,18 @@
 import type { TSESTree } from "@typescript-eslint/utils";
-import { isInComponentOwnershipDirectory, isStoryOrTestTsxFile } from "./helpers.ts";
+import {
+  COMPONENT_OWNERSHIP_DIRECTORY_NAMES,
+  isInComponentOwnershipDirectory,
+  isStoryOrTestTsxFile,
+} from "./helpers.ts";
 import type { RuleModule } from "./types.ts";
+
+const COMPONENT_OWNERSHIP_DIRECTORIES = COMPONENT_OWNERSHIP_DIRECTORY_NAMES.map(
+  (directoryName) => `"${directoryName}/"`,
+)
+  .join(", ")
+  .replace(/, ([^,]+)$/u, ", or $1");
+
+const NO_INTRINSIC_ELEMENTS_OUTSIDE_COMPONENT_GLOBS_MESSAGE = `Raw DOM markup only allowed inside component ownership files in ${COMPONENT_OWNERSHIP_DIRECTORIES}.`;
 
 function isIntrinsicJsxIdentifier(node: TSESTree.JSXIdentifier): boolean {
   const firstCharacter = node.name.at(0);
@@ -24,13 +36,11 @@ const noIntrinsicElementsOutsideComponentGlobsRuleModule: RuleModule = {
     type: "problem",
     docs: {
       description: "Ban intrinsic JSX elements outside canonical component areas in TSX files",
-      guidance:
-        "Keep raw intrinsic JSX only in component-owned TSX files inside canonical component areas. Outside that surface, compose imported components instead of writing DOM markup directly.",
+      guidance: `Keep raw intrinsic JSX only in component-owned TSX files inside "components/", "templates/", or "layouts/". Outside that surface, compose imported components instead of writing DOM markup directly.`,
     },
     schema: [],
     messages: {
-      noIntrinsicElementOutsideComponentDirectory:
-        "Replace intrinsic JSX elements with imported components outside canonical component areas. Keep raw DOM markup only inside component ownership files.",
+      noIntrinsicElementOutsideComponentDirectory: NO_INTRINSIC_ELEMENTS_OUTSIDE_COMPONENT_GLOBS_MESSAGE,
     },
   },
   create(context) {

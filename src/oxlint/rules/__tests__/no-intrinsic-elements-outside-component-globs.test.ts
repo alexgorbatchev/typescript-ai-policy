@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
@@ -10,6 +10,14 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
+const EXPECTED_NO_INTRINSIC_ELEMENTS_OUTSIDE_COMPONENT_GLOBS_MESSAGE =
+  'Raw DOM markup only allowed inside component ownership files in "components/", "templates/", or "layouts/".';
+
+it("uses the approved intrinsic JSX repair message", () => {
+  expect(
+    noIntrinsicElementsOutsideComponentGlobsRuleModule.meta.messages?.noIntrinsicElementOutsideComponentDirectory,
+  ).toBe(EXPECTED_NO_INTRINSIC_ELEMENTS_OUTSIDE_COMPONENT_GLOBS_MESSAGE);
+});
 
 ruleTester.run(
   "no-intrinsic-elements-outside-component-globs blocks intrinsic JSX outside canonical component areas",
