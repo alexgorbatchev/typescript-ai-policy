@@ -48,7 +48,7 @@ const hooksDirectoryFileConventionRule: RuleModule = {
     schema: [],
     messages: {
       invalidHooksDirectoryFile:
-        'Move or rename "{{ relativePath }}". A "hooks/" directory may contain only direct-child "use*.ts" or "use*.tsx" ownership files, direct-child "index.ts" or "types.ts" files, or a direct-child "__tests__/" tree.',
+        'Only "use*.ts{,x}", "index.ts", "types.ts", and "__tests__/**" are allowed in "hooks/".',
     },
   },
   create(context) {
@@ -66,9 +66,6 @@ const hooksDirectoryFileConventionRule: RuleModule = {
         context.report({
           node: readProgramReportNode(node),
           messageId: "invalidHooksDirectoryFile",
-          data: {
-            relativePath: relativePath || ".",
-          },
         });
       },
     };

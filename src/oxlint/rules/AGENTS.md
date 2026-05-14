@@ -65,10 +65,16 @@ When adding or changing rules here:
 8. Use `messageId` + `data` in `context.report(...)` when the rule defines `meta.messages`. However, **do not include the names of reported things in the message text** (for example node names, identifiers, attribute names, or the reported token's current spelling) because the lint harness already points to the offending syntax.
 9. **Do not suggest escape hatches in rule messages.** Do not offer alternate easy outs, policy workarounds, or mechanically convenient exceptions that let an agent silence the rule without fixing the ownership or placement problem.
 10. **Keep steering messages strict, direct, and grammatical.** Rule messages must be a maximum of 2 short sentences that provide a strict, direct instruction on what to fix.
-11. **Avoid multi-line highlights unless the violating syntax is itself multi-line.** Prefer the most specific violating subnode or token. For declaration-style rules whose natural node spans a full function, class, hook, component, `if` block, JSX element, or other large body, override `loc` so the diagnostic highlights only the first line when that first line fully captures the violation.
-12. Put file-scoping exceptions in Oxlint config when possible, not inside rule heuristics.
-13. If a rule applies to a path-glob-addressable file role such as `index.ts`, `constants.ts`, or `types.ts`, require narrow `overrides[].files` activation in `../oxlint.config.ts` instead of global `rules`.
-14. If a rule is fixable, implement it with standard ESLint fixer callbacks.
+11. **Prefer a single sentence when it fully specifies the repair.** Add a second short sentence only when it is required to disambiguate the fix. Put rationale, edge cases, and full policy detail in `meta.docs.guidance`, not repeated diagnostics.
+12. **Format path references consistently in diagnostics.** Write directory names with a trailing slash such as `"stories/"` or `"__tests__/"`, write filenames without a trailing slash such as `"index.ts"`, and preserve glob or pattern syntax when the repair itself is pattern-based such as `"*.test.ts"`.
+13. **Use only the approved message shapes.** Use `Rename ...`, `Place ...`, `Create ...`, `Use ...`, or `Export ...` for direct repairs, and use `Only ... are allowed in ".../".` for directory allowlist rules.
+14. **Allowed patterns may appear when they are the repair.** It is acceptable to include canonical filenames, globs, or allowlist patterns in diagnostics, but do not include the offending identifier, path, or current spelling.
+15. **Keep `meta.docs.guidance` concrete and specific.** Guidance is the detailed layer for the CLI output, so name the exact directories, filenames, patterns, and file roles that the rule enforces instead of vague terms such as `surface`, `area`, or `canonical location`.
+16. **Keep `meta.docs.guidance` scoped to this rule's contract.** Do not describe neighboring policies or repairs enforced by other rules.
+17. **Avoid multi-line highlights unless the violating syntax is itself multi-line.** Prefer the most specific violating subnode or token. For declaration-style rules whose natural node spans a full function, class, hook, component, `if` block, JSX element, or other large body, override `loc` so the diagnostic highlights only the first line when that first line fully captures the violation.
+18. Put file-scoping exceptions in Oxlint config when possible, not inside rule heuristics.
+19. If a rule applies to a path-glob-addressable file role such as `index.ts`, `constants.ts`, or `types.ts`, require narrow `overrides[].files` activation in `../oxlint.config.ts` instead of global `rules`.
+20. If a rule is fixable, implement it with standard ESLint fixer callbacks.
 
 ## Authoritative agent guidance output
 

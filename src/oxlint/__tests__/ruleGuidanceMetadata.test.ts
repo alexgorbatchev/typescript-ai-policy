@@ -12,7 +12,7 @@ const RULE_FILE_NAMES = readdirSync(RULES_DIRECTORY_PATH)
 it("defines meta.docs.guidance inside every rule module file", () => {
   const ruleFileNamesMissingGuidance = RULE_FILE_NAMES.filter((fileName) => {
     const ruleFileContent = readFileSync(join(RULES_DIRECTORY_PATH, fileName), "utf8");
-    return !/docs:\s*\{[\s\S]*?guidance:\s*["`][\s\S]*?\n\s*\},/u.test(ruleFileContent);
+    return !/docs:\s*\{[\s\S]*?guidance:\s*["'`][\s\S]*?\n\s*\},/u.test(ruleFileContent);
   });
 
   expect(ruleFileNamesMissingGuidance).toEqual([]);

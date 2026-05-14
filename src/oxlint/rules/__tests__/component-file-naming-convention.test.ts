@@ -12,15 +12,12 @@ RuleTester.itOnly = it.only;
 const ruleTester = new RuleTester();
 
 const EXPECTED_COMPONENT_FILE_NAMING_GUIDANCE =
-  "Name component ownership files after the component they export. Keep non-component file roles out of the component ownership surface.";
+  "Name each component ownership file after its exported PascalCase component. For multipart component families, use the shared family root name.";
 
 const EXPECTED_COMPONENT_FILE_NAMING_MESSAGES = {
-  invalidComponentExportName:
-    "Rename this exported component to PascalCase. Component ownership exports must use PascalCase names.",
-  invalidComponentFileName:
-    "Rename this file so its basename maps deterministically to the exported component name. Keep non-component file roles out of the component ownership surface.",
-  mismatchedComponentFileName:
-    "Rename this file or the exported component so they match exactly. Use the PascalCase or kebab-case form of the component name.",
+  invalidComponentExportName: "Rename this exported component to PascalCase.",
+  invalidComponentFileName: "Rename this file so its basename matches the exported component name.",
+  mismatchedComponentFileName: "Rename this file or exported component so they match exactly.",
 };
 
 it("uses the approved component file naming guidance and messages", () => {
@@ -75,7 +72,6 @@ ruleTester.run(
           {
             messageId: "mismatchedComponentFileName",
             type: AST_NODE_TYPES.Identifier,
-            data: {},
           },
         ],
         output: null,
@@ -106,7 +102,6 @@ ruleTester.run(
           {
             messageId: "mismatchedComponentFileName",
             type: AST_NODE_TYPES.Identifier,
-            data: {},
           },
         ],
         output: null,
@@ -119,7 +114,6 @@ ruleTester.run(
           {
             messageId: "mismatchedComponentFileName",
             type: AST_NODE_TYPES.Identifier,
-            data: {},
           },
         ],
         output: null,

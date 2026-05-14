@@ -78,8 +78,7 @@ describe("story lint-target integration", () => {
           column: 1,
           filePath: "src/app/App.stories.tsx",
           line: 1,
-          message:
-            'Move this story file under a "stories/" directory. Storybook files must not live outside a sibling "stories/" tree.',
+          message: 'Place story files in a sibling "stories/" directory.',
           ruleId: "@alexgorbatchev(story-file-location-convention)",
           severity: "error",
         },
@@ -101,8 +100,7 @@ describe("story lint-target integration", () => {
           column: 1,
           filePath: "src/accounts/components/stories/Missing.stories.tsx",
           line: 1,
-          message:
-            'Rename or move this story so it matches an existing sibling component ownership file. ".../accounts/components/Missing.tsx" must exist for this story file.',
+          message: "Rename or move this story to match a sibling component ownership file.",
           ruleId: "@alexgorbatchev(story-file-location-convention)",
           severity: "error",
         },
@@ -125,7 +123,7 @@ describe("story lint-target integration", () => {
           filePath: "src/widgets/components/stories/setup.ts",
           line: 1,
           message:
-            'Move or rename "setup.ts". A "stories" directory may contain only "*.stories.tsx", "helpers.ts", "helpers.tsx", "fixtures.ts", "fixtures.tsx", or files under "fixtures/".',
+            'Only "*.stories.tsx", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/**" are allowed in "stories/".',
           ruleId: "@alexgorbatchev(stories-directory-file-convention)",
           severity: "error",
         },

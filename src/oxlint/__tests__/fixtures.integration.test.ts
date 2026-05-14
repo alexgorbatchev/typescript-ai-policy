@@ -20,7 +20,7 @@ describe("fixture lint-target integration", () => {
         filePath: "src/accounts/buildRows.ts",
         line: 1,
         message:
-          'Move "fixture_userAccountRows" into a nested "fixtures.ts" or "fixtures.tsx" entrypoint under "__tests__/" or "stories/" and export it only from there.',
+          'Export fixture helpers only from nested "fixtures.ts" or "fixtures.tsx" entrypoints under "__tests__/" or "stories/".',
         ruleId: "@alexgorbatchev(no-fixture-exports-outside-fixture-entrypoint)",
         severity: "error",
       },
@@ -35,8 +35,7 @@ describe("fixture lint-target integration", () => {
         column: 1,
         filePath: "src/accounts/stories/fixtures.ts",
         line: 1,
-        message:
-          'Keep exactly one fixture entrypoint shape in this fixture-support directory under "stories" so "./fixtures" resolves unambiguously. Remove all but one of: fixtures.ts, fixtures/.',
+        message: "Use exactly one fixture entrypoint shape per fixture-support directory.",
         ruleId: "@alexgorbatchev(single-fixture-entrypoint)",
         severity: "error",
       },
@@ -53,8 +52,7 @@ describe("fixture lint-target integration", () => {
         column: 10,
         filePath: "src/accounts/__tests__/rows.test.ts",
         line: 2,
-        message:
-          'Import "fixture_userAccountRows" from a relative "fixtures" module without renaming it. The local binding must stay "fixture_userAccountRows".',
+        message: 'Import fixture bindings from relative "fixtures" modules without renaming them.',
         ruleId: "@alexgorbatchev(fixture-import-path-convention)",
         severity: "error",
       },
@@ -75,7 +73,7 @@ describe("fixture lint-target integration", () => {
           filePath: "src/accounts/components/stories/AccountPanel.stories.tsx",
           line: 3,
           message:
-            'Change this import so "fixture_accountPanel" comes from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree.',
+            'Import fixture bindings from relative "fixtures" modules in the same "__tests__/" or "stories/" tree.',
           ruleId: "@alexgorbatchev(fixture-import-path-convention)",
           severity: "error",
         },
@@ -124,7 +122,7 @@ describe("fixture lint-target integration", () => {
         filePath: "src/accounts/__tests__/rows.test.ts",
         line: 2,
         message:
-          'Change this import so "fixture_userAccountRows" comes from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree.',
+          'Import fixture bindings from relative "fixtures" modules in the same "__tests__/" or "stories/" tree.',
         ruleId: "@alexgorbatchev(fixture-import-path-convention)",
         severity: "error",
       },

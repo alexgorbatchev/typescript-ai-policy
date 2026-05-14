@@ -49,9 +49,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidHooksDirectoryFile",
-            data: {
-              relativePath: "utils.ts",
-            },
           },
         ],
         output: null,
@@ -63,9 +60,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidHooksDirectoryFile",
-            data: {
-              relativePath: "accountHook.ts",
-            },
           },
         ],
         output: null,
@@ -77,9 +71,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidHooksDirectoryFile",
-            data: {
-              relativePath: "helpers.ts",
-            },
           },
         ],
         output: null,
@@ -91,9 +82,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidHooksDirectoryFile",
-            data: {
-              relativePath: "constants.ts",
-            },
           },
         ],
         output: null,
@@ -105,9 +93,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidHooksDirectoryFile",
-            data: {
-              relativePath: "internal/useAccount.ts",
-            },
           },
         ],
         output: null,

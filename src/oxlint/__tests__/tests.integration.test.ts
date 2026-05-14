@@ -11,8 +11,7 @@ describe("test-file lint-target integration", () => {
         column: 1,
         filePath: "src/widgets/SignalPanel.test.tsx",
         line: 1,
-        message:
-          'Move this test file into a sibling "__tests__/" directory. Misplaced tests belong at "__tests__/basename.test.ts[x]" next to the source they cover.',
+        message: 'Place test files in a sibling "__tests__/" directory.',
         ruleId: "@alexgorbatchev(test-file-location-convention)",
         severity: "error",
       },
@@ -28,7 +27,7 @@ describe("test-file lint-target integration", () => {
         filePath: "src/widgets/__tests__/setup.ts",
         line: 1,
         message:
-          'Move or rename "setup.ts". A "__tests__" directory may contain only "*.test.ts", "*.test.tsx", "helpers.ts", "helpers.tsx", "fixtures.ts", "fixtures.tsx", or files under "fixtures/".',
+          'Only "*.test.ts{,x}", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/**" are allowed in "__tests__/".',
         ruleId: "@alexgorbatchev(tests-directory-file-convention)",
         severity: "error",
       },

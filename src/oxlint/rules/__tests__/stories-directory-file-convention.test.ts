@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
 import storiesDirectoryFileConventionRuleModule from "../stories-directory-file-convention.ts";
@@ -9,6 +9,12 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const storiesDirectoryFileConventionRuleTester = new RuleTester();
+const EXPECTED_STORIES_DIRECTORY_FILE_GUIDANCE =
+  'Keep "stories/" limited to "*.stories.tsx", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/". Move runtime files and other support roles out of the story tree.';
+
+it("uses the approved stories directory guidance", () => {
+  expect(storiesDirectoryFileConventionRuleModule.meta.docs?.guidance).toBe(EXPECTED_STORIES_DIRECTORY_FILE_GUIDANCE);
+});
 
 storiesDirectoryFileConventionRuleTester.run(
   "stories-directory-file-convention restricts stories contents",
@@ -44,9 +50,6 @@ storiesDirectoryFileConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidStoriesDirectoryFile",
-            data: {
-              relativePath: "setup.ts",
-            },
           },
         ],
         output: null,
@@ -58,9 +61,6 @@ storiesDirectoryFileConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidStoriesDirectoryFile",
-            data: {
-              relativePath: "helpers.js",
-            },
           },
         ],
         output: null,
@@ -72,9 +72,6 @@ storiesDirectoryFileConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidStoriesDirectoryFile",
-            data: {
-              relativePath: "subdir/SignalPanel.stories.tsx",
-            },
           },
         ],
         output: null,

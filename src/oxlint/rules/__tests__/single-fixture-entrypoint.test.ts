@@ -90,10 +90,6 @@ ruleTester.run(
           {
             messageId: "conflictingFixtureEntrypoints",
             type: AST_NODE_TYPES.ExportNamedDeclaration,
-            data: {
-              directoryLabel: "__tests__",
-              entries: "fixtures.ts, fixtures.tsx",
-            },
           },
         ],
         output: null,
@@ -105,10 +101,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "conflictingFixtureEntrypoints",
-            data: {
-              directoryLabel: "__tests__",
-              entries: "fixtures.ts, fixtures/",
-            },
           },
         ],
         output: null,
@@ -120,10 +112,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "conflictingFixtureEntrypoints",
-            data: {
-              directoryLabel: "stories",
-              entries: "fixtures.tsx, fixtures/",
-            },
           },
         ],
         output: null,

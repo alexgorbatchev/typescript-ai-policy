@@ -113,10 +113,6 @@ function readExpectedHookNameFromFilename(filename: string): string | null {
   return `use${segments.map((segment) => `${segment[0]?.toUpperCase() ?? ""}${segment.slice(1)}`).join("")}`;
 }
 
-function readKebabCaseHookFilename(hookName: string): string {
-  return `${hookName.replaceAll(/([a-z0-9])([A-Z])/gu, "$1-$2").toLowerCase()}.ts`;
-}
-
 const hookFileNamingConventionRule: RuleModule = {
   meta: {
     type: "problem" as const,
@@ -128,12 +124,9 @@ const hookFileNamingConventionRule: RuleModule = {
     },
     schema: [],
     messages: {
-      invalidHookFileName:
-        'Rename this hook file to either "useFoo.ts[x]" or "use-foo.ts[x]" so its basename maps deterministically to the exported hook name.',
-      invalidHookExportName:
-        'Rename the exported hook to lower camelCase starting with "use". Hook ownership files must export names like "useFoo".',
-      mismatchedHookFileName:
-        'Rename this file or the exported hook so they match exactly. "{{ exportedName }}" must live in either "{{ camelFilename }}" or "{{ kebabFilename }}".',
+      invalidHookFileName: 'Rename this hook file to "use*.ts{,x}".',
+      invalidHookExportName: 'Rename this exported hook to start with "use" and use camelCase.',
+      mismatchedHookFileName: "Rename this file or exported hook so they match exactly.",
     },
   },
   create(context) {
@@ -173,16 +166,9 @@ const hookFileNamingConventionRule: RuleModule = {
           return;
         }
 
-        const extension = context.filename.endsWith(".tsx") ? ".tsx" : ".ts";
-
         context.report({
           node: reportNode,
           messageId: "mismatchedHookFileName",
-          data: {
-            exportedName: exportedHookName,
-            camelFilename: `${exportedHookName}${extension}`,
-            kebabFilename: readKebabCaseHookFilename(exportedHookName).replace(/\.ts$/u, extension),
-          },
         });
       },
     };

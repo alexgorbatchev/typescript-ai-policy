@@ -34,9 +34,8 @@ const testFileLocationConventionRule: RuleModule = {
     },
     schema: [],
     messages: {
-      invalidTestFileName: 'Rename this file to match the "*.test.ts" or "*.test.tsx" pattern.',
-      missingTestsDirectory:
-        'Move this test file into a sibling "__tests__/" directory. Misplaced tests belong at "__tests__/basename.test.ts[x]" next to the source they cover.',
+      invalidTestFileName: 'Rename this file to "*.test.ts" or "*.test.tsx".',
+      missingTestsDirectory: 'Place test files in a sibling "__tests__/" directory.',
     },
   },
   create(context) {

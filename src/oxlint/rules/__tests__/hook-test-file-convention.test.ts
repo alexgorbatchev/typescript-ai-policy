@@ -88,10 +88,6 @@ ruleTester.run(
           {
             messageId: "missingHookTestFile",
             type: AST_NODE_TYPES.ImportDeclaration,
-            data: {
-              requiredTestFileName: "useAccount.test.ts",
-              requiredTestsDirectoryPath: ".../missing-test/hooks/__tests__",
-            },
           },
         ],
         output: null,

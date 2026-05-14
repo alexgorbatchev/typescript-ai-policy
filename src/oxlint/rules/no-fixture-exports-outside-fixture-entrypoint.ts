@@ -13,7 +13,7 @@ const noFixtureExportsOutsideFixtureEntrypointRule: RuleModule = {
     schema: [],
     messages: {
       unexpectedFixtureExport:
-        'Move "{{ name }}" into a nested "fixtures.ts" or "fixtures.tsx" entrypoint under "__tests__/" or "stories/" and export it only from there.',
+        'Export fixture helpers only from nested "fixtures.ts" or "fixtures.tsx" entrypoints under "__tests__/" or "stories/".',
     },
   },
   create(context) {
@@ -32,9 +32,6 @@ const noFixtureExportsOutsideFixtureEntrypointRule: RuleModule = {
             context.report({
               node: node.declaration,
               messageId: "unexpectedFixtureExport",
-              data: {
-                name,
-              },
             });
           });
         }
@@ -57,9 +54,6 @@ const noFixtureExportsOutsideFixtureEntrypointRule: RuleModule = {
           context.report({
             node: specifier,
             messageId: "unexpectedFixtureExport",
-            data: {
-              name: fixtureLikeName,
-            },
           });
         });
       },

@@ -70,24 +70,26 @@ it("prints authoritative published rule guidance for every local rule", () => {
     - **@alexgorbatchev/no-inline-type-imports**: Hoist type imports to explicit
       top-level \`import type\` declarations. Do not hide imported types inside inline
       \`import()\` expressions.
-    - **@alexgorbatchev/component-file-location-convention**: Keep component
-      ownership files in the allowed location for their role. Move misplaced
-      component files into the canonical component-owned area.
-    - **@alexgorbatchev/component-directory-file-convention**: Keep component
-      directories limited to files that belong to the component surface. Move
-      unrelated file roles out of component directories.
+    - **@alexgorbatchev/component-file-location-convention**: Keep non-hook,
+      non-test ".tsx" ownership files under "components/", "templates/", or
+      "layouts/". Move files for other roles to their canonical locations.
+    - **@alexgorbatchev/component-directory-file-convention**: Keep "components/",
+      "templates/", and "layouts/" limited to component ".tsx" ownership files,
+      "constants.ts", "index.ts", "types.ts", nested component subdirectories, and
+      sibling "stories/" trees. Move tests and other file roles to their canonical
+      directories.
     - **@alexgorbatchev/component-file-contract**: Use component ownership files
       only for the component contract they own. Keep unrelated runtime exports out
       of the file.
-    - **@alexgorbatchev/component-file-naming-convention**: Name component ownership
-      files after the component they export. Keep non-component file roles out of
-      the component ownership surface.
+    - **@alexgorbatchev/component-file-naming-convention**: Name each component
+      ownership file after its exported PascalCase component. For multipart
+      component families, use the shared family root name.
     - **@alexgorbatchev/component-story-file-convention**: Place each component
       story alongside its owned component in the canonical story role. Do not
       scatter story files outside the expected component/story relationship.
-    - **@alexgorbatchev/stories-directory-file-convention**: Keep \`stories/\`
-      directories limited to story files, approved helpers, and fixture support.
-      Move unrelated files out of the story area.
+    - **@alexgorbatchev/stories-directory-file-convention**: Keep "stories/" limited
+      to "*.stories.tsx", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/". Move
+      runtime files and other support roles out of the story tree.
     - **@alexgorbatchev/story-file-location-convention**: Keep \`*.stories.tsx\` files
       under \`stories/\`. Move misplaced story files into the canonical story
       directory.
@@ -117,9 +119,9 @@ it("prints authoritative published rule guidance for every local rule", () => {
     - **@alexgorbatchev/test-file-location-convention**: Keep committed tests under
       \`__tests__/\` and name them \`*.test.ts\` or \`*.test.tsx\`. Move misplaced test
       files into the canonical test area.
-    - **@alexgorbatchev/tests-directory-file-convention**: Keep \`__tests__\`
-      directories limited to test files, approved helpers, and fixtures. Move
-      runtime modules and unrelated files out of test directories.
+    - **@alexgorbatchev/tests-directory-file-convention**: Keep "__tests__/" limited
+      to "*.test.ts{,x}", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/". Move
+      runtime files and other support roles out of the test tree.
     - **@alexgorbatchev/fixture-file-contract**: Use \`fixtures.ts\`, \`fixtures.tsx\`,
       or fixture support files only for shared fixture data and factories. Keep test
       execution logic and unrelated exports out of fixture entrypoints.

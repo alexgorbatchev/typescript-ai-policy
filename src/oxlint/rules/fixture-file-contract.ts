@@ -12,16 +12,13 @@ const fixtureFileContractRule: RuleModule = {
     },
     schema: [],
     messages: {
-      unexpectedDefaultExport:
-        'Remove the default export. A nested "fixtures.ts" or "fixtures.tsx" entrypoint under "__tests__/" or "stories/" must use only named exports.',
+      unexpectedDefaultExport: 'Use named exports only in nested "fixtures.ts" or "fixtures.tsx" entrypoints.',
       unexpectedExportDeclaration:
-        'Replace this export with either "export const fixture_* = ..." or "export function factory_*() { ... }" in a nested "fixtures.ts" or "fixtures.tsx" entrypoint under "__tests__/" or "stories/".',
+        'Export only "const fixture_*" bindings or "function factory_*()" declarations from nested "fixtures.ts" or "fixtures.tsx" entrypoints.',
       unexpectedExportList:
         "Inline the exported declaration in this nested fixture entrypoint. Do not use export lists or re-exports here.",
-      unexpectedExportPattern:
-        'Bind the exported const to a direct identifier, for example "export const fixture_user = ...". Do not export destructuring patterns from a nested fixture entrypoint.',
-      unexpectedVariableKind:
-        'Change this exported "{{ kind }}" declaration to "const". Nested fixture entrypoints allow only exported const declarations.',
+      unexpectedExportPattern: "Export fixture consts from direct identifiers only.",
+      unexpectedVariableKind: 'Export fixture bindings as "const".',
     },
   },
   create(context) {
@@ -57,9 +54,6 @@ const fixtureFileContractRule: RuleModule = {
             context.report({
               node: declaration,
               messageId: "unexpectedVariableKind",
-              data: {
-                kind: declaration.kind,
-              },
             });
             return;
           }

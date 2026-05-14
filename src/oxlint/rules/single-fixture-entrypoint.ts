@@ -105,8 +105,7 @@ const singleFixtureEntrypointRule: RuleModule = {
     },
     schema: [],
     messages: {
-      conflictingFixtureEntrypoints:
-        'Keep exactly one fixture entrypoint shape in this fixture-support directory under "{{ directoryLabel }}" so "./fixtures" resolves unambiguously. Remove all but one of: {{ entries }}.',
+      conflictingFixtureEntrypoints: "Use exactly one fixture entrypoint shape per fixture-support directory.",
     },
   },
   create(context) {
@@ -131,10 +130,6 @@ const singleFixtureEntrypointRule: RuleModule = {
         context.report({
           node: readProgramReportNode(node),
           messageId: "conflictingFixtureEntrypoints",
-          data: {
-            directoryLabel,
-            entries: existingCandidateKeys.join(", "),
-          },
         });
       },
     };

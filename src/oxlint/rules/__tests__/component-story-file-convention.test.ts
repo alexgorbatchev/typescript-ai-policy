@@ -83,10 +83,6 @@ ruleTester.run(
           {
             messageId: "missingComponentStoryFile",
             type: AST_NODE_TYPES.Identifier,
-            data: {
-              requiredStoriesDirectoryPath: ".../missing-story/components/stories",
-              requiredStoryFileName: "Button.stories.tsx",
-            },
           },
         ],
         output: null,

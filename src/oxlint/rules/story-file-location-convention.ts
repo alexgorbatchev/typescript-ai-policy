@@ -3,7 +3,6 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import {
   getStorySourceBaseName,
-  readAbbreviatedPath,
   readPathFromStoriesDirectory,
   readProgramReportNode,
   readRootPathBeforeDirectory,
@@ -34,10 +33,8 @@ const storyFileLocationConventionRule: RuleModule = {
     },
     schema: [],
     messages: {
-      invalidStoryFileLocation:
-        'Move this story file under a "stories/" directory. Storybook files must not live outside a sibling "stories/" tree.',
-      missingSiblingComponent:
-        'Rename or move this story so it matches an existing sibling component ownership file. "{{ requiredComponentFilePath }}" must exist for this story file.',
+      invalidStoryFileLocation: 'Place story files in a sibling "stories/" directory.',
+      missingSiblingComponent: "Rename or move this story to match a sibling component ownership file.",
     },
   },
   create(context) {
@@ -61,9 +58,6 @@ const storyFileLocationConventionRule: RuleModule = {
         context.report({
           node: reportNode,
           messageId: "missingSiblingComponent",
-          data: {
-            requiredComponentFilePath: readAbbreviatedPath(requiredComponentFilePath),
-          },
         });
       },
     };

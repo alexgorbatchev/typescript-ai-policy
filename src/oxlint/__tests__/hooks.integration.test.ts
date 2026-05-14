@@ -17,8 +17,7 @@ describe("hook lint-target integration", () => {
         column: 1,
         filePath: "src/accounts/hooks/useAccount.ts",
         line: 1,
-        message:
-          'Create "useAccount.test.ts" under ".../accounts/hooks/__tests__". Hook ownership files must keep their tests under a sibling "__tests__/" directory.',
+        message: 'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory.',
         ruleId: "@alexgorbatchev(hook-test-file-convention)",
         severity: "error",
       },
@@ -33,8 +32,7 @@ describe("hook lint-target integration", () => {
         column: 8,
         filePath: "src/accounts/account.ts",
         line: 1,
-        message:
-          'Move exported hook "useAccount" into a direct-child ownership file under a "hooks/" directory. Valid filenames are "hooks/useAccount.ts" or "hooks/use-account.ts".',
+        message: 'Place exported hooks in direct-child "hooks/use*.ts{,x}" files.',
         ruleId: "@alexgorbatchev(hook-export-location-convention)",
         severity: "error",
       },
@@ -49,8 +47,7 @@ describe("hook lint-target integration", () => {
         column: 1,
         filePath: "src/accounts/hooks/helpers.ts",
         line: 1,
-        message:
-          'Move or rename "helpers.ts". A "hooks/" directory may contain only direct-child "use*.ts" or "use*.tsx" ownership files, direct-child "index.ts" or "types.ts" files, or a direct-child "__tests__/" tree.',
+        message: 'Only "use*.ts{,x}", "index.ts", "types.ts", and "__tests__/**" are allowed in "hooks/".',
         ruleId: "@alexgorbatchev(hooks-directory-file-convention)",
         severity: "error",
       },

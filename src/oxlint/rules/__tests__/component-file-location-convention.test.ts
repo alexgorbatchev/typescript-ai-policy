@@ -10,10 +10,13 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
+const EXPECTED_COMPONENT_FILE_LOCATION_GUIDANCE =
+  'Keep non-hook, non-test ".tsx" ownership files under "components/", "templates/", or "layouts/". Move files for other roles to their canonical locations.';
 const EXPECTED_COMPONENT_FILE_LOCATION_MESSAGE =
-  'Move this ".tsx" ownership file under a "components", "templates", or "layouts" directory. Keep non-component file roles out of the component ownership surface.';
+  'Place non-hook, non-test ".tsx" ownership files under "components/", "templates/", or "layouts/".';
 
 it("uses the approved component ownership repair message", () => {
+  expect(componentFileLocationConventionRuleModule.meta.docs?.guidance).toBe(EXPECTED_COMPONENT_FILE_LOCATION_GUIDANCE);
   expect(componentFileLocationConventionRuleModule.meta.messages?.unexpectedComponentFileLocation).toBe(
     EXPECTED_COMPONENT_FILE_LOCATION_MESSAGE,
   );

@@ -70,9 +70,6 @@ fixtureFileContractRuleTester.run(
         errors: [
           {
             messageId: "unexpectedVariableKind",
-            data: {
-              kind: "let",
-            },
           },
         ],
         output: null,

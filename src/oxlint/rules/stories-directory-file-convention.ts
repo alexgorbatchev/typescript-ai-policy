@@ -22,12 +22,12 @@ const storiesDirectoryFileConventionRule: RuleModule = {
     docs: {
       description: "Restrict stories directory contents to story files, helpers, and fixtures",
       guidance:
-        "Keep `stories/` directories limited to story files, approved helpers, and fixture support. Move unrelated files out of the story area.",
+        'Keep "stories/" limited to "*.stories.tsx", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/". Move runtime files and other support roles out of the story tree.',
     },
     schema: [],
     messages: {
       invalidStoriesDirectoryFile:
-        'Move or rename "{{ relativePath }}". A "stories" directory may contain only "*.stories.tsx", "helpers.ts", "helpers.tsx", "fixtures.ts", "fixtures.tsx", or files under "fixtures/".',
+        'Only "*.stories.tsx", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/**" are allowed in "stories/".',
     },
   },
   create(context) {
@@ -45,9 +45,6 @@ const storiesDirectoryFileConventionRule: RuleModule = {
         context.report({
           node: readProgramReportNode(node),
           messageId: "invalidStoriesDirectoryFile",
-          data: {
-            relativePath,
-          },
         });
       },
     };

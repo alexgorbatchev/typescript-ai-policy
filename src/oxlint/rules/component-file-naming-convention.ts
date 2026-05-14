@@ -195,16 +195,13 @@ const componentFileNamingConventionRule: RuleModule = {
       description:
         "Require component ownership filenames to match their exported PascalCase component name, or multipart family root name, in either PascalCase or kebab-case form",
       guidance:
-        "Name component ownership files after the component they export. Keep non-component file roles out of the component ownership surface.",
+        "Name each component ownership file after its exported PascalCase component. For multipart component families, use the shared family root name.",
     },
     schema: [],
     messages: {
-      invalidComponentFileName:
-        "Rename this file so its basename maps deterministically to the exported component name. Keep non-component file roles out of the component ownership surface.",
-      invalidComponentExportName:
-        "Rename this exported component to PascalCase. Component ownership exports must use PascalCase names.",
-      mismatchedComponentFileName:
-        "Rename this file or the exported component so they match exactly. Use the PascalCase or kebab-case form of the component name.",
+      invalidComponentFileName: "Rename this file so its basename matches the exported component name.",
+      invalidComponentExportName: "Rename this exported component to PascalCase.",
+      mismatchedComponentFileName: "Rename this file or exported component so they match exactly.",
     },
   },
   create(context) {
@@ -244,16 +241,9 @@ const componentFileNamingConventionRule: RuleModule = {
           return;
         }
 
-        const kebabFilename = `${exportedComponentName.replaceAll(/([a-z0-9])([A-Z])/gu, "$1-$2").toLowerCase()}.tsx`;
-
         context.report({
           node: reportNode,
           messageId: "mismatchedComponentFileName",
-          data: {
-            exportedName: exportedComponentName,
-            pascalFilename: `${exportedComponentName}.tsx`,
-            kebabFilename,
-          },
         });
       },
     };

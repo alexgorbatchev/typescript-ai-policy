@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
@@ -10,6 +10,12 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const testsDirectoryFileConventionRuleTester = new RuleTester();
+const EXPECTED_TESTS_DIRECTORY_FILE_GUIDANCE =
+  'Keep "__tests__/" limited to "*.test.ts{,x}", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/". Move runtime files and other support roles out of the test tree.';
+
+it("uses the approved tests directory guidance", () => {
+  expect(testsDirectoryFileConventionRuleModule.meta.docs?.guidance).toBe(EXPECTED_TESTS_DIRECTORY_FILE_GUIDANCE);
+});
 
 testsDirectoryFileConventionRuleTester.run(
   "tests-directory-file-convention restricts __tests__ contents",
@@ -50,9 +56,6 @@ testsDirectoryFileConventionRuleTester.run(
           {
             messageId: "invalidTestsDirectoryFile",
             type: AST_NODE_TYPES.ExportNamedDeclaration,
-            data: {
-              relativePath: "setup.ts",
-            },
           },
         ],
         output: null,
@@ -64,9 +67,6 @@ testsDirectoryFileConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestsDirectoryFile",
-            data: {
-              relativePath: "helpers.js",
-            },
           },
         ],
         output: null,
@@ -78,9 +78,6 @@ testsDirectoryFileConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestsDirectoryFile",
-            data: {
-              relativePath: "subdir/SignalPanel.test.ts",
-            },
           },
         ],
         output: null,
@@ -92,9 +89,6 @@ testsDirectoryFileConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidTestsDirectoryFile",
-            data: {
-              relativePath: "AGENTS.md",
-            },
           },
         ],
         output: null,

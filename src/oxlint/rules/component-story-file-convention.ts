@@ -6,7 +6,6 @@ import {
   isExemptSupportBasename,
   isInStoriesDirectory,
   isInTestsDirectory,
-  readAbbreviatedSiblingDirectoryPath,
   readProgramReportNode,
 } from "./helpers.ts";
 
@@ -72,8 +71,7 @@ const componentStoryFileConventionRule: RuleModule = {
     },
     schema: [],
     messages: {
-      missingComponentStoryFile:
-        'Create "{{ requiredStoryFileName }}" under "{{ requiredStoriesDirectoryPath }}". Component ownership files must keep their Storybook coverage under a sibling "stories/" directory.',
+      missingComponentStoryFile: 'Create the matching ".stories.tsx" file under a sibling "stories/" directory.',
     },
   },
   create(context) {
@@ -88,7 +86,6 @@ const componentStoryFileConventionRule: RuleModule = {
     return {
       Program(node: AstProgram) {
         const requiredStoriesDirectoryPath = readRequiredStoriesDirectoryPath(context.filename);
-        const displayedStoriesDirectoryPath = readAbbreviatedSiblingDirectoryPath(context.filename, "stories");
         const requiredStoryFileName = readRequiredStoryFileName(context.filename);
         if (findDescendantFilePath(requiredStoriesDirectoryPath, requiredStoryFileName)) {
           return;
@@ -97,10 +94,6 @@ const componentStoryFileConventionRule: RuleModule = {
         context.report({
           node: readReportNode(node),
           messageId: "missingComponentStoryFile",
-          data: {
-            requiredStoriesDirectoryPath: displayedStoriesDirectoryPath,
-            requiredStoryFileName,
-          },
         });
       },
     };

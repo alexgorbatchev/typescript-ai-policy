@@ -7,7 +7,6 @@ import {
   isExemptSupportBasename,
   isInStoriesDirectory,
   isInTestsDirectory,
-  readAbbreviatedSiblingDirectoryPath,
   readProgramReportNode,
 } from "./helpers.ts";
 
@@ -33,8 +32,7 @@ const hookTestFileConventionRule: RuleModule = {
     },
     schema: [],
     messages: {
-      missingHookTestFile:
-        'Create "{{ requiredTestFileName }}" under "{{ requiredTestsDirectoryPath }}". Hook ownership files must keep their tests under a sibling "__tests__/" directory.',
+      missingHookTestFile: 'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory.',
     },
   },
   create(context) {
@@ -49,7 +47,6 @@ const hookTestFileConventionRule: RuleModule = {
     return {
       Program(node: AstProgram) {
         const requiredTestsDirectoryPath = readRequiredTestsDirectoryPath(context.filename);
-        const displayedTestsDirectoryPath = readAbbreviatedSiblingDirectoryPath(context.filename, "__tests__");
         const requiredTestFileName = readRequiredHookTestFileName(context.filename);
         if (findDescendantFilePath(requiredTestsDirectoryPath, requiredTestFileName)) {
           return;
@@ -58,10 +55,6 @@ const hookTestFileConventionRule: RuleModule = {
         context.report({
           node: readProgramReportNode(node),
           messageId: "missingHookTestFile",
-          data: {
-            requiredTestFileName,
-            requiredTestsDirectoryPath: displayedTestsDirectoryPath,
-          },
         });
       },
     };

@@ -118,10 +118,6 @@ function isCanonicalHookOwnershipFile(filename: string): boolean {
   return getFilenameWithoutExtension(filename).startsWith("use");
 }
 
-function readKebabCaseHookName(name: string): string {
-  return name.replaceAll(/([a-z0-9])([A-Z])/gu, "$1-$2").toLowerCase();
-}
-
 function readFirstLineReportLocation(node: AstSourceLocationNode, sourceLines: string[]): AstSourceLocationNode["loc"] {
   const nodeLocation = node.loc;
 
@@ -155,8 +151,7 @@ const hookExportLocationConventionRule: RuleModule = {
     },
     schema: [],
     messages: {
-      misplacedHookExport:
-        'Move exported hook "{{ hookName }}" into a direct-child ownership file under a "hooks/" directory. Valid filenames are "hooks/{{ camelFilename }}" or "hooks/{{ kebabFilename }}".',
+      misplacedHookExport: 'Place exported hooks in direct-child "hooks/use*.ts{,x}" files.',
     },
   },
   create(context) {
@@ -176,17 +171,10 @@ const hookExportLocationConventionRule: RuleModule = {
     return {
       Program(node) {
         readRuntimeHookExportEntries(node).forEach((hookExportEntry) => {
-          const extension = getExtension(context.filename) || ".ts";
-
           context.report({
             loc: readFirstLineReportLocation(hookExportEntry.node, sourceLines),
             node: hookExportEntry.node,
             messageId: "misplacedHookExport",
-            data: {
-              hookName: hookExportEntry.exportedName,
-              camelFilename: `${hookExportEntry.exportedName}${extension}`,
-              kebabFilename: `${readKebabCaseHookName(hookExportEntry.exportedName)}${extension}`,
-            },
           });
         });
       },

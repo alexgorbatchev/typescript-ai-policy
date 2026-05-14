@@ -50,11 +50,6 @@ ruleTester.run(
             endLine: 1,
             line: 1,
             messageId: "misplacedHookExport",
-            data: {
-              hookName: "useAccount",
-              camelFilename: "useAccount.ts",
-              kebabFilename: "use-account.ts",
-            },
           },
         ],
         output: null,
@@ -66,11 +61,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "misplacedHookExport",
-            data: {
-              hookName: "useAccount",
-              camelFilename: "useAccount.tsx",
-              kebabFilename: "use-account.tsx",
-            },
           },
         ],
         output: null,
@@ -82,11 +72,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "misplacedHookExport",
-            data: {
-              hookName: "useAccount",
-              camelFilename: "useAccount.ts",
-              kebabFilename: "use-account.ts",
-            },
           },
         ],
         output: null,
@@ -98,11 +83,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "misplacedHookExport",
-            data: {
-              hookName: "useAccountHelper",
-              camelFilename: "useAccountHelper.ts",
-              kebabFilename: "use-account-helper.ts",
-            },
           },
         ],
         output: null,
@@ -114,11 +94,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "misplacedHookExport",
-            data: {
-              hookName: "useAccountConfig",
-              camelFilename: "useAccountConfig.ts",
-              kebabFilename: "use-account-config.ts",
-            },
           },
         ],
         output: null,
@@ -133,11 +108,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "misplacedHookExport",
-            data: {
-              hookName: "useAccount",
-              camelFilename: "useAccount.ts",
-              kebabFilename: "use-account.ts",
-            },
           },
         ],
         output: null,

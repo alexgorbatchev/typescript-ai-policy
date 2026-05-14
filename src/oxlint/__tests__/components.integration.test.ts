@@ -23,8 +23,7 @@ describe("component lint-target integration", () => {
           column: 17,
           filePath: "src/accounts/components/Button.tsx",
           line: 1,
-          message:
-            'Create "Button.stories.tsx" under ".../accounts/components/stories". Component ownership files must keep their Storybook coverage under a sibling "stories/" directory.',
+          message: 'Create the matching ".stories.tsx" file under a sibling "stories/" directory.',
           ruleId: "@alexgorbatchev(component-story-file-convention)",
           severity: "error",
         },
@@ -46,8 +45,7 @@ describe("component lint-target integration", () => {
           column: 1,
           filePath: "src/accounts/AccountPanel.tsx",
           line: 1,
-          message:
-            'Move this ".tsx" ownership file under a "components", "templates", or "layouts" directory. Keep non-component file roles out of the component ownership surface.',
+          message: 'Place non-hook, non-test ".tsx" ownership files under "components/", "templates/", or "layouts/".',
           ruleId: "@alexgorbatchev(component-file-location-convention)",
           severity: "error",
         },
@@ -79,7 +77,7 @@ describe("component lint-target integration", () => {
           filePath: "src/accounts/components/utils.ts",
           line: 1,
           message:
-            'Move or rename "utils.ts". A "components/" directory may contain only component ".tsx" files, nested component-area subdirectories, "constants.ts", "index.ts", or "types.ts" support files, or a sibling "stories/" tree.',
+            'Only component ".tsx" files, "constants.ts", "index.ts", "types.ts", nested component subdirectories, and "stories/**" are allowed in "components/", "templates/", and "layouts/".',
           ruleId: "@alexgorbatchev(component-directory-file-convention)",
           severity: "error",
         },

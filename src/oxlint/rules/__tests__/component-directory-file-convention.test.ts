@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
 import componentDirectoryFileConventionRuleModule from "../component-directory-file-convention.ts";
@@ -9,6 +9,14 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
+const EXPECTED_COMPONENT_DIRECTORY_FILE_GUIDANCE =
+  'Keep "components/", "templates/", and "layouts/" limited to component ".tsx" ownership files, "constants.ts", "index.ts", "types.ts", nested component subdirectories, and sibling "stories/" trees. Move tests and other file roles to their canonical directories.';
+
+it("uses the approved component directory guidance", () => {
+  expect(componentDirectoryFileConventionRuleModule.meta.docs?.guidance).toBe(
+    EXPECTED_COMPONENT_DIRECTORY_FILE_GUIDANCE,
+  );
+});
 
 ruleTester.run(
   "component-directory-file-convention restricts component area contents to ownership files, nested component subdirectories, support basenames, and sibling stories",
@@ -69,10 +77,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidComponentDirectoryFile",
-            data: {
-              directoryName: "components",
-              relativePath: "AccountPanel.ts",
-            },
           },
         ],
         output: null,
@@ -84,10 +88,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidComponentDirectoryFile",
-            data: {
-              directoryName: "components",
-              relativePath: "utils.ts",
-            },
           },
         ],
         output: null,
@@ -99,10 +99,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidComponentDirectoryFile",
-            data: {
-              directoryName: "components",
-              relativePath: "helpers.tsx",
-            },
           },
         ],
         output: null,
@@ -114,10 +110,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidComponentDirectoryFile",
-            data: {
-              directoryName: "components",
-              relativePath: "__tests__/AccountPanel.test.tsx",
-            },
           },
         ],
         output: null,
@@ -129,10 +121,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidComponentDirectoryFile",
-            data: {
-              directoryName: "components",
-              relativePath: "__tests__/helpers.ts",
-            },
           },
         ],
         output: null,
@@ -144,10 +132,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidComponentDirectoryFile",
-            data: {
-              directoryName: "components",
-              relativePath: "__tests__/fixtures.ts",
-            },
           },
         ],
         output: null,

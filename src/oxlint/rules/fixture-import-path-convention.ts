@@ -35,14 +35,12 @@ const fixtureImportPathConventionRule: RuleModule = {
     },
     schema: [],
     messages: {
-      invalidFixturesImportAlias:
-        'Import "{{ name }}" from a relative "fixtures" module without renaming it. The local binding must stay "{{ name }}".',
+      invalidFixturesImportAlias: 'Import fixture bindings from relative "fixtures" modules without renaming them.',
       invalidFixturesImportName:
-        'Only named imports that start with "fixture_" or "factory_" are allowed from a relative "fixtures" module. Remove or rename "{{ name }}".',
+        'Import only named "fixture_*" or "factory_*" bindings from relative "fixtures" modules.',
       invalidFixturesImportPath:
-        'Change this import so "{{ name }}" comes from a relative "fixtures" module inside the same "__tests__/" or "stories/" tree.',
-      invalidFixturesImportStyle:
-        'Rewrite this as a named import from a relative "fixtures" module, for example: import { fixture_name } from "./fixtures".',
+        'Import fixture bindings from relative "fixtures" modules in the same "__tests__/" or "stories/" tree.',
+      invalidFixturesImportStyle: 'Use named imports from relative "fixtures" modules.',
     },
   },
   create(context) {
@@ -78,9 +76,6 @@ const fixtureImportPathConventionRule: RuleModule = {
               context.report({
                 node: specifier,
                 messageId: "invalidFixturesImportName",
-                data: {
-                  name: importedName ?? localName,
-                },
               });
               return;
             }
@@ -89,9 +84,6 @@ const fixtureImportPathConventionRule: RuleModule = {
               context.report({
                 node: specifier,
                 messageId: "invalidFixturesImportAlias",
-                data: {
-                  name: importedName,
-                },
               });
             }
           });
@@ -114,9 +106,6 @@ const fixtureImportPathConventionRule: RuleModule = {
           context.report({
             node: specifier,
             messageId: "invalidFixturesImportPath",
-            data: {
-              name: fixtureLikeName,
-            },
           });
         });
       },

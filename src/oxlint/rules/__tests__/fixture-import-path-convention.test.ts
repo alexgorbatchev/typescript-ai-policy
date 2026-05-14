@@ -69,9 +69,6 @@ fixtureImportPathConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidFixturesImportPath",
-            data: {
-              name: "fixture_userAccountRows",
-            },
           },
         ],
         output: null,
@@ -85,9 +82,6 @@ fixtureImportPathConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidFixturesImportPath",
-            data: {
-              name: "factory_userAccountRows",
-            },
           },
         ],
         output: null,
@@ -101,9 +95,6 @@ fixtureImportPathConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidFixturesImportAlias",
-            data: {
-              name: "fixture_userAccountRows",
-            },
           },
         ],
         output: null,
@@ -117,9 +108,6 @@ fixtureImportPathConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidFixturesImportName",
-            data: {
-              name: "userAccountRows",
-            },
           },
         ],
         output: null,
@@ -172,9 +160,6 @@ fixtureImportPathConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidFixturesImportPath",
-            data: {
-              name: "fixture_userAccountRows",
-            },
           },
         ],
         output: null,
@@ -188,9 +173,6 @@ fixtureImportPathConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidFixturesImportPath",
-            data: {
-              name: "fixture_userAccountRows",
-            },
           },
         ],
         output: null,
@@ -204,9 +186,6 @@ fixtureImportPathConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidFixturesImportPath",
-            data: {
-              name: "fixture_userAccountRows",
-            },
           },
         ],
         output: null,
@@ -220,9 +199,6 @@ fixtureImportPathConventionRuleTester.run(
         errors: [
           {
             messageId: "invalidFixturesImportAlias",
-            data: {
-              name: "fixture_userAccountRows",
-            },
           },
         ],
         output: null,

@@ -55,11 +55,6 @@ ruleTester.run(
           {
             messageId: "mismatchedHookFileName",
             type: AST_NODE_TYPES.Identifier,
-            data: {
-              exportedName: "UseAccount",
-              camelFilename: "UseAccount.ts",
-              kebabFilename: "use-account.ts",
-            },
           },
         ],
         output: null,
@@ -78,11 +73,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "mismatchedHookFileName",
-            data: {
-              exportedName: "useBar",
-              camelFilename: "useBar.ts",
-              kebabFilename: "use-bar.ts",
-            },
           },
         ],
         output: null,
@@ -94,11 +84,6 @@ ruleTester.run(
         errors: [
           {
             messageId: "mismatchedHookFileName",
-            data: {
-              exportedName: "useBar",
-              camelFilename: "useBar.tsx",
-              kebabFilename: "use-bar.tsx",
-            },
           },
         ],
         output: null,

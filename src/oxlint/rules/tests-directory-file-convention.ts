@@ -22,12 +22,12 @@ const testsDirectoryFileConventionRule: RuleModule = {
     docs: {
       description: "Restrict __tests__ directory contents to tests, helpers, and fixtures",
       guidance:
-        "Keep `__tests__` directories limited to test files, approved helpers, and fixtures. Move runtime modules and unrelated files out of test directories.",
+        'Keep "__tests__/" limited to "*.test.ts{,x}", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/". Move runtime files and other support roles out of the test tree.',
     },
     schema: [],
     messages: {
       invalidTestsDirectoryFile:
-        'Move or rename "{{ relativePath }}". A "__tests__" directory may contain only "*.test.ts", "*.test.tsx", "helpers.ts", "helpers.tsx", "fixtures.ts", "fixtures.tsx", or files under "fixtures/".',
+        'Only "*.test.ts{,x}", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/**" are allowed in "__tests__/".',
     },
   },
   create(context) {
@@ -45,9 +45,6 @@ const testsDirectoryFileConventionRule: RuleModule = {
         context.report({
           node: readProgramReportNode(node),
           messageId: "invalidTestsDirectoryFile",
-          data: {
-            relativePath,
-          },
         });
       },
     };

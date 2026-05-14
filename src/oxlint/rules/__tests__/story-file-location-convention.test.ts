@@ -86,9 +86,6 @@ ruleTester.run(
           {
             messageId: "missingSiblingComponent",
             type: AST_NODE_TYPES.ExportDefaultDeclaration,
-            data: {
-              requiredComponentFilePath: ".../missing-sibling-component/components/Missing.tsx",
-            },
           },
         ],
         output: null,

@@ -38,12 +38,12 @@ const componentDirectoryFileConventionRule: RuleModule = {
       description:
         'Restrict "components", "templates", and "layouts" directories to component ownership files, nested component-area subdirectories, support files (`constants.ts`, `index.ts`, `types.ts`), and sibling "stories/" trees',
       guidance:
-        "Keep component directories limited to files that belong to the component surface. Move unrelated file roles out of component directories.",
+        'Keep "components/", "templates/", and "layouts/" limited to component ".tsx" ownership files, "constants.ts", "index.ts", "types.ts", nested component subdirectories, and sibling "stories/" trees. Move tests and other file roles to their canonical directories.',
     },
     schema: [],
     messages: {
       invalidComponentDirectoryFile:
-        'Move or rename "{{ relativePath }}". A "{{ directoryName }}/" directory may contain only component ".tsx" files, nested component-area subdirectories, "constants.ts", "index.ts", or "types.ts" support files, or a sibling "stories/" tree.',
+        'Only component ".tsx" files, "constants.ts", "index.ts", "types.ts", nested component subdirectories, and "stories/**" are allowed in "components/", "templates/", and "layouts/".',
     },
   },
   create(context) {
@@ -64,10 +64,6 @@ const componentDirectoryFileConventionRule: RuleModule = {
         context.report({
           node: readProgramReportNode(node),
           messageId: "invalidComponentDirectoryFile",
-          data: {
-            directoryName: componentDirectoryMatch.directoryName,
-            relativePath: componentDirectoryMatch.relativePath || ".",
-          },
         });
       },
     };

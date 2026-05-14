@@ -58,9 +58,6 @@ noFixtureExportsOutsideFixtureEntrypointRuleTester.run(
         errors: [
           {
             messageId: "unexpectedFixtureExport",
-            data: {
-              name: "fixture_userAccountRows",
-            },
           },
         ],
         output: null,
@@ -76,9 +73,6 @@ noFixtureExportsOutsideFixtureEntrypointRuleTester.run(
         errors: [
           {
             messageId: "unexpectedFixtureExport",
-            data: {
-              name: "factory_userAccountRows",
-            },
           },
         ],
         output: null,
@@ -93,9 +87,6 @@ noFixtureExportsOutsideFixtureEntrypointRuleTester.run(
         errors: [
           {
             messageId: "unexpectedFixtureExport",
-            data: {
-              name: "fixture_userAccountRows",
-            },
           },
         ],
         output: null,
@@ -109,9 +100,6 @@ noFixtureExportsOutsideFixtureEntrypointRuleTester.run(
         errors: [
           {
             messageId: "unexpectedFixtureExport",
-            data: {
-              name: "fixture_userAccountRows",
-            },
           },
         ],
         output: null,

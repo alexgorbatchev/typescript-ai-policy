@@ -129,8 +129,7 @@ const indexFileContractRule: RuleModule = {
     },
     schema: [],
     messages: {
-      unexpectedIndexTsxFilename:
-        'Rename this file to "index.ts". Index barrel files must not use the ".tsx" extension.',
+      unexpectedIndexTsxFilename: 'Rename this file to "index.ts".',
       unexpectedIndexExport:
         'Remove this local export from the index barrel. "{{ barrelBaseName }}" must not define symbols; move the definition into another module and re-export it from here instead{{ renameSuffix }}',
       unexpectedIndexStatement:
