@@ -61,19 +61,35 @@ export default createOxfmtConfig(() => ({
 ```ts
 import createOxlintConfig from "@alexgorbatchev/typescript-ai-policy/oxlint-config";
 
-export default createOxlintConfig(() => ({
+export default createOxlintConfig({
   ignorePatterns: ["coverage"],
   rules: {
     "no-var": "error",
   },
-}));
+});
 ```
 
-Both config entrypoints export factory functions. The callback is optional and is deep-merged **before** the shared
-defaults, so the shared policy still wins on conflicting keys.
+Both config entrypoints export factory functions. `createOxlintConfig(...)` accepts either a config object or a
+callback that returns one. The returned user config is deep-merged **before** the shared defaults, so the shared
+policy still wins on conflicting keys.
 
-For Oxlint specifically, consumer configs are extension-only. If the callback tries to redefine a shared rule, the
-factory throws instead of letting repositories silently weaken the policy downstream.
+For Oxlint specifically, consumer configs are extension-only. If the provided config tries to redefine a shared rule,
+the factory throws instead of letting repositories silently weaken the policy downstream.
+
+`createOxlintConfig` also exports `FilenameStyle` as a named export from
+`@alexgorbatchev/typescript-ai-policy/oxlint-config`. `createOxlintConfig` reserves the `filenameStyle` key for this
+package's shared filename policy. It defaults to `FilenameStyle.PascalCase`, which enforces `ComponentName.tsx` and
+`useThing.ts{,x}` ownership files. Set `filenameStyle: FilenameStyle.DashCase` to enforce `component-name.tsx` and
+`use-thing.ts{,x}` instead:
+
+```ts
+import createOxlintConfig, { FilenameStyle } from "@alexgorbatchev/typescript-ai-policy/oxlint-config";
+
+export default createOxlintConfig({
+  filenameStyle: FilenameStyle.DashCase,
+  ignorePatterns: ["coverage"],
+});
+```
 
 When you run Oxlint manually, use Bun to launch the CLI:
 
@@ -89,8 +105,8 @@ these TypeScript config entrypoints.
 At a glance, the shared policy enforces:
 
 - baseline guardrails such as strict equality and no `any`
-- component ownership files that export exactly one main component or one multipart component family, plus type-only secondary API, and live under canonical `components/`, `templates/`, or `layouts/` directories
-- hook ownership files that export exactly one main `use*` hook, plus type-only secondary API, and live as direct-child `hooks/use*.ts[x]` files
+- component ownership files that export exactly one main component or one multipart component family, plus type-only secondary API, and live under canonical `components/`, `templates/`, or `layouts/` directories using `ComponentName.tsx` by default or `component-name.tsx` when `filenameStyle: FilenameStyle.DashCase` is configured
+- hook ownership files that export exactly one main `use*` hook, plus type-only secondary API, and live as direct-child `hooks/useThing.ts[x]` files by default or `hooks/use-thing.ts[x]` when `filenameStyle: FilenameStyle.DashCase` is configured
 - JSX-only React component code instead of `React.createElement(...)`
 - matching Storybook files for component ownership files under sibling `stories/` directories, with story support files limited to `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
 - matching test files for hook ownership files under sibling `__tests__/` directories, with test support files limited to `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
@@ -147,8 +163,8 @@ fixed ownership locations:
 - exported runtime hooks whose names start with `use` live under direct-child `hooks/` ownership files
 - test files live under sibling `__tests__/` directories, and that area is reserved for `*.test.ts[x]`, `helpers.ts[x]`, `fixtures.ts[x]`, and `fixtures/`
 - fixture entrypoints and fixture directories live under `stories/` or `__tests__/`
-- component filenames match the exported PascalCase component name in PascalCase or kebab-case form
-- hook filenames match the exported `use*` hook name in camelCase or kebab-case form
+- component filenames match the exported PascalCase component name in `ComponentName.tsx` form by default, or `component-name.tsx` when `filenameStyle: FilenameStyle.DashCase` is configured
+- hook filenames match the exported `use*` hook name in `useThing.ts[x]` form by default, or `use-thing.ts[x]` when `filenameStyle: FilenameStyle.DashCase` is configured
 - `index.ts` is reserved for pure barrel re-exports only
 - `constants.ts` is for runtime values only
 - `types.ts` is for type-only exports only

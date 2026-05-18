@@ -1,6 +1,8 @@
 import { describe, it } from "bun:test";
-import { expectLintTargetFailure } from "../test-support/expectLintTargetResult.ts";
+import { FilenameStyle } from "../createOxlintConfig.ts";
+import { expectLintTargetFailure, expectLintTargetSuccess } from "../test-support/expectLintTargetResult.ts";
 import { runLintTargetFixtureWithConsumerConfig } from "../test-support/runLintTargetFixtureWithConsumerConfig.ts";
+import { runLintTargetFixture } from "../test-support/runLintTargetFixture.ts";
 
 const FIXTURE_CONFIG_HEADER = {
   configPath: "<fixture-root>/oxlint.config.ts",
@@ -84,5 +86,31 @@ describe("component lint-target integration", () => {
       ],
       FIXTURE_CONFIG_HEADER,
     );
+  });
+
+  it("reports dash-case component ownership filenames by default", () => {
+    const lintTargetResult = runLintTargetFixture("component-file-naming-convention/dash-case-component-invalid");
+
+    expectLintTargetFailure(lintTargetResult, [
+      {
+        column: 1,
+        filePath: "src/accounts/components/account-panel.tsx",
+        line: 1,
+        message:
+          "Rename this file to the configured ComponentName.tsx basename that matches the exported component name.",
+        ruleId: "@alexgorbatchev(component-file-naming-convention)",
+        severity: "error",
+      },
+    ]);
+  });
+
+  it("allows dash-case component ownership filenames when configured", () => {
+    const lintTargetResult = runLintTargetFixtureWithConsumerConfig(
+      "component-file-naming-convention/dash-case-component-invalid",
+      {},
+      { filenameStyle: FilenameStyle.DashCase },
+    );
+
+    expectLintTargetSuccess(lintTargetResult, FIXTURE_CONFIG_HEADER);
   });
 });

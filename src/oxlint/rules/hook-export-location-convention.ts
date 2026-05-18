@@ -17,6 +17,12 @@ import {
   readDeclarationIdentifierNames,
   readPatternIdentifierNames,
 } from "./helpers.ts";
+import {
+  filenameStyleRuleSchema,
+  isHookOwnershipFileStem,
+  readFilenameStyle,
+  readHookFilePattern,
+} from "../filenameStyle.ts";
 
 const HOOK_DIRECTORY_NAMES = new Set(["hooks"]);
 const ALLOWED_HOOK_EXTENSIONS = new Set([".ts", ".tsx"]);
@@ -106,7 +112,7 @@ function readVariableDeclarationRuntimeHookExportEntries(declaration: AstVariabl
   });
 }
 
-function isCanonicalHookOwnershipFile(filename: string): boolean {
+function isCanonicalHookOwnershipFile(filename: string, filenameStyle: ReturnType<typeof readFilenameStyle>): boolean {
   if (isStrictAreaAllowedSupportFile(filename)) {
     return false;
   }
@@ -115,7 +121,7 @@ function isCanonicalHookOwnershipFile(filename: string): boolean {
     return false;
   }
 
-  return getFilenameWithoutExtension(filename).startsWith("use");
+  return isHookOwnershipFileStem(getFilenameWithoutExtension(filename), filenameStyle);
 }
 
 function readFirstLineReportLocation(node: AstSourceLocationNode, sourceLines: string[]): AstSourceLocationNode["loc"] {
@@ -145,17 +151,19 @@ const hookExportLocationConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Require exported runtime bindings whose name starts with "use" to live in direct-child "hooks/use*.ts" or "hooks/use*.tsx" ownership files',
+        'Require exported runtime bindings whose name starts with "use" to live in direct-child configured "hooks/useThing.ts{,x}" or "hooks/use-thing.ts{,x}" ownership files',
       guidance:
-        "Export hooks from the canonical hook ownership location. Do not leak hook exports from unrelated modules.",
+        'Export hooks from direct-child "hooks/useThing.ts{,x}" ownership files by default, or "hooks/use-thing.ts{,x}" when the shared config uses `FilenameStyle.DashCase`. Do not leak hook exports from unrelated modules.',
     },
-    schema: [],
+    schema: filenameStyleRuleSchema,
     messages: {
-      misplacedHookExport: 'Place exported hooks in direct-child "hooks/use*.ts{,x}" files.',
+      misplacedHookExport: 'Place exported hooks in direct-child "hooks/{{expectedHookFilePattern}}" files.',
     },
   },
   create(context) {
     const sourceLines = context.sourceCode.getLines();
+    const filenameStyle = readFilenameStyle(context.options);
+    const expectedHookFilePattern = readHookFilePattern(filenameStyle);
 
     if (
       !ALLOWED_HOOK_EXTENSIONS.has(getExtension(context.filename)) ||
@@ -164,7 +172,7 @@ const hookExportLocationConventionRule: RuleModule = {
       return {};
     }
 
-    if (isCanonicalHookOwnershipFile(context.filename)) {
+    if (isCanonicalHookOwnershipFile(context.filename, filenameStyle)) {
       return {};
     }
 
@@ -175,6 +183,7 @@ const hookExportLocationConventionRule: RuleModule = {
             loc: readFirstLineReportLocation(hookExportEntry.node, sourceLines),
             node: hookExportEntry.node,
             messageId: "misplacedHookExport",
+            data: { expectedHookFilePattern },
           });
         });
       },

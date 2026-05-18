@@ -11,7 +11,7 @@ RuleTester.itOnly = it.only;
 const ruleTester = new RuleTester();
 
 ruleTester.run(
-  "hook-export-location-convention requires exported use* runtime bindings to live in direct-child hooks ownership files",
+  "hook-export-location-convention requires exported use* runtime bindings to live in direct-child configured hooks ownership files",
   hookExportLocationConventionRuleModule,
   {
     valid: [
@@ -22,7 +22,7 @@ ruleTester.run(
       },
       {
         code: `export function useAccount() { return null; }`,
-        filename: "src/accounts/hooks/use-account.ts",
+        filename: "src/accounts/hooks/useAccountPanel.ts",
         languageOptions: languageOpts,
       },
       {
@@ -34,6 +34,12 @@ ruleTester.run(
         code: `export type UseAccountConfig = { isReady: boolean };`,
         filename: "src/accounts/types.ts",
         languageOptions: languageOpts,
+      },
+      {
+        code: `export function useAccount() { return null; }`,
+        filename: "src/accounts/hooks/use-account.ts",
+        languageOptions: languageOpts,
+        options: [{ filenameStyle: "dash-case" }],
       },
     ],
     invalid: [
@@ -50,6 +56,7 @@ ruleTester.run(
             endLine: 1,
             line: 1,
             messageId: "misplacedHookExport",
+            data: { expectedHookFilePattern: "useThing.ts{,x}" },
           },
         ],
         output: null,
@@ -61,6 +68,7 @@ ruleTester.run(
         errors: [
           {
             messageId: "misplacedHookExport",
+            data: { expectedHookFilePattern: "useThing.ts{,x}" },
           },
         ],
         output: null,
@@ -72,6 +80,7 @@ ruleTester.run(
         errors: [
           {
             messageId: "misplacedHookExport",
+            data: { expectedHookFilePattern: "useThing.ts{,x}" },
           },
         ],
         output: null,
@@ -83,6 +92,7 @@ ruleTester.run(
         errors: [
           {
             messageId: "misplacedHookExport",
+            data: { expectedHookFilePattern: "useThing.ts{,x}" },
           },
         ],
         output: null,
@@ -94,6 +104,20 @@ ruleTester.run(
         errors: [
           {
             messageId: "misplacedHookExport",
+            data: { expectedHookFilePattern: "useThing.ts{,x}" },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `export function useAccount() { return null; }`,
+        filename: "src/accounts/hooks/useAccount.ts",
+        languageOptions: languageOpts,
+        options: [{ filenameStyle: "dash-case" }],
+        errors: [
+          {
+            messageId: "misplacedHookExport",
+            data: { expectedHookFilePattern: "use-thing.ts{,x}" },
           },
         ],
         output: null,
@@ -108,6 +132,7 @@ ruleTester.run(
         errors: [
           {
             messageId: "misplacedHookExport",
+            data: { expectedHookFilePattern: "useThing.ts{,x}" },
           },
         ],
         output: null,

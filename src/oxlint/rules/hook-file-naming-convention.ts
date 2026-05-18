@@ -14,6 +14,13 @@ import {
   readDeclarationIdentifierNames,
   readProgramReportNode,
 } from "./helpers.ts";
+import {
+  filenameStyleRuleSchema,
+  readFilenameStyle,
+  readExpectedHookNameFromFileStem,
+  readHookExportPattern,
+  readHookFilePattern,
+} from "../filenameStyle.ts";
 
 function isTypeOnlyExportSpecifier(
   specifier: AstExportSpecifier,
@@ -98,35 +105,21 @@ function readStatementRuntimeExportEntry(statement: AstProgramStatement): HookRu
   };
 }
 
-function readExpectedHookNameFromFilename(filename: string): string | null {
-  const fileStem = getFilenameWithoutExtension(filename);
-  if (/^use[A-Z][A-Za-z0-9]*$/u.test(fileStem)) {
-    return fileStem;
-  }
-
-  if (!/^use(?:-[a-z0-9]+)+$/u.test(fileStem)) {
-    return null;
-  }
-
-  const [, ...segments] = fileStem.split("-");
-
-  return `use${segments.map((segment) => `${segment[0]?.toUpperCase() ?? ""}${segment.slice(1)}`).join("")}`;
-}
-
 const hookFileNamingConventionRule: RuleModule = {
   meta: {
     type: "problem" as const,
     docs: {
       description:
-        "Require hook ownership filenames to match their exported hook name in either camelCase or kebab-case `use*` form",
+        'Require hook ownership filenames to match their exported hook name in the configured "useThing.ts{,x}" or "use-thing.ts{,x}" form',
       guidance:
-        "Name hook files after the exported hook using the `use...` contract. Do not use filenames that hide or contradict hook ownership.",
+        'Name hook files after the exported hook using the `use...` contract. Use "useThing.ts{,x}" by default, or "use-thing.ts{,x}" when the shared config uses `FilenameStyle.DashCase`. Do not use filenames that hide or contradict hook ownership.',
     },
-    schema: [],
+    schema: filenameStyleRuleSchema,
     messages: {
-      invalidHookFileName: 'Rename this hook file to "use*.ts{,x}".',
-      invalidHookExportName: 'Rename this exported hook to start with "use" and use camelCase.',
-      mismatchedHookFileName: "Rename this file or exported hook so they match exactly.",
+      invalidHookFileName: "Rename this hook file to the configured {{expectedHookFilePattern}} form.",
+      invalidHookExportName: "Rename this exported hook to the {{expectedHookExportPattern}} form.",
+      mismatchedHookFileName:
+        "Rename this file or exported hook so they match in the configured {{expectedHookFilePattern}} / {{expectedHookExportPattern}} form.",
     },
   },
   create(context) {
@@ -138,6 +131,10 @@ const hookFileNamingConventionRule: RuleModule = {
       return {};
     }
 
+    const filenameStyle = readFilenameStyle(context.options);
+    const expectedHookExportPattern = readHookExportPattern();
+    const expectedHookFilePattern = readHookFilePattern(filenameStyle);
+
     return {
       Program(node) {
         const exportedHookEntry = readFirstRuntimeExportEntry(node);
@@ -146,11 +143,15 @@ const hookFileNamingConventionRule: RuleModule = {
         }
 
         const { name: exportedHookName, reportNode } = exportedHookEntry;
-        const expectedHookName = readExpectedHookNameFromFilename(context.filename);
+        const expectedHookName = readExpectedHookNameFromFileStem(
+          getFilenameWithoutExtension(context.filename),
+          filenameStyle,
+        );
         if (!expectedHookName) {
           context.report({
             node: readProgramReportNode(node),
             messageId: "invalidHookFileName",
+            data: { expectedHookFilePattern },
           });
           return;
         }
@@ -159,6 +160,7 @@ const hookFileNamingConventionRule: RuleModule = {
           context.report({
             node: reportNode,
             messageId: "invalidHookExportName",
+            data: { expectedHookExportPattern },
           });
         }
 
@@ -169,6 +171,7 @@ const hookFileNamingConventionRule: RuleModule = {
         context.report({
           node: reportNode,
           messageId: "mismatchedHookFileName",
+          data: { expectedHookExportPattern, expectedHookFilePattern },
         });
       },
     };

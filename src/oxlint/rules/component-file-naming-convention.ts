@@ -17,6 +17,12 @@ import {
   readMultipartComponentRootName,
   readProgramReportNode,
 } from "./helpers.ts";
+import {
+  filenameStyleRuleSchema,
+  readComponentFilePattern,
+  readExpectedComponentNameFromFileStem,
+  readFilenameStyle,
+} from "../filenameStyle.ts";
 
 function isTypeOnlyExportSpecifier(
   specifier: AstExportSpecifier,
@@ -172,36 +178,22 @@ function readVariableDeclarationExportEntry(declaration: TSESTree.VariableDeclar
   };
 }
 
-function readExpectedComponentNameFromFilename(filename: string): string | null {
-  const fileStem = getFilenameWithoutExtension(filename);
-  if (isPascalCase(fileStem)) {
-    return fileStem;
-  }
-
-  if (!/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/u.test(fileStem)) {
-    return null;
-  }
-
-  return fileStem
-    .split("-")
-    .map((segment) => `${segment[0]?.toUpperCase() ?? ""}${segment.slice(1)}`)
-    .join("");
-}
-
 const componentFileNamingConventionRule: RuleModule = {
   meta: {
     type: "problem" as const,
     docs: {
       description:
-        "Require component ownership filenames to match their exported PascalCase component name, or multipart family root name, in either PascalCase or kebab-case form",
+        'Require component ownership filenames to match their exported PascalCase component name, or multipart family root name, in the configured "ComponentName.tsx" or "component-name.tsx" form',
       guidance:
-        "Name each component ownership file after its exported PascalCase component. For multipart component families, use the shared family root name.",
+        'Name each component ownership file after its exported PascalCase component. Use "ComponentName.tsx" by default, or "component-name.tsx" when the shared config uses `FilenameStyle.DashCase`. For multipart component families, use the shared family root name.',
     },
-    schema: [],
+    schema: filenameStyleRuleSchema,
     messages: {
-      invalidComponentFileName: "Rename this file so its basename matches the exported component name.",
+      invalidComponentFileName:
+        "Rename this file to the configured {{expectedComponentFilePattern}} basename that matches the exported component name.",
       invalidComponentExportName: "Rename this exported component to PascalCase.",
-      mismatchedComponentFileName: "Rename this file or exported component so they match exactly.",
+      mismatchedComponentFileName:
+        "Rename this file or exported component so they match in the configured {{expectedComponentFilePattern}} form.",
     },
   },
   create(context) {
@@ -213,6 +205,9 @@ const componentFileNamingConventionRule: RuleModule = {
       return {};
     }
 
+    const filenameStyle = readFilenameStyle(context.options);
+    const expectedComponentFilePattern = readComponentFilePattern(filenameStyle);
+
     return {
       Program(node) {
         const exportedComponentEntry = readCanonicalRuntimeExportEntry(node);
@@ -221,11 +216,15 @@ const componentFileNamingConventionRule: RuleModule = {
         }
 
         const { name: exportedComponentName, reportNode } = exportedComponentEntry;
-        const expectedComponentName = readExpectedComponentNameFromFilename(context.filename);
+        const expectedComponentName = readExpectedComponentNameFromFileStem(
+          getFilenameWithoutExtension(context.filename),
+          filenameStyle,
+        );
         if (!expectedComponentName) {
           context.report({
             node: readProgramReportNode(node),
             messageId: "invalidComponentFileName",
+            data: { expectedComponentFilePattern },
           });
           return;
         }
@@ -244,6 +243,7 @@ const componentFileNamingConventionRule: RuleModule = {
         context.report({
           node: reportNode,
           messageId: "mismatchedComponentFileName",
+          data: { expectedComponentFilePattern },
         });
       },
     };

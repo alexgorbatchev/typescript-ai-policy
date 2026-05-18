@@ -12,12 +12,14 @@ RuleTester.itOnly = it.only;
 const ruleTester = new RuleTester();
 
 const EXPECTED_COMPONENT_FILE_NAMING_GUIDANCE =
-  "Name each component ownership file after its exported PascalCase component. For multipart component families, use the shared family root name.";
+  'Name each component ownership file after its exported PascalCase component. Use "ComponentName.tsx" by default, or "component-name.tsx" when the shared config uses `FilenameStyle.DashCase`. For multipart component families, use the shared family root name.';
 
 const EXPECTED_COMPONENT_FILE_NAMING_MESSAGES = {
   invalidComponentExportName: "Rename this exported component to PascalCase.",
-  invalidComponentFileName: "Rename this file so its basename matches the exported component name.",
-  mismatchedComponentFileName: "Rename this file or exported component so they match exactly.",
+  invalidComponentFileName:
+    "Rename this file to the configured {{expectedComponentFilePattern}} basename that matches the exported component name.",
+  mismatchedComponentFileName:
+    "Rename this file or exported component so they match in the configured {{expectedComponentFilePattern}} form.",
 };
 
 it("uses the approved component file naming guidance and messages", () => {
@@ -26,7 +28,7 @@ it("uses the approved component file naming guidance and messages", () => {
 });
 
 ruleTester.run(
-  "component-file-naming-convention requires PascalCase exports and matching PascalCase or kebab-case filenames",
+  "component-file-naming-convention requires PascalCase exports and matching configured filenames",
   componentFileNamingConventionRuleModule,
   {
     valid: [
@@ -37,7 +39,7 @@ ruleTester.run(
       },
       {
         code: `export function AccountPanel() { return <section />; }`,
-        filename: "src/ui/components/account-panel.tsx",
+        filename: "src/ui/components/AccountPanel.tsx",
         languageOptions: languageOpts,
       },
       {
@@ -55,8 +57,28 @@ ruleTester.run(
             return <button />;
           }
         `,
+        filename: "src/ui/components/Select.tsx",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export function AccountPanel() { return <section />; }`,
+        filename: "src/ui/components/account-panel.tsx",
+        languageOptions: languageOpts,
+        options: [{ filenameStyle: "dash-case" }],
+      },
+      {
+        code: `
+          export function SelectTrigger() {
+            return <button />;
+          }
+
+          export function Select() {
+            return <button />;
+          }
+        `,
         filename: "src/ui/components/select.tsx",
         languageOptions: languageOpts,
+        options: [{ filenameStyle: "dash-case" }],
       },
     ],
     invalid: [
@@ -72,6 +94,7 @@ ruleTester.run(
           {
             messageId: "mismatchedComponentFileName",
             type: AST_NODE_TYPES.Identifier,
+            data: { expectedComponentFilePattern: "ComponentName.tsx" },
           },
         ],
         output: null,
@@ -90,6 +113,7 @@ ruleTester.run(
           {
             messageId: "invalidComponentFileName",
             type: AST_NODE_TYPES.ImportDeclaration,
+            data: { expectedComponentFilePattern: "ComponentName.tsx" },
           },
         ],
         output: null,
@@ -102,18 +126,34 @@ ruleTester.run(
           {
             messageId: "mismatchedComponentFileName",
             type: AST_NODE_TYPES.Identifier,
+            data: { expectedComponentFilePattern: "ComponentName.tsx" },
           },
         ],
         output: null,
       },
       {
-        code: `export function AccountCard() { return <section />; }`,
+        code: `export function AccountPanel() { return <section />; }`,
         filename: "src/ui/components/account-panel.tsx",
         languageOptions: languageOpts,
         errors: [
           {
-            messageId: "mismatchedComponentFileName",
-            type: AST_NODE_TYPES.Identifier,
+            messageId: "invalidComponentFileName",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
+            data: { expectedComponentFilePattern: "ComponentName.tsx" },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `export function AccountPanel() { return <section />; }`,
+        filename: "src/ui/components/AccountPanel.tsx",
+        languageOptions: languageOpts,
+        options: [{ filenameStyle: "dash-case" }],
+        errors: [
+          {
+            messageId: "invalidComponentFileName",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
+            data: { expectedComponentFilePattern: "component-name.tsx" },
           },
         ],
         output: null,

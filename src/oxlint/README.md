@@ -105,7 +105,10 @@ on files that cannot meaningfully violate them.
    - test-support `.tsx` files explicitly turn off the same component-ownership rules because test helpers and fixtures are not component ownership files
 9. **Basename-addressable `.test.tsx` file-role compatibility overrides** run on `**/*.test.tsx`:
    - these files explicitly turn off the same component-ownership rules because a basename-addressable test file is still a test role even when misplaced and should be reported by `@alexgorbatchev/test-file-location-convention` instead of component-ownership rules
-10. **Hook ownership rules** run on any `use*.ts` or `use*.tsx` ownership filename, with rule-level backstops that skip `__tests__/`, `stories/`, and exempt support basenames:
+10. **Hook ownership rules** run on the configured ownership filename globs, with rule-level backstops that skip `__tests__/`, `stories/`, and exempt support basenames:
+
+- default `filenameStyle: FilenameStyle.PascalCase`: `**/use[A-Z]*.ts`, `**/use[A-Z]*.tsx`
+- optional `filenameStyle: FilenameStyle.DashCase`: `**/use-*.ts`, `**/use-*.tsx`
 
 - `@alexgorbatchev/hook-file-contract`
 - `@alexgorbatchev/hook-file-naming-convention`
@@ -784,7 +787,7 @@ arbitrary feature-local `.tsx` leaves.
 
 ### `@alexgorbatchev/component-file-naming-convention`
 
-**Policy:** The exported component name must be PascalCase, and the filename must match it as either `ComponentName.tsx` or `component-name.tsx`. For allowed multipart component families, the filename must match the shared root component name. If a `.tsx` module is not actually a component ownership file, rename it to `.ts` instead of forcing it through the component-file contract.
+**Policy:** The exported component name must be PascalCase, and the filename must match it in the configured form: `ComponentName.tsx` by default, or `component-name.tsx` when `filenameStyle: FilenameStyle.DashCase` is configured. For allowed multipart component families, the filename must match the shared root component name in that configured form. If a `.tsx` module is not actually a component ownership file, rename it to `.ts` instead of forcing it through the component-file contract.
 
 ### `@alexgorbatchev/component-story-file-convention`
 
@@ -954,18 +957,17 @@ export const useAccount = trace(function useAccount() {
 
 ### `@alexgorbatchev/hook-file-naming-convention`
 
-**Policy:** Hook ownership files must use matching `useFoo.ts[x]` or `use-foo.ts[x]` basenames, and the exported hook
-name must match the filename's camelCase conversion exactly.
+**Policy:** Hook ownership files must use the configured basename form: `useThing.ts[x]` by default, or `use-thing.ts[x]` when `filenameStyle: FilenameStyle.DashCase` is configured. The exported hook name must still be `[use]PascalCase`, and it must match the filename's configured conversion exactly.
 
 ### `@alexgorbatchev/hook-export-location-convention`
 
 **Policy:** Any exported runtime binding whose name starts with `use` must live in a direct-child ownership file under a
-`hooks/` directory. This is a global leak guard so misplaced hooks are reported where they currently live.
+`hooks/` directory: `hooks/useThing.ts[x]` by default, or `hooks/use-thing.ts[x]` when `filenameStyle: FilenameStyle.DashCase`
+is configured. This is a global leak guard so misplaced hooks are reported where they currently live.
 
 ### `@alexgorbatchev/hooks-directory-file-convention`
 
-**Policy:** A `hooks/` directory may contain only direct-child `use*.ts` or `use*.tsx` ownership files, direct-child
-`index.ts` or `types.ts`, or a direct-child `__tests__/` tree.
+**Policy:** A `hooks/` directory may contain only direct-child hook ownership files in the configured form: `useThing.ts[x]` by default, or `use-thing.ts[x]` when `filenameStyle: FilenameStyle.DashCase` is configured, plus direct-child `index.ts` or `types.ts`, or a direct-child `__tests__/` tree.
 
 ### `@alexgorbatchev/hook-test-file-convention`
 

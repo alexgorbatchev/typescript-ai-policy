@@ -1,4 +1,4 @@
-import { afterAll, describe, it } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { AST_NODE_TYPES } from "@typescript-eslint/types";
 import { languageOpts } from "./helpers.ts";
@@ -11,8 +11,23 @@ RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
 
+const EXPECTED_HOOK_FILE_NAMING_GUIDANCE =
+  'Name hook files after the exported hook using the `use...` contract. Use "useThing.ts{,x}" by default, or "use-thing.ts{,x}" when the shared config uses `FilenameStyle.DashCase`. Do not use filenames that hide or contradict hook ownership.';
+
+const EXPECTED_HOOK_FILE_NAMING_MESSAGES = {
+  invalidHookFileName: "Rename this hook file to the configured {{expectedHookFilePattern}} form.",
+  invalidHookExportName: "Rename this exported hook to the {{expectedHookExportPattern}} form.",
+  mismatchedHookFileName:
+    "Rename this file or exported hook so they match in the configured {{expectedHookFilePattern}} / {{expectedHookExportPattern}} form.",
+};
+
+it("uses the approved hook file naming guidance and messages", () => {
+  expect(hookFileNamingConventionRuleModule.meta.docs?.guidance).toBe(EXPECTED_HOOK_FILE_NAMING_GUIDANCE);
+  expect(hookFileNamingConventionRuleModule.meta.messages).toEqual(EXPECTED_HOOK_FILE_NAMING_MESSAGES);
+});
+
 ruleTester.run(
-  "hook-file-naming-convention requires matching useFoo or use-foo filenames and export names",
+  "hook-file-naming-convention requires matching configured hook filenames and export names",
   hookFileNamingConventionRuleModule,
   {
     valid: [
@@ -23,7 +38,7 @@ ruleTester.run(
       },
       {
         code: `export function useAccountPanel() { return null; }`,
-        filename: "src/accounts/hooks/use-account-panel.ts",
+        filename: "src/accounts/hooks/useAccountPanel.ts",
         languageOptions: languageOpts,
       },
       {
@@ -41,6 +56,12 @@ ruleTester.run(
         filename: "src/accounts/hooks/stories/useAccount.tsx",
         languageOptions: languageOpts,
       },
+      {
+        code: `export function useAccountPanel() { return null; }`,
+        filename: "src/accounts/hooks/use-account-panel.ts",
+        languageOptions: languageOpts,
+        options: [{ filenameStyle: "dash-case" }],
+      },
     ],
     invalid: [
       {
@@ -55,6 +76,10 @@ ruleTester.run(
           {
             messageId: "mismatchedHookFileName",
             type: AST_NODE_TYPES.Identifier,
+            data: {
+              expectedHookExportPattern: "[use]PascalCase",
+              expectedHookFilePattern: "useThing.ts{,x}",
+            },
           },
         ],
         output: null,
@@ -63,7 +88,26 @@ ruleTester.run(
         code: `export function useAccount() { return null; }`,
         filename: "src/accounts/hooks/useaccount.ts",
         languageOptions: languageOpts,
-        errors: [{ messageId: "invalidHookFileName", type: AST_NODE_TYPES.ExportNamedDeclaration }],
+        errors: [
+          {
+            messageId: "invalidHookFileName",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
+            data: { expectedHookFilePattern: "useThing.ts{,x}" },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `export function useAccount() { return null; }`,
+        filename: "src/accounts/hooks/use-account.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "invalidHookFileName",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
+            data: { expectedHookFilePattern: "useThing.ts{,x}" },
+          },
+        ],
         output: null,
       },
       {
@@ -73,6 +117,10 @@ ruleTester.run(
         errors: [
           {
             messageId: "mismatchedHookFileName",
+            data: {
+              expectedHookExportPattern: "[use]PascalCase",
+              expectedHookFilePattern: "useThing.ts{,x}",
+            },
           },
         ],
         output: null,
@@ -81,9 +129,28 @@ ruleTester.run(
         code: `export function useBar() { return null; }`,
         filename: "src/accounts/hooks/use-foo.tsx",
         languageOptions: languageOpts,
+        options: [{ filenameStyle: "dash-case" }],
         errors: [
           {
             messageId: "mismatchedHookFileName",
+            data: {
+              expectedHookExportPattern: "[use]PascalCase",
+              expectedHookFilePattern: "use-thing.ts{,x}",
+            },
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `export function useAccount() { return null; }`,
+        filename: "src/accounts/hooks/useAccount.ts",
+        languageOptions: languageOpts,
+        options: [{ filenameStyle: "dash-case" }],
+        errors: [
+          {
+            messageId: "invalidHookFileName",
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
+            data: { expectedHookFilePattern: "use-thing.ts{,x}" },
           },
         ],
         output: null,

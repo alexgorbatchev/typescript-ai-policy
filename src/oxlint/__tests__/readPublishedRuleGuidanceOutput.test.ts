@@ -82,8 +82,10 @@ it("prints authoritative published rule guidance for every local rule", () => {
       only for the component contract they own. Keep unrelated runtime exports out
       of the file.
     - **@alexgorbatchev/component-file-naming-convention**: Name each component
-      ownership file after its exported PascalCase component. For multipart
-      component families, use the shared family root name.
+      ownership file after its exported PascalCase component. Use
+      "ComponentName.tsx" by default, or "component-name.tsx" when the shared config
+      uses \`FilenameStyle.DashCase\`. For multipart component families, use the
+      shared family root name.
     - **@alexgorbatchev/component-story-file-convention**: Place each component
       story alongside its owned component in the canonical story role. Do not
       scatter story files outside the expected component/story relationship.
@@ -101,18 +103,21 @@ it("prints authoritative published rule guidance for every local rule", () => {
     - **@alexgorbatchev/story-export-contract**: Keep story exports limited to the
       approved Storybook surface. Move helper bindings and support code out of story
       files.
-    - **@alexgorbatchev/hook-export-location-convention**: Export hooks from the
-      canonical hook ownership location. Do not leak hook exports from unrelated
-      modules.
+    - **@alexgorbatchev/hook-export-location-convention**: Export hooks from
+      direct-child "hooks/useThing.ts{,x}" ownership files by default, or
+      "hooks/use-thing.ts{,x}" when the shared config uses \`FilenameStyle.DashCase\`.
+      Do not leak hook exports from unrelated modules.
     - **@alexgorbatchev/hooks-directory-file-convention**: Keep hook directories
-      limited to hook files and approved support files. Move unrelated roles out of
-      hook-owned directories.
+      limited to direct-child ownership files named "useThing.ts{,x}" by default, or
+      "use-thing.ts{,x}" when the shared config uses \`FilenameStyle.DashCase\`, plus
+      approved support files.
     - **@alexgorbatchev/hook-file-contract**: Use hook files only for the hook
       contract they own. Keep unrelated runtime exports and file roles out of hook
       ownership files.
     - **@alexgorbatchev/hook-file-naming-convention**: Name hook files after the
-      exported hook using the \`use...\` contract. Do not use filenames that hide or
-      contradict hook ownership.
+      exported hook using the \`use...\` contract. Use "useThing.ts{,x}" by default,
+      or "use-thing.ts{,x}" when the shared config uses \`FilenameStyle.DashCase\`. Do
+      not use filenames that hide or contradict hook ownership.
     - **@alexgorbatchev/hook-test-file-convention**: Place hook tests in the
       canonical adjacent \`__tests__\` role. Do not leave hook tests beside runtime
       hook files or in unrelated folders.

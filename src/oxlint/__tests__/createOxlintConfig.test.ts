@@ -1,7 +1,9 @@
 import assert from "node:assert";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "bun:test";
 import type { ExternalPluginEntry } from "oxlint";
-import createOxlintConfig from "../createOxlintConfig.ts";
+import createOxlintConfig, { FilenameStyle } from "../createOxlintConfig.ts";
 import {
   readPackageUsageNotice,
   resetPackageUsageNoticeForTests,
@@ -13,8 +15,19 @@ type ExplicitJsPlugin = {
   specifier: string;
 };
 
+const DIST_OXLINT_CONFIG_TYPES_PATH = join(import.meta.dir, "../../../dist/oxlint-config.d.ts");
+const DIST_OXLINT_CONFIG_RUNTIME_PATH = join(import.meta.dir, "../../../dist/oxlint-config.js");
+
 function readValidUserConfig() {
   return {};
+}
+
+function readValidFactoryInput() {
+  return { ...readValidUserConfig() };
+}
+
+function readValidUserConfigCallback() {
+  return readValidUserConfig();
 }
 
 function assertIsExplicitJsPlugin(value: ExternalPluginEntry | undefined): asserts value is ExplicitJsPlugin {
@@ -34,7 +47,20 @@ describe("createOxlintConfig", () => {
       stderr.push(text);
     });
 
-    expect(createOxlintConfig()).toEqual(createOxlintConfig(readValidUserConfig));
+    expect(createOxlintConfig()).toEqual(createOxlintConfig(readValidFactoryInput()));
+    expect(stderr).toEqual([readPackageUsageNotice()]);
+  });
+
+  it("returns the shared lint defaults when called with the legacy callback shape", () => {
+    const stderr: string[] = [];
+
+    setPackageUsageNoticeWriterForTests((text: string) => {
+      stderr.push(text);
+    });
+
+    const oxlintConfig = createOxlintConfig(readValidUserConfigCallback);
+
+    expect(oxlintConfig).toEqual(createOxlintConfig());
     expect(stderr).toEqual([readPackageUsageNotice()]);
   });
 
@@ -45,10 +71,27 @@ describe("createOxlintConfig", () => {
       stderr.push(text);
     });
 
-    const oxlintConfig = createOxlintConfig(readValidUserConfig);
+    const oxlintConfig = createOxlintConfig(readValidFactoryInput());
 
     expect(oxlintConfig).toEqual(createOxlintConfig());
     expect(stderr).toEqual([readPackageUsageNotice()]);
+  });
+
+  it("accepts FilenameStyle.PascalCase as the explicit default enum member", () => {
+    expect(FilenameStyle.PascalCase).toBe(0);
+
+    const oxlintConfig = createOxlintConfig({ filenameStyle: FilenameStyle.PascalCase });
+
+    expect(oxlintConfig).toEqual(createOxlintConfig());
+  });
+
+  it("publishes FilenameStyle from the oxlint-config package entrypoint", () => {
+    const publishedTypes = readFileSync(DIST_OXLINT_CONFIG_TYPES_PATH, "utf8");
+    const publishedRuntime = readFileSync(DIST_OXLINT_CONFIG_RUNTIME_PATH, "utf8");
+
+    expect(publishedTypes).toContain("FilenameStyle");
+    expect(publishedTypes).toContain("export {");
+    expect(publishedRuntime).toContain("export { FilenameStyle,");
   });
 
   it("returns the shared lint defaults", () => {
@@ -58,7 +101,7 @@ describe("createOxlintConfig", () => {
       stderr.push(text);
     });
 
-    const oxlintConfig = createOxlintConfig(readValidUserConfig);
+    const oxlintConfig = createOxlintConfig(readValidFactoryInput());
     const jsPlugin = oxlintConfig.jsPlugins?.[0];
 
     expect(oxlintConfig.plugins).toEqual(["unicorn", "typescript", "oxc", "react", "jest"]);
@@ -73,7 +116,7 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-react-create-element": "error",
       "@alexgorbatchev/no-imports-from-tests-directory": "error",
       "@alexgorbatchev/no-type-imports-from-constants": "error",
-      "@alexgorbatchev/hook-export-location-convention": "error",
+      "@alexgorbatchev/hook-export-location-convention": ["error", { filenameStyle: "[use]PascalCase" }],
       "@alexgorbatchev/test-file-location-convention": "error",
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "@alexgorbatchev/no-lint-disable-comments": "error",
@@ -172,7 +215,7 @@ describe("createOxlintConfig", () => {
         "@alexgorbatchev/require-component-root-testid": "error",
         "@alexgorbatchev/component-file-location-convention": "error",
         "@alexgorbatchev/component-file-contract": "error",
-        "@alexgorbatchev/component-file-naming-convention": "error",
+        "@alexgorbatchev/component-file-naming-convention": ["error", { filenameStyle: "[use]PascalCase" }],
         "@alexgorbatchev/component-story-file-convention": "error",
       },
     });
@@ -192,10 +235,10 @@ describe("createOxlintConfig", () => {
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
-      files: ["**/use[A-Z]*.ts", "**/use[A-Z]*.tsx", "**/use-*.ts", "**/use-*.tsx"],
+      files: ["**/use[A-Z]*.ts", "**/use[A-Z]*.tsx"],
       rules: {
         "@alexgorbatchev/hook-file-contract": "error",
-        "@alexgorbatchev/hook-file-naming-convention": "error",
+        "@alexgorbatchev/hook-file-naming-convention": ["error", { filenameStyle: "[use]PascalCase" }],
         "@alexgorbatchev/hook-test-file-convention": "error",
       },
     });
@@ -203,7 +246,7 @@ describe("createOxlintConfig", () => {
     expect(oxlintConfig.overrides).toContainEqual({
       files: ["**/hooks/**/*"],
       rules: {
-        "@alexgorbatchev/hooks-directory-file-convention": "error",
+        "@alexgorbatchev/hooks-directory-file-convention": ["error", { filenameStyle: "[use]PascalCase" }],
       },
     });
 
@@ -231,6 +274,44 @@ describe("createOxlintConfig", () => {
     expect(stderr).toEqual([readPackageUsageNotice()]);
   });
 
+  it("allows consumers to switch component and hook ownership filenames to dash-case", () => {
+    const oxlintConfig = createOxlintConfig({ filenameStyle: FilenameStyle.DashCase });
+
+    expect(oxlintConfig.rules).toMatchObject({
+      "@alexgorbatchev/hook-export-location-convention": ["error", { filenameStyle: "dash-case" }],
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/*.tsx"],
+      rules: {
+        "@alexgorbatchev/no-classname-style-props-outside-component-globs": "error",
+        "@alexgorbatchev/no-intrinsic-elements-outside-component-globs": "error",
+        "@alexgorbatchev/testid-naming-convention": "error",
+        "@alexgorbatchev/require-component-root-testid": "error",
+        "@alexgorbatchev/component-file-location-convention": "error",
+        "@alexgorbatchev/component-file-contract": "error",
+        "@alexgorbatchev/component-file-naming-convention": ["error", { filenameStyle: "dash-case" }],
+        "@alexgorbatchev/component-story-file-convention": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/use-*.ts", "**/use-*.tsx"],
+      rules: {
+        "@alexgorbatchev/hook-file-contract": "error",
+        "@alexgorbatchev/hook-file-naming-convention": ["error", { filenameStyle: "dash-case" }],
+        "@alexgorbatchev/hook-test-file-convention": "error",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/hooks/**/*"],
+      rules: {
+        "@alexgorbatchev/hooks-directory-file-convention": ["error", { filenameStyle: "dash-case" }],
+      },
+    });
+  });
+
   it("allows additive user config without weakening shared rules", () => {
     const stderr: string[] = [];
 
@@ -238,8 +319,53 @@ describe("createOxlintConfig", () => {
       stderr.push(text);
     });
 
+    const oxlintConfig = createOxlintConfig({
+      ignorePatterns: ["coverage"],
+      rules: {
+        "no-var": "error",
+      },
+    });
+
+    expect(oxlintConfig.ignorePatterns).toEqual([
+      "coverage",
+      ".tmp",
+      "**/.tmp",
+      "**/.tmp/**",
+      ".cache",
+      ".venv",
+      "**/.astro",
+      "**/.react-email",
+      "**/dist",
+      "**/node_modules",
+      "**/*.generated.ts",
+      "**/*.gen.ts",
+      "**/routeTree.gen.ts",
+      "**/.vitepress/cache",
+      "**/.vitepress/dist",
+    ]);
+    expect(oxlintConfig.rules).toEqual({
+      "no-var": "error",
+      eqeqeq: "error",
+      "@alexgorbatchev/no-react-create-element": "error",
+      "@alexgorbatchev/no-imports-from-tests-directory": "error",
+      "@alexgorbatchev/no-type-imports-from-constants": "error",
+      "@alexgorbatchev/hook-export-location-convention": ["error", { filenameStyle: "[use]PascalCase" }],
+      "@alexgorbatchev/test-file-location-convention": "error",
+      "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
+      "@alexgorbatchev/no-lint-disable-comments": "error",
+      "typescript/no-explicit-any": "error",
+    });
+    expect(stderr).toEqual([readPackageUsageNotice()]);
+  });
+
+  it("allows additive user config through the callback shape without weakening shared rules", () => {
+    const stderr: string[] = [];
+
+    setPackageUsageNoticeWriterForTests((text: string) => {
+      stderr.push(text);
+    });
+
     const oxlintConfig = createOxlintConfig(() => ({
-      ...readValidUserConfig(),
       ignorePatterns: ["coverage"],
       rules: {
         "no-var": "error",
@@ -269,13 +395,25 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-react-create-element": "error",
       "@alexgorbatchev/no-imports-from-tests-directory": "error",
       "@alexgorbatchev/no-type-imports-from-constants": "error",
-      "@alexgorbatchev/hook-export-location-convention": "error",
+      "@alexgorbatchev/hook-export-location-convention": ["error", { filenameStyle: "[use]PascalCase" }],
       "@alexgorbatchev/test-file-location-convention": "error",
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "@alexgorbatchev/no-lint-disable-comments": "error",
       "typescript/no-explicit-any": "error",
     });
     expect(stderr).toEqual([readPackageUsageNotice()]);
+  });
+
+  it("throws for invalid top-level input shapes instead of silently ignoring them", () => {
+    expect(() => createOxlintConfig("bad-input" as unknown as never)).toThrow(
+      "createOxlintConfig accepts either a config object or a callback that returns a config object.",
+    );
+  });
+
+  it("throws for invalid filenameStyle values instead of silently falling back", () => {
+    expect(() => createOxlintConfig({ filenameStyle: "kebab-case" as unknown as FilenameStyle })).toThrow(
+      'Invalid filenameStyle. Expected one of: "[use]PascalCase", "dash-case".',
+    );
   });
 
   it("fails hard when a consumer tries to redefine a shared top-level rule", () => {
@@ -286,12 +424,11 @@ describe("createOxlintConfig", () => {
     });
 
     expect(() =>
-      createOxlintConfig(() => ({
-        ...readValidUserConfig(),
+      createOxlintConfig({
         rules: {
           eqeqeq: "warn",
         },
-      })),
+      }),
     ).toThrow(
       "User oxlint config must extend the shared policy instead of redefining existing rules. Remove these rule entries: eqeqeq. If you need to change a shared rule, update @alexgorbatchev/typescript-ai-policy itself instead of overriding it in a consumer config.",
     );
@@ -306,8 +443,7 @@ describe("createOxlintConfig", () => {
     });
 
     expect(() =>
-      createOxlintConfig(() => ({
-        ...readValidUserConfig(),
+      createOxlintConfig({
         overrides: [
           {
             files: ["**/*.ts"],
@@ -316,7 +452,7 @@ describe("createOxlintConfig", () => {
             },
           },
         ],
-      })),
+      }),
     ).toThrow(
       "User oxlint config must extend the shared policy instead of redefining existing rules. Remove these rule entries: @alexgorbatchev/interface-naming-convention. If you need to change a shared rule, update @alexgorbatchev/typescript-ai-policy itself instead of overriding it in a consumer config.",
     );
@@ -330,8 +466,8 @@ describe("createOxlintConfig", () => {
       stderr.push(text);
     });
 
-    createOxlintConfig(readValidUserConfig);
-    createOxlintConfig(readValidUserConfig);
+    createOxlintConfig(readValidFactoryInput());
+    createOxlintConfig(readValidUserConfigCallback);
 
     expect(stderr).toEqual([readPackageUsageNotice()]);
   });

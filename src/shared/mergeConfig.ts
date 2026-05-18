@@ -29,10 +29,7 @@ function mergeValue(userValue: unknown, defaultValue: unknown): unknown {
  * Deep-merge two config objects with user values applied first and defaults applied last.
  * This preserves all default policy values while still allowing additive user extensions.
  */
-export function mergeConfig<TConfig extends Record<string, unknown>>(
-  userConfig: TConfig,
-  defaultConfig: TConfig,
-): TConfig;
+export function mergeConfig<TConfig extends object>(userConfig: TConfig, defaultConfig: TConfig): TConfig;
 export function mergeConfig(userConfig: unknown, defaultConfig: unknown): unknown {
   return mergeValue(structuredClone(userConfig), defaultConfig);
 }

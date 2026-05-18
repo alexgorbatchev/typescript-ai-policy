@@ -11,7 +11,7 @@ RuleTester.itOnly = it.only;
 const ruleTester = new RuleTester();
 
 ruleTester.run(
-  "hooks-directory-file-convention restricts hooks directories to direct-child use files, support basenames, and sibling tests",
+  "hooks-directory-file-convention restricts hooks directories to direct-child configured hook files, support basenames, and sibling tests",
   hooksDirectoryFileConventionRuleModule,
   {
     valid: [
@@ -22,7 +22,7 @@ ruleTester.run(
       },
       {
         code: `export function useAccount() { return null; }`,
-        filename: "src/accounts/hooks/use-account.ts",
+        filename: "src/accounts/hooks/useAccountPanel.ts",
         languageOptions: languageOpts,
       },
       {
@@ -39,6 +39,12 @@ ruleTester.run(
         code: `import { test } from 'bun:test'; test('works', () => {});`,
         filename: "src/accounts/hooks/__tests__/useAccount.test.ts",
         languageOptions: languageOpts,
+      },
+      {
+        code: `export function useAccount() { return null; }`,
+        filename: "src/accounts/hooks/use-account.ts",
+        languageOptions: languageOpts,
+        options: [{ filenameStyle: "dash-case" }],
       },
     ],
     invalid: [
@@ -60,6 +66,18 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidHooksDirectoryFile",
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `export function useAccount() { return null; }`,
+        filename: "src/accounts/hooks/use-account.ts",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "invalidHooksDirectoryFile",
+            data: { expectedHookFilePattern: "useThing.ts{,x}" },
           },
         ],
         output: null,
@@ -93,6 +111,19 @@ ruleTester.run(
         errors: [
           {
             messageId: "invalidHooksDirectoryFile",
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `export function useAccount() { return null; }`,
+        filename: "src/accounts/hooks/useAccount.ts",
+        languageOptions: languageOpts,
+        options: [{ filenameStyle: "dash-case" }],
+        errors: [
+          {
+            messageId: "invalidHooksDirectoryFile",
+            data: { expectedHookFilePattern: "use-thing.ts{,x}" },
           },
         ],
         output: null,
