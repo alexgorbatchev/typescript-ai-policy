@@ -137,8 +137,9 @@ The important contract is simple:
 For React components, this policy is intentionally **story-first**.
 
 Every component ownership file must have a matching Storybook file, every story meta must be typed and use a
-package-relative `title`, and every exported story must be typed and include a `play` function. In practice, that makes
-Storybook the canonical artifact for component behavior:
+package-relative `title`, and every exported story must be typed and include a `play` function unless `!test` removes
+the built-in Storybook `test` tag for that story. In practice, that makes Storybook the canonical artifact for
+component behavior:
 
 - the same story layer can back CI interaction coverage
 - the same stories also act as the human visual reference for the component

@@ -22,6 +22,8 @@ type StoryCandidateEntry = {
   name: string;
 };
 
+type StorybookTestTagDirective = "test" | "!test";
+
 function readDefaultExportDeclaration(program: AstProgram): TSESTree.ExportDefaultDeclaration | null {
   return program.body.find((statement) => statement.type === "ExportDefaultDeclaration") ?? null;
 }
@@ -84,6 +86,99 @@ function readPropertyName(property: TSESTree.Property): string | null {
   }
 
   return null;
+}
+
+function readObjectPropertyByName(
+  objectExpression: TSESTree.ObjectExpression,
+  propertyName: string,
+): TSESTree.Property | null {
+  const matchingProperty = objectExpression.properties.find((property) => {
+    return property.type === "Property" && readPropertyName(property) === propertyName;
+  });
+
+  return matchingProperty?.type === "Property" ? matchingProperty : null;
+}
+
+function isExpressionPropertyValue(value: TSESTree.Property["value"]): value is TSESTree.Expression {
+  switch (value.type) {
+    case "ArrayPattern":
+    case "AssignmentPattern":
+    case "ObjectPattern":
+    case "TSEmptyBodyFunctionExpression":
+      return false;
+    default:
+      return true;
+  }
+}
+
+function readStorybookTestTagDirectivesFromExpression(expression: TSESTree.Expression): StorybookTestTagDirective[] {
+  const objectExpression = readStoryObjectExpression(expression);
+  if (!objectExpression) {
+    return [];
+  }
+
+  const tagsProperty = readObjectPropertyByName(objectExpression, "tags");
+  if (!tagsProperty) {
+    return [];
+  }
+
+  if (!isExpressionPropertyValue(tagsProperty.value)) {
+    return [];
+  }
+
+  const tagsExpression = unwrapTypeScriptExpression(tagsProperty.value);
+  if (tagsExpression.type !== "ArrayExpression") {
+    return [];
+  }
+
+  return tagsExpression.elements.flatMap((element) => {
+    if (element?.type !== "Literal") {
+      return [];
+    }
+
+    return element.value === "test" || element.value === "!test" ? [element.value] : [];
+  });
+}
+
+function readStorybookTestTagDirectivesFromMetaBinding(
+  program: AstProgram,
+  metaBindingName: string | null,
+): StorybookTestTagDirective[] {
+  if (!metaBindingName) {
+    return [];
+  }
+
+  for (const statement of program.body) {
+    if (statement.type !== "VariableDeclaration") {
+      continue;
+    }
+
+    for (const declarator of statement.declarations) {
+      if (declarator.id.type !== "Identifier" || declarator.id.name !== metaBindingName || declarator.init === null) {
+        continue;
+      }
+
+      return readStorybookTestTagDirectivesFromExpression(declarator.init);
+    }
+  }
+
+  return [];
+}
+
+function readRequiresStoryPlay(
+  storyExpression: TSESTree.Expression,
+  metaTagDirectives: StorybookTestTagDirective[],
+): boolean {
+  const storyTagDirectives = readStorybookTestTagDirectivesFromExpression(storyExpression);
+  const combinedTagDirectives = [...metaTagDirectives, ...storyTagDirectives];
+
+  return combinedTagDirectives.reduce<boolean>((isTestEnabled, tagDirective) => {
+    if (tagDirective === "!test") {
+      return false;
+    }
+
+    return true;
+  }, true);
 }
 
 function hasPlayProperty(expression: TSESTree.Expression): boolean {
@@ -217,9 +312,9 @@ const storyExportContractRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        "Require Storybook story exports to use `const StoryName: Story = { ... }` bindings, enforce the single-vs-multiple export contract, and require a `play` property on every exported story",
+        "Require Storybook story exports to use `const StoryName: Story = { ... }` bindings, enforce the single-vs-multiple export contract, and require `play` unless `!test` removes the built-in Storybook test tag",
       guidance:
-        "Keep story exports limited to the approved Storybook surface. Move helper bindings and support code out of story files.",
+        'Keep story exports limited to the approved Storybook surface. Give each exported story a typed `Story` binding and a `play` function unless `meta.tags` or `story.tags` remove the built-in `test` tag with `"!test"`. Move helper bindings and support code out of story files.',
     },
     schema: [],
     messages: {
@@ -232,7 +327,7 @@ const storyExportContractRule: RuleModule = {
       unexpectedStoryTypeAssertion:
         "Replace this story assertion with a const type annotation. Keep story types on the binding, not on the object expression.",
       missingStoryPlay:
-        "Add a `play` property to this story object. Use stories as the required interaction-test surface for the sibling component.",
+        'Add a `play` property to this story object. Only stories excluded from Storybook test runs with `"!test"` may omit it.',
       invalidSingleStoryExportShape:
         "Use the single-story export shape for single-story files. Export one `Default` binding and re-export it as the sibling component name.",
       invalidMultiStoryExportShape:
@@ -247,6 +342,7 @@ const storyExportContractRule: RuleModule = {
           defaultExportDeclaration?.declaration.type === "Identifier"
             ? defaultExportDeclaration.declaration.name
             : null;
+        const metaTagDirectives = readStorybookTestTagDirectivesFromMetaBinding(node, metaBindingName);
         const storyEntries = readTopLevelStoryCandidateEntries(node).filter((entry) => {
           return isStoryCandidateEntry(entry, metaBindingName);
         });
@@ -282,7 +378,10 @@ const storyExportContractRule: RuleModule = {
             });
           }
 
-          if (!hasPlayProperty(storyEntry.declarator.init)) {
+          if (
+            readRequiresStoryPlay(storyEntry.declarator.init, metaTagDirectives) &&
+            !hasPlayProperty(storyEntry.declarator.init)
+          ) {
             context.report({
               node: readStoryObjectExpression(storyEntry.declarator.init) ?? storyEntry.declarator,
               messageId: "missingStoryPlay",

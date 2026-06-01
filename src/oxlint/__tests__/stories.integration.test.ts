@@ -33,13 +33,22 @@ describe("story lint-target integration", () => {
           filePath: "src/accounts/components/stories/AccountPanel.stories.tsx",
           line: 13,
           message:
-            "Add a `play` property to this story object. Use stories as the required interaction-test surface for the sibling component.",
+            'Add a `play` property to this story object. Only stories excluded from Storybook test runs with `"!test"` may omit it.',
           ruleId: "@alexgorbatchev(story-export-contract)",
           severity: "error",
         },
       ],
       FIXTURE_CONFIG_HEADER,
     );
+  });
+
+  it("allows story exports that omit play when !test removes the Storybook test tag", () => {
+    const lintTargetResult = runLintTargetFixtureWithConsumerConfig(
+      "story-export-contract/missing-play-notest-valid",
+      CONSUMER_SETTINGS,
+    );
+
+    expectLintTargetSuccess(lintTargetResult, FIXTURE_CONFIG_HEADER);
   });
 
   it("reports story meta titles that do not match the package-relative story path", () => {

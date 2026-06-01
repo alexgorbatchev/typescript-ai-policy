@@ -881,7 +881,8 @@ const meta: Meta<typeof AccountPanel> = {
 ### `@alexgorbatchev/story-export-contract`
 
 **Policy:** After the default meta, exported runtime object bindings are treated as stories. Story exports must use
-typed `Story` bindings, every exported story must define a `play` property, and the export shape depends on story count:
+typed `Story` bindings, and every exported story must define a `play` property unless `meta.tags` or `story.tags`
+remove the built-in Storybook `test` tag with `"!test"`. The export shape still depends on story count:
 
 - single story: `const Default: Story = { ... }; export { Default as ComponentName };`
 - multiple stories: `export const StoryName: Story = { ... };`
@@ -905,6 +906,19 @@ export const WithProps: Story = {
   args: { isReady: true },
   play: async () => {},
 };
+```
+
+```tsx
+const meta: Meta<typeof AccountPanel> = {
+  component: AccountPanel,
+  tags: ["!test"],
+};
+
+export default meta;
+
+const Default: Story = {};
+
+export { Default as AccountPanel };
 ```
 
 **Bad**

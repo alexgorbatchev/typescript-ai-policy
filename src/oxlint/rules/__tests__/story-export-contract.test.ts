@@ -12,7 +12,7 @@ RuleTester.itOnly = it.only;
 const ruleTester = new RuleTester();
 
 const EXPECTED_STORY_EXPORT_CONTRACT_GUIDANCE =
-  "Keep story exports limited to the approved Storybook surface. Move helper bindings and support code out of story files.";
+  'Keep story exports limited to the approved Storybook surface. Give each exported story a typed `Story` binding and a `play` function unless `meta.tags` or `story.tags` remove the built-in `test` tag with `"!test"`. Move helper bindings and support code out of story files.';
 
 const EXPECTED_STORY_EXPORT_CONTRACT_MESSAGES = {
   invalidMultiStoryExportShape:
@@ -22,7 +22,7 @@ const EXPECTED_STORY_EXPORT_CONTRACT_MESSAGES = {
   missingStoryExport:
     "Export at least one story object after the default meta. Keep story files focused on the approved Storybook surface.",
   missingStoryPlay:
-    "Add a `play` property to this story object. Use stories as the required interaction-test surface for the sibling component.",
+    'Add a `play` property to this story object. Only stories excluded from Storybook test runs with `"!test"` may omit it.',
   missingStoryTypeAnnotation: "Annotate this story binding as `: Story`. Do not rely on inference for story objects.",
   unexpectedStoryTypeAssertion:
     "Replace this story assertion with a const type annotation. Keep story types on the binding, not on the object expression.",
@@ -82,6 +82,49 @@ ruleTester.run("story-export-contract enforces story export shapes and play func
         };
       `,
       filename: "src/accounts/components/stories/AccountPanel.stories.tsx",
+      languageOptions: languageOpts,
+    },
+    {
+      code: `
+        import type { Meta, StoryObj } from '@storybook/react';
+        import { Button } from '../Button';
+
+        const meta: Meta<typeof Button> = {
+          component: Button,
+          tags: ['!test'],
+        };
+
+        export default meta;
+
+        type Story = StoryObj<typeof meta>;
+
+        const Default: Story = {};
+
+        export { Default as Button };
+      `,
+      filename: "src/accounts/components/stories/Button.stories.tsx",
+      languageOptions: languageOpts,
+    },
+    {
+      code: `
+        import type { Meta, StoryObj } from '@storybook/react';
+        import { Button } from '../Button';
+
+        const meta: Meta<typeof Button> = {
+          component: Button,
+        };
+
+        export default meta;
+
+        type Story = StoryObj<typeof meta>;
+
+        const Default: Story = {
+          tags: ['!test'],
+        };
+
+        export { Default as Button };
+      `,
+      filename: "src/accounts/components/stories/Button.stories.tsx",
       languageOptions: languageOpts,
     },
   ],
@@ -204,6 +247,35 @@ ruleTester.run("story-export-contract enforces story export shapes and play func
         },
         {
           messageId: "invalidMultiStoryExportShape",
+        },
+      ],
+      output: null,
+    },
+    {
+      code: `
+        import type { Meta, StoryObj } from '@storybook/react';
+        import { Button } from '../Button';
+
+        const meta: Meta<typeof Button> = {
+          component: Button,
+          tags: ['!test'],
+        };
+
+        export default meta;
+
+        type Story = StoryObj<typeof meta>;
+
+        const Default: Story = {
+          tags: ['test'],
+        };
+
+        export { Default as Button };
+      `,
+      filename: "src/accounts/components/stories/Button.stories.tsx",
+      languageOptions: languageOpts,
+      errors: [
+        {
+          messageId: "missingStoryPlay",
         },
       ],
       output: null,

@@ -101,7 +101,9 @@ it("prints authoritative published rule guidance for every local rule", () => {
     - **@alexgorbatchev/story-title-convention**: Set each story title from the
       owned component path and role. Do not invent ad-hoc Storybook titles.
     - **@alexgorbatchev/story-export-contract**: Keep story exports limited to the
-      approved Storybook surface. Move helper bindings and support code out of story
+      approved Storybook surface. Give each exported story a typed \`Story\` binding
+      and a \`play\` function unless \`meta.tags\` or \`story.tags\` remove the built-in
+      \`test\` tag with \`"!test"\`. Move helper bindings and support code out of story
       files.
     - **@alexgorbatchev/hook-export-location-convention**: Export hooks from
       direct-child "hooks/useThing.ts{,x}" ownership files by default, or
