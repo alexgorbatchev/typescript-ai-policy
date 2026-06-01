@@ -1,6 +1,6 @@
 {
   "name": "@alexgorbatchev/typescript-ai-policy",
-  "version": "8.1.2",
+  "version": "9.0.0",
   "description": "Shared TypeScript AI policy configs and Oxlint rules",
   "homepage": "https://github.com/alexgorbatchev/typescript-ai-policy#readme",
   "repository": {
