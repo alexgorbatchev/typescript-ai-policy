@@ -15,5 +15,8 @@ bun x oxlint .
 echo "==> tsgo"
 bun x tsgo --noEmit
 
+echo "==> build"
+bun run build
+
 echo "==> bun test"
 bun test

@@ -167,6 +167,7 @@ bun run lint:target -- /Users/alex/development/projects/date-maker
 - `oxfmt --check .`
 - `oxlint .`
 - `tsgo --noEmit`
+- `bun run build`
 - `bun test`
 
 `lint:target` runs this repository's current Oxlint policy against another directory by:
