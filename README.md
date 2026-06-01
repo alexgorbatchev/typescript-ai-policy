@@ -109,10 +109,11 @@ At a glance, the shared policy enforces:
 - hook ownership files that export exactly one main `use*` hook, plus type-only secondary API, and live as direct-child `hooks/useThing.ts[x]` files by default or `hooks/use-thing.ts[x]` when `filenameStyle: FilenameStyle.DashCase` is configured
 - JSX-only React component code instead of `React.createElement(...)`
 - matching Storybook files for component ownership files under sibling `stories/` directories, with story support files limited to `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
+- Storybook project support `.tsx` files under direct or nested `.storybook/` paths without treating them as component ownership files
 - matching test files for hook ownership files under sibling `__tests__/` directories, with test support files limited to `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
 - typed Storybook meta with package-relative titles, typed story exports, and required `play` functions
 - deterministic component test ids such as `ComponentName` and `ComponentName--child`, plus required root test ids for exported ownership components
-- canonical component ownership directories (`components/`, `templates/`, `layouts/`) as the only `.tsx` surface allowed to render raw intrinsic JSX or pass direct `className` / `style` props
+- canonical component ownership directories (`components/`, `templates/`, `layouts/`) as the only product `.tsx` surface allowed to render raw intrinsic JSX or pass direct `className` / `style` props, with file-role carve-outs for story/test support and Storybook `.storybook/` support files
 - strict boundaries between runtime code, test code, story code, and fixture code, including no imports from `__tests__/` into runtime code and no type imports from `constants.ts`
 - test-file discipline: no skipped or focused tests, no conditional logic, no `throw`, no module mocking, no test-file exports, and no inline fixture bindings
 - fixture discipline: canonical location, single entrypoint, constrained export naming and export types, no local type declarations, and canonical fixture import paths
@@ -160,6 +161,8 @@ fixed ownership locations:
 - non-story, non-test `.tsx` files must not render raw intrinsic JSX such as `<div>`, `<span>`, or `<p>` unless the
   file lives inside one of those canonical component ownership areas
 - direct `className` and `style` props are only allowed in files inside those canonical component ownership areas
+- Storybook project support `.tsx` files under `.storybook/*.tsx` and `.storybook/**/*.tsx` are not component ownership
+  files and may use local Storybook wrapper markup
 - story files live under sibling `stories/` directories, and that area is reserved for `*.stories.tsx`, `helpers.ts[x]`, `fixtures.ts[x]`, and `fixtures/`
 - exported runtime hooks whose names start with `use` live under direct-child `hooks/` ownership files
 - test files live under sibling `__tests__/` directories, and that area is reserved for `*.test.ts[x]`, `helpers.ts[x]`, `fixtures.ts[x]`, and `fixtures/`
@@ -192,9 +195,10 @@ import createOxlintConfig from "@alexgorbatchev/typescript-ai-policy/oxlint-conf
 export default createOxlintConfig();
 ```
 
-With that config in place, routes, pages, feature views, and other non-story, non-test `.tsx` files must render
-imported components instead of raw DOM tags, and they must not pass direct `className` or `style` props. Raw
-intrinsic JSX and direct styling props stay inside canonical component ownership areas.
+With that config in place, routes, pages, feature views, and other product `.tsx` files must render imported components
+instead of raw DOM tags, and they must not pass direct `className` or `style` props. Raw intrinsic JSX and direct
+styling props stay inside canonical component ownership areas, story/test support files, or Storybook `.storybook/`
+support files.
 
 In a consuming repository, use `typescript-ai-policy check` through your package manager's local binary runner to
 execute the shared formatter and linter checks against that repo.

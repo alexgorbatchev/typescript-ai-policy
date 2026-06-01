@@ -51,6 +51,15 @@ describe("story lint-target integration", () => {
     expectLintTargetSuccess(lintTargetResult, FIXTURE_CONFIG_HEADER);
   });
 
+  it("allows direct and nested Storybook config TSX support files without component ownership noise", () => {
+    const lintTargetResult = runLintTargetFixtureWithConsumerConfig(
+      "storybook-config-tsx/valid-config-support-files",
+      CONSUMER_SETTINGS,
+    );
+
+    expectLintTargetSuccess(lintTargetResult, FIXTURE_CONFIG_HEADER);
+  });
+
   it("reports story meta titles that do not match the package-relative story path", () => {
     const lintTargetResult = runLintTargetFixtureWithConsumerConfig(
       "story-title-convention/missing-title-invalid",

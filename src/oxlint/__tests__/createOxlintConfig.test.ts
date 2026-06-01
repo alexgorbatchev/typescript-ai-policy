@@ -221,6 +221,20 @@ describe("createOxlintConfig", () => {
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
+      files: ["**/.storybook/*.tsx", "**/.storybook/**/*.tsx"],
+      rules: {
+        "@alexgorbatchev/component-file-location-convention": "off",
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/component-file-contract": "off",
+        "@alexgorbatchev/component-file-naming-convention": "off",
+        "@alexgorbatchev/component-story-file-convention": "off",
+        "@alexgorbatchev/no-intrinsic-elements-outside-component-globs": "off",
+        "@alexgorbatchev/no-classname-style-props-outside-component-globs": "off",
+      },
+    });
+
+    expect(oxlintConfig.overrides).toContainEqual({
       files: ["**/components/**/*", "**/templates/**/*", "**/layouts/**/*"],
       rules: {
         "@alexgorbatchev/component-directory-file-convention": "error",

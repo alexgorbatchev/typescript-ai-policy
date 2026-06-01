@@ -1,0 +1,3 @@
+export function ThemeDecorator() {
+  return <section style={{ color: "rebeccapurple" }}>Theme decorator</section>;
+}
