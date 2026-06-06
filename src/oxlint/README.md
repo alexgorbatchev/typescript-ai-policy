@@ -658,8 +658,7 @@ export function DashboardRoute() {
 
 ### `@alexgorbatchev/no-classname-style-props-outside-component-globs`
 
-**Policy:** Non-story, non-test, non-`.storybook/` `.tsx` files outside canonical component ownership areas must not pass
-direct `className` or `style` props. Put those styling decisions inside a component ownership file instead.
+**Policy:** Custom/capitalized components must not accept `className` or `style` props in any file (including inside component directories, stories, and tests). For intrinsic HTML elements (like `div`), direct `className` or `style` props are only allowed inside canonical component ownership areas. Non-story, non-test, non-`.storybook/` `.tsx` files outside canonical component ownership areas must not pass styling props on any elements.
 
 **Good**
 

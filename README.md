@@ -160,7 +160,7 @@ fixed ownership locations:
 - nested subdirectories inside those component ownership areas are allowed but not required
 - non-story, non-test `.tsx` files must not render raw intrinsic JSX such as `<div>`, `<span>`, or `<p>` unless the
   file lives inside one of those canonical component ownership areas
-- direct `className` and `style` props are only allowed in files inside those canonical component ownership areas
+- direct `className` and `style` props are only allowed on raw HTML elements in files inside those canonical component ownership areas. Custom/capitalized components must not accept `className` or `style` props in any file.
 - Storybook project support `.tsx` files under `.storybook/*.tsx` and `.storybook/**/*.tsx` are not component ownership
   files and may use local Storybook wrapper markup
 - story files live under sibling `stories/` directories, and that area is reserved for `*.stories.tsx`, `helpers.ts[x]`, `fixtures.ts[x]`, and `fixtures/`
@@ -197,8 +197,8 @@ export default createOxlintConfig();
 
 With that config in place, routes, pages, feature views, and other product `.tsx` files must render imported components
 instead of raw DOM tags, and they must not pass direct `className` or `style` props. Raw intrinsic JSX and direct
-styling props stay inside canonical component ownership areas, story/test support files, or Storybook `.storybook/`
-support files.
+styling props stay on raw HTML elements inside canonical component ownership areas, story/test support files, or Storybook `.storybook/`
+support files. Passing `className` or `style` props to custom components is banned everywhere.
 
 In a consuming repository, use `typescript-ai-policy check` through your package manager's local binary runner to
 execute the shared formatter and linter checks against that repo.

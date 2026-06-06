@@ -157,9 +157,9 @@ it("prints authoritative published rule guidance for every local rule", () => {
       instead of silencing the linter. Do not commit eslint or oxlint disable
       comments.
     - **@alexgorbatchev/no-classname-style-props-outside-component-globs**: Keep
-      \`className\` and \`style\` props only in component-owned TSX files inside
-      canonical component areas. Expose variants or styling APIs instead of passing
-      styling props outside that surface.
+      \`className\` and \`style\` props only on raw HTML elements inside component-owned
+      TSX files in canonical component areas. Custom/capitalized components must not
+      accept \`className\` or \`style\` props in any file.
     - **@alexgorbatchev/no-intrinsic-elements-outside-component-globs**: Keep raw
       intrinsic JSX only in component-owned TSX files inside "components/",
       "templates/", or "layouts/". Outside that surface, compose imported components
