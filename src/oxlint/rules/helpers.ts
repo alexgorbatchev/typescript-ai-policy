@@ -585,6 +585,23 @@ export function readJsxAttributeName(attributeName: TSESTree.JSXAttribute["name"
   return "";
 }
 
+export function isIntrinsicJsxIdentifier(node: TSESTree.JSXIdentifier): boolean {
+  const firstCharacter = node.name.at(0);
+  return firstCharacter !== undefined && firstCharacter === firstCharacter.toLowerCase();
+}
+
+export function isIntrinsicElementName(node: TSESTree.JSXOpeningElement["name"]): boolean {
+  if (node.type === "JSXNamespacedName") {
+    return true;
+  }
+
+  if (node.type !== "JSXIdentifier") {
+    return false;
+  }
+
+  return isIntrinsicJsxIdentifier(node);
+}
+
 export function isAstNode(value: unknown): value is AstNode {
   return (
     value !== null && typeof value === "object" && "type" in value && typeof Reflect.get(value, "type") === "string"

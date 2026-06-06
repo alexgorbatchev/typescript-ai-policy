@@ -1,7 +1,7 @@
-import type { TSESTree } from "@typescript-eslint/utils";
 import {
   COMPONENT_OWNERSHIP_DIRECTORY_NAMES,
   isInComponentOwnershipDirectory,
+  isIntrinsicElementName,
   isStoryOrTestTsxFile,
 } from "./helpers.ts";
 import type { RuleModule } from "./types.ts";
@@ -13,23 +13,6 @@ const COMPONENT_OWNERSHIP_DIRECTORIES = COMPONENT_OWNERSHIP_DIRECTORY_NAMES.map(
   .replace(/, ([^,]+)$/u, ", or $1");
 
 const NO_INTRINSIC_ELEMENTS_OUTSIDE_COMPONENT_GLOBS_MESSAGE = `Raw DOM markup only allowed inside component ownership files in ${COMPONENT_OWNERSHIP_DIRECTORIES}.`;
-
-function isIntrinsicJsxIdentifier(node: TSESTree.JSXIdentifier): boolean {
-  const firstCharacter = node.name.at(0);
-  return firstCharacter !== undefined && firstCharacter === firstCharacter.toLowerCase();
-}
-
-function isIntrinsicElementName(node: TSESTree.JSXOpeningElement["name"]): boolean {
-  if (node.type === "JSXNamespacedName") {
-    return true;
-  }
-
-  if (node.type !== "JSXIdentifier") {
-    return false;
-  }
-
-  return isIntrinsicJsxIdentifier(node);
-}
 
 const noIntrinsicElementsOutsideComponentGlobsRuleModule: RuleModule = {
   meta: {
