@@ -27,17 +27,8 @@ ruleTester.run(
       },
       {
         code: `
-          export function Button() {
-            return <Button className="page-shell" style={{ color: "red" }} />;
-          }
-        `,
-        filename: "src/email/templates/marketing/Button.tsx",
-        languageOptions: languageOpts,
-      },
-      {
-        code: `
           export const meta = {
-            decorators: [(Story: () => JSX.Element) => <Button className="frame"><Story /></Button>],
+            decorators: [(Story: () => JSX.Element) => <div className="frame"><Story /></div>],
           };
         `,
         filename: "src/app/stories/AppShell.stories.tsx",
@@ -46,7 +37,7 @@ ruleTester.run(
       {
         code: `
           export function renderHarness() {
-            return <Button className="frame" style={{ color: "red" }} />;
+            return <div className="frame" style={{ color: "red" }} />;
           }
         `,
         filename: "src/app/__tests__/AppShell.test.tsx",
@@ -73,7 +64,7 @@ ruleTester.run(
         languageOptions: languageOpts,
         errors: [
           {
-            messageId: "noClassNameOrStylePropOutsideComponentDirectory",
+            messageId: "noClassNameOrStylePropOnCustomComponent",
             type: AST_NODE_TYPES.JSXIdentifier,
           },
         ],
@@ -89,7 +80,7 @@ ruleTester.run(
         languageOptions: languageOpts,
         errors: [
           {
-            messageId: "noClassNameOrStylePropOutsideComponentDirectory",
+            messageId: "noClassNameOrStylePropOnCustomComponent",
             type: AST_NODE_TYPES.JSXIdentifier,
           },
         ],
@@ -102,6 +93,78 @@ ruleTester.run(
           }
         `,
         filename: "src/main.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "noClassNameOrStylePropOnCustomComponent",
+            type: AST_NODE_TYPES.JSXIdentifier,
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          export function Button() {
+            return <Button className="page-shell" style={{ color: "red" }} />;
+          }
+        `,
+        filename: "src/email/templates/marketing/Button.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "noClassNameOrStylePropOnCustomComponent",
+            type: AST_NODE_TYPES.JSXIdentifier,
+          },
+          {
+            messageId: "noClassNameOrStylePropOnCustomComponent",
+            type: AST_NODE_TYPES.JSXIdentifier,
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          export const meta = {
+            decorators: [(Story: () => JSX.Element) => <Button className="frame"><Story /></Button>],
+          };
+        `,
+        filename: "src/app/stories/AppShell.stories.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "noClassNameOrStylePropOnCustomComponent",
+            type: AST_NODE_TYPES.JSXIdentifier,
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          export function renderHarness() {
+            return <Button className="frame" style={{ color: "red" }} />;
+          }
+        `,
+        filename: "src/app/__tests__/AppShell.test.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "noClassNameOrStylePropOnCustomComponent",
+            type: AST_NODE_TYPES.JSXIdentifier,
+          },
+          {
+            messageId: "noClassNameOrStylePropOnCustomComponent",
+            type: AST_NODE_TYPES.JSXIdentifier,
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          export function DashboardRoute() {
+            return <div className="page-shell" />;
+          }
+        `,
+        filename: "src/routes/DashboardRoute.tsx",
         languageOptions: languageOpts,
         errors: [
           {
