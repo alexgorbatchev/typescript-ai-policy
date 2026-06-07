@@ -48,15 +48,34 @@ fi
 
 target_dir="$(cd -- "$target_dir" && pwd -P)"
 
+resolved_config_path=""
+config_label=""
+if [[ -f "$target_dir/oxlint.config.ts" || -f "$target_dir/oxlint.json" ]]; then
+  config_label="(target nested configuration)"
+  target_node_modules="$target_dir/node_modules/@alexgorbatchev/typescript-ai-policy/dist"
+  if [[ -d "$target_node_modules" ]]; then
+    cp -r "$repo_dir/dist/"* "$target_node_modules/"
+  fi
+else
+  config_label="$config_path"
+  resolved_config_path="$config_path"
+fi
+
 echo "==> oxlint"
-echo "config: $config_path"
+echo "config: $config_label"
 echo "target: $target_dir"
 
 (
   cd -- "$target_dir"
-  "$oxlint_bin" \
-    --config "$config_path" \
-    --disable-nested-config \
-    "$@" \
-    .
+  if [[ -n "$resolved_config_path" ]]; then
+    "$oxlint_bin" \
+      --config "$resolved_config_path" \
+      --disable-nested-config \
+      "$@" \
+      .
+  else
+    "$oxlint_bin" \
+      "$@" \
+      .
+  fi
 )
