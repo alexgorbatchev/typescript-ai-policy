@@ -1,6 +1,33 @@
-import { isInComponentOwnershipDirectory, isIntrinsicElementName, isStoryOrTestTsxFile } from "./helpers.ts";
+import {
+  isInComponentOwnershipDirectory,
+  isIntrinsicElementName,
+  isStoryOrTestTsxFile,
+  readChildNodes,
+} from "./helpers.ts";
 import type { RuleModule } from "./types.ts";
 import type { TSESTree } from "@typescript-eslint/types";
+
+function isLayoutStylingAttribute(attr: TSESTree.JSXAttribute): boolean {
+  const isLayoutString = (str: string) => /\b(flex|grid|inline-flex|inline-grid)\b/u.test(str);
+
+  const hasLayoutWord = (node: TSESTree.Node): boolean => {
+    if (node.type === "Literal" && typeof node.value === "string") {
+      return isLayoutString(node.value);
+    }
+    if (node.type === "TemplateElement") {
+      const value = node.value.cooked ?? node.value.raw;
+      return isLayoutString(value);
+    }
+    for (const child of readChildNodes(node)) {
+      if (hasLayoutWord(child)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  return attr.value ? hasLayoutWord(attr.value) : false;
+}
 
 const noClassNameStylePropsOutsideComponentGlobsRuleModule: RuleModule = {
   meta: {
@@ -39,6 +66,10 @@ const noClassNameStylePropsOutsideComponentGlobsRuleModule: RuleModule = {
             (attr.name.name === "className" || attr.name.name === "style"),
         );
         if (!stylingAttribute) {
+          return;
+        }
+
+        if (isLayoutStylingAttribute(stylingAttribute)) {
           return;
         }
 

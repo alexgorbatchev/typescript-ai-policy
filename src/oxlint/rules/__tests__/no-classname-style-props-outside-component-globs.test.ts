@@ -67,6 +67,19 @@ ruleTester.run(
         filename: "src/ui/components/DropdownMenu.tsx",
         languageOptions: languageOpts,
       },
+      {
+        code: `
+          export function Navbar() {
+            return (
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <Badge />
+              </div>
+            );
+          }
+        `,
+        filename: "src/ui/components/Navbar.tsx",
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {
