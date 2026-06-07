@@ -43,6 +43,30 @@ ruleTester.run("no-arbitrary-child-selectors", noArbitraryChildSelectorsRuleModu
       output: null,
     },
     {
+      code: `export const classes = <div className="bg-red-500 [&` + `amp;_*]:bg-red-500" />;`,
+      filename: "src/components/Button.tsx",
+      languageOptions: languageOpts,
+      errors: [
+        {
+          messageId: "noArbitraryChildSelector",
+          type: AST_NODE_TYPES.JSXIdentifier,
+        },
+      ],
+      output: null,
+    },
+    {
+      code: `export const classes = <div className="bg-red-500 [&` + `amp;>*]:mt-4" />;`,
+      filename: "src/components/Button.tsx",
+      languageOptions: languageOpts,
+      errors: [
+        {
+          messageId: "noArbitraryChildSelector",
+          type: AST_NODE_TYPES.JSXIdentifier,
+        },
+      ],
+      output: null,
+    },
+    {
       code: `export const classes = <div className="bg-red-500 [&` + `amp;>span]:text-xs" />;`,
       filename: "src/components/Button.tsx",
       languageOptions: languageOpts,

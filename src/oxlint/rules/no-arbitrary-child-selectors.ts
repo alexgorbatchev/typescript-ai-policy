@@ -1,7 +1,7 @@
 import type { RuleModule } from "./types.ts";
 import type { TSESTree } from "@typescript-eslint/types";
 
-const ARBITRARY_CHILD_SELECTOR_REGEX = /\[&[^\s]*[_>~+]/;
+const ARBITRARY_CHILD_SELECTOR_REGEX = /\[&[^\s]*[_>~+*]/;
 
 type TargetNode = TSESTree.Literal | TSESTree.TemplateElement;
 
