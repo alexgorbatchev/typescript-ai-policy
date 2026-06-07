@@ -14,6 +14,20 @@ const ruleTester = new RuleTester();
 ruleTester.run("no-arbitrary-child-selectors", noArbitraryChildSelectorsRuleModule, {
   valid: [
     {
+      code: `
+          export function Container() {
+            return (
+              <div className="[&_svg]:size-4">
+                <svg />
+                <span>Text</span>
+              </div>
+            );
+          }
+        `,
+      filename: "src/components/Container.tsx",
+      languageOptions: languageOpts,
+    },
+    {
       code: `export const classes = <div className="bg-red-500 text-white [&amp;[data-state=open]]:bg-white" />;`,
       filename: "src/components/Button.tsx",
       languageOptions: languageOpts,
@@ -24,14 +38,15 @@ ruleTester.run("no-arbitrary-child-selectors", noArbitraryChildSelectorsRuleModu
       languageOptions: languageOpts,
     },
     {
-      code: `export const classes = "bg-red-500 text-white [&[data-state=open]]:bg-white";`,
+      code: `export const classes = <div className="bg-red-500 [&amp;[data-active=true]_svg]:w-4" />;`,
       filename: "src/components/Button.tsx",
       languageOptions: languageOpts,
     },
   ],
   invalid: [
+    // 1. Direct custom component targeting by name (Banned everywhere)
     {
-      code: `export const classes = <div className="bg-red-500 [&` + `amp;_div]:bg-blue-500" />;`,
+      code: `export const classes = <div className="bg-red-500 [&` + `amp;_Button]:bg-blue-500" />;`,
       filename: "src/components/Button.tsx",
       languageOptions: languageOpts,
       errors: [
@@ -43,92 +58,7 @@ ruleTester.run("no-arbitrary-child-selectors", noArbitraryChildSelectorsRuleModu
       output: null,
     },
     {
-      code: `export const classes = <div className="bg-red-500 [&` + `amp;_*]:bg-red-500" />;`,
-      filename: "src/components/Button.tsx",
-      languageOptions: languageOpts,
-      errors: [
-        {
-          messageId: "noArbitraryChildSelector",
-          type: AST_NODE_TYPES.JSXIdentifier,
-        },
-      ],
-      output: null,
-    },
-    {
-      code: `export const classes = <div className="bg-red-500 [&` + `amp;>*]:mt-4" />;`,
-      filename: "src/components/Button.tsx",
-      languageOptions: languageOpts,
-      errors: [
-        {
-          messageId: "noArbitraryChildSelector",
-          type: AST_NODE_TYPES.JSXIdentifier,
-        },
-      ],
-      output: null,
-    },
-    {
-      code: `export const classes = <div className="bg-red-500 [&` + `amp;>span]:text-xs" />;`,
-      filename: "src/components/Button.tsx",
-      languageOptions: languageOpts,
-      errors: [
-        {
-          messageId: "noArbitraryChildSelector",
-          type: AST_NODE_TYPES.JSXIdentifier,
-        },
-      ],
-      output: null,
-    },
-    {
-      code: `export const classes = <div className={\`bg-red-500 [\${someVar}] [\\x26~p]:mt-2\`} />;`,
-      filename: "src/components/Button.tsx",
-      languageOptions: languageOpts,
-      errors: [
-        {
-          messageId: "noArbitraryChildSelector",
-          type: AST_NODE_TYPES.JSXIdentifier,
-        },
-      ],
-      output: null,
-    },
-    {
-      code: `export const classes = <div className="bg-red-500 [&` + `amp;[data-active=true]_svg]:w-4" />;`,
-      filename: "src/components/Button.tsx",
-      languageOptions: languageOpts,
-      errors: [
-        {
-          messageId: "noArbitraryChildSelector",
-          type: AST_NODE_TYPES.JSXIdentifier,
-        },
-      ],
-      output: null,
-    },
-    {
-      code: `export const classes = <div class="bg-red-500 [&` + `amp;_div]:bg-blue-500" />;`,
-      filename: "src/components/Button.tsx",
-      languageOptions: languageOpts,
-      errors: [
-        {
-          messageId: "noArbitraryChildSelector",
-          type: AST_NODE_TYPES.JSXIdentifier,
-        },
-      ],
-      output: null,
-    },
-    {
-      code: `export const classes = <div className={cn("bg-red-500", "[\\x26_div]:bg-blue-500")} />;`,
-      filename: "src/components/Button.tsx",
-      languageOptions: languageOpts,
-      errors: [
-        {
-          messageId: "noArbitraryChildSelector",
-          type: AST_NODE_TYPES.JSXIdentifier,
-        },
-      ],
-      output: null,
-    },
-    // Outside of JSX attributes - should report on Literal / TemplateElement directly
-    {
-      code: `export const classes = "bg-red-500 [\\x26_div]:bg-blue-500";`,
+      code: `export const classes = "bg-red-500 [\\x26_\\x42utton]:bg-blue-500";`,
       filename: "src/components/Button.tsx",
       languageOptions: languageOpts,
       errors: [
@@ -139,14 +69,64 @@ ruleTester.run("no-arbitrary-child-selectors", noArbitraryChildSelectorsRuleModu
       ],
       output: null,
     },
+    // 2. Intrinsic selectors styling custom component descendants (Banned when wrapping a component)
     {
-      code: `export const classes = \`bg-red-500 [\${someVar}] [\\x26~p]:mt-2\`;`,
-      filename: "src/components/Button.tsx",
+      code: `
+          export function Container() {
+            return (
+              <div className="bg-red-500 [&_svg]:size-4">
+                <Button />
+              </div>
+            );
+          }
+        `,
+      filename: "src/components/Container.tsx",
       languageOptions: languageOpts,
       errors: [
         {
-          messageId: "noArbitraryChildSelector",
-          type: AST_NODE_TYPES.TemplateElement,
+          messageId: "noArbitraryChildSelectorOnCustomComponent",
+          type: AST_NODE_TYPES.JSXIdentifier,
+        },
+      ],
+      output: null,
+    },
+    {
+      code: `
+          export function Container() {
+            return (
+              <div className="bg-red-500 [&_a]:underline">
+                <Button />
+              </div>
+            );
+          }
+        `,
+      filename: "src/components/Container.tsx",
+      languageOptions: languageOpts,
+      errors: [
+        {
+          messageId: "noArbitraryChildSelectorOnCustomComponent",
+          type: AST_NODE_TYPES.JSXIdentifier,
+        },
+      ],
+      output: null,
+    },
+    {
+      code: `
+          export function Container() {
+            return (
+              <div className="bg-red-500 [&_svg]:size-4">
+                <Button />
+                <Button />
+              </div>
+            );
+          }
+        `,
+      filename: "src/components/Container.tsx",
+      languageOptions: languageOpts,
+      errors: [
+        {
+          messageId: "noArbitraryChildSelectorOnCustomComponent",
+          type: AST_NODE_TYPES.JSXIdentifier,
         },
       ],
       output: null,

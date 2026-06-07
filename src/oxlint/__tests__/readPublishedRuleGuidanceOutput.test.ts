@@ -165,9 +165,9 @@ it("prints authoritative published rule guidance for every local rule", () => {
       "templates/", or "layouts/". Outside that surface, compose imported components
       instead of writing DOM markup directly.
     - **@alexgorbatchev/no-arbitrary-child-selectors**: Do not use arbitrary child
-      or sibling selectors to style nested descendants or siblings from the outside.
-      Add proper variant props or sub-component slots to the target component
-      instead.
+      or sibling selectors to target custom components (such as targeting custom
+      elements or nesting tags when wrapping a custom component). Add proper variant
+      props or sub-component slots to the target component instead.
     "
   `);
 });
