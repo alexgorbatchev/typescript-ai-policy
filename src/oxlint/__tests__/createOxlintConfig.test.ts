@@ -187,6 +187,7 @@ describe("createOxlintConfig", () => {
         "@alexgorbatchev/no-inline-type-expressions": "error",
         "@alexgorbatchev/no-inline-type-imports": "error",
         "@alexgorbatchev/require-template-indent": "error",
+        "@alexgorbatchev/no-arbitrary-child-selectors": "error",
       },
     });
 

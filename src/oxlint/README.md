@@ -77,6 +77,7 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/no-inline-type-expressions`
    - `@alexgorbatchev/no-inline-type-imports`
    - `@alexgorbatchev/require-template-indent`
+   - `@alexgorbatchev/no-arbitrary-child-selectors`
 3. **React component ownership rules** run on all `**/*.tsx` files unless a narrower file-role override disables
    them:
    - `@alexgorbatchev/no-intrinsic-elements-outside-component-globs`
@@ -679,6 +680,34 @@ export function DashboardShell() {
 ```tsx
 export function DashboardRoute() {
   return <DashboardShell className="dashboard-shell" />;
+}
+```
+
+### `@alexgorbatchev/no-arbitrary-child-selectors`
+
+**Policy:** Do not use arbitrary child or sibling selectors to style nested descendants or siblings. Use composition with separate components or explicit visual primitives instead.
+
+**Good**
+
+```tsx
+export function Button({ icon }) {
+  return (
+    <button className="flex items-center gap-2">
+      <Icon icon={icon} size="sm" />
+    </button>
+  );
+}
+```
+
+**Bad**
+
+```tsx
+export function Button() {
+  return (
+    <button className="[&_svg]:w-4 [&_svg]:h-4">
+      <CustomIcon />
+    </button>
+  );
 }
 ```
 

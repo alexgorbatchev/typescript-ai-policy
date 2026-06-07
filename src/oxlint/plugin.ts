@@ -46,6 +46,7 @@ import singleFixtureEntrypointRule from "./rules/single-fixture-entrypoint.ts";
 import noLintDisableCommentsRule from "./rules/no-lint-disable-comments.ts";
 import noClassNameStylePropsOutsideComponentGlobsRule from "./rules/no-classname-style-props-outside-component-globs.ts";
 import noIntrinsicElementsOutsideComponentGlobsRule from "./rules/no-intrinsic-elements-outside-component-globs.ts";
+import noArbitraryChildSelectorsRule from "./rules/no-arbitrary-child-selectors.ts";
 import { printPackageUsageNoticeOnce } from "../shared/packageUsageNotice.ts";
 
 type PluginMeta = {
@@ -114,6 +115,7 @@ const pluginImplementation: OxlintPlugin = {
     "no-lint-disable-comments": noLintDisableCommentsRule,
     "no-classname-style-props-outside-component-globs": noClassNameStylePropsOutsideComponentGlobsRule,
     "no-intrinsic-elements-outside-component-globs": noIntrinsicElementsOutsideComponentGlobsRule,
+    "no-arbitrary-child-selectors": noArbitraryChildSelectorsRule,
   },
 };
 
