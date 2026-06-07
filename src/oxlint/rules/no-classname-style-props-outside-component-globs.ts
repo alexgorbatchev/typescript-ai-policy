@@ -1,5 +1,6 @@
 import { isInComponentOwnershipDirectory, isIntrinsicElementName, isStoryOrTestTsxFile } from "./helpers.ts";
 import type { RuleModule } from "./types.ts";
+import type { TSESTree } from "@typescript-eslint/types";
 
 const noClassNameStylePropsOutsideComponentGlobsRuleModule: RuleModule = {
   meta: {
@@ -16,10 +17,54 @@ const noClassNameStylePropsOutsideComponentGlobsRuleModule: RuleModule = {
         "Move styling into a component ownership file. Expose necessary variants instead of passing styling props here.",
       noClassNameOrStylePropOnCustomComponent:
         "Use layout components or variant props instead of passing className or style.",
+      noStyledWrapperOfCustomComponent:
+        "Use explicit variant props or layouts instead of wrapping custom components in styled elements.",
     },
   },
   create(context) {
     return {
+      JSXElement(node) {
+        if (isStoryOrTestTsxFile(context.filename)) {
+          return;
+        }
+
+        if (!isIntrinsicElementName(node.openingElement.name)) {
+          return;
+        }
+
+        const stylingAttribute = node.openingElement.attributes.find(
+          (attr): attr is TSESTree.JSXAttribute =>
+            attr.type === "JSXAttribute" &&
+            attr.name.type === "JSXIdentifier" &&
+            (attr.name.name === "className" || attr.name.name === "style"),
+        );
+        if (!stylingAttribute) {
+          return;
+        }
+
+        const activeChildren = node.children.filter((child) => {
+          if (child.type === "JSXText") {
+            return child.value.trim() !== "";
+          }
+          return true;
+        });
+
+        if (activeChildren.length !== 1) {
+          return;
+        }
+
+        const singleChild = activeChildren[0];
+        if (
+          singleChild &&
+          singleChild.type === "JSXElement" &&
+          !isIntrinsicElementName(singleChild.openingElement.name)
+        ) {
+          context.report({
+            node: stylingAttribute.name,
+            messageId: "noStyledWrapperOfCustomComponent",
+          });
+        }
+      },
       JSXAttribute(node) {
         if (node.name.type !== "JSXIdentifier") {
           return;

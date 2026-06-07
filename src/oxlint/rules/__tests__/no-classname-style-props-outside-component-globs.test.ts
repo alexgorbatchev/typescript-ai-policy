@@ -52,6 +52,21 @@ ruleTester.run(
         filename: "src/routes/WelcomeEmail.tsx",
         languageOptions: languageOpts,
       },
+      {
+        code: `
+          export function DropdownMenuItem({ children }) {
+            return (
+              <DropdownMenuPrimitive.Item>
+                <div className="menu-item-class">
+                  {children}
+                </div>
+              </DropdownMenuPrimitive.Item>
+            );
+          }
+        `,
+        filename: "src/ui/components/DropdownMenu.tsx",
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {
@@ -169,6 +184,46 @@ ruleTester.run(
         errors: [
           {
             messageId: "noClassNameOrStylePropOutsideComponentDirectory",
+            type: AST_NODE_TYPES.JSXIdentifier,
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          export function Navbar() {
+            return (
+              <div className="wrapper">
+                <Button />
+              </div>
+            );
+          }
+        `,
+        filename: "src/ui/components/Navbar.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "noStyledWrapperOfCustomComponent",
+            type: AST_NODE_TYPES.JSXIdentifier,
+          },
+        ],
+        output: null,
+      },
+      {
+        code: `
+          export function Navbar() {
+            return (
+              <div style={{ color: "red" }}>
+                <Button />
+              </div>
+            );
+          }
+        `,
+        filename: "src/ui/components/Navbar.tsx",
+        languageOptions: languageOpts,
+        errors: [
+          {
+            messageId: "noStyledWrapperOfCustomComponent",
             type: AST_NODE_TYPES.JSXIdentifier,
           },
         ],
