@@ -4,6 +4,7 @@ import type { TSESTree } from "@typescript-eslint/types";
 
 const ARBITRARY_CUSTOM_COMPONENT_SELECTOR_REGEX = /\[&[^\s]*[A-Z][A-Za-z0-9]*/;
 const ARBITRARY_CHILD_SELECTOR_REGEX = /\[&[^\s]*[_>~+*]/;
+const CSS_VARIABLE_OVERRIDE_REGEX = /\[--[a-zA-Z0-9_-]+:/;
 
 type TargetNode = TSESTree.Literal | TSESTree.TemplateElement;
 
@@ -24,6 +25,20 @@ function hasArbitraryChildSelectorRegex(node: TSESTree.Node, regex: RegExp): boo
   }
 
   return false;
+}
+
+function hasCssVariableStyleProperty(node: TSESTree.Node): boolean {
+  if (node.type !== "JSXExpressionContainer" || node.expression.type !== "ObjectExpression") {
+    return false;
+  }
+  return node.expression.properties.some((prop) => {
+    if (prop.type !== "Property") return false;
+    if (prop.key.type === "Identifier" && prop.key.name.startsWith("--")) return true;
+    if (prop.key.type === "Literal" && typeof prop.key.value === "string" && prop.key.value.startsWith("--")) {
+      return true;
+    }
+    return false;
+  });
 }
 
 function findClassJSXAttribute(node: TSESTree.Node): TSESTree.JSXAttribute | null {
@@ -54,7 +69,7 @@ const noArbitraryChildSelectorsRuleModule: RuleModule = {
       noArbitraryChildSelector:
         "Use explicit variant props or visual primitives on custom components instead of targeting them with arbitrary selectors.",
       noArbitraryChildSelectorOnCustomComponent:
-        "Use explicit variant props on the custom component instead of targeting its nested descendants from the outside.",
+        "Use explicit variant props on the custom component instead of targeting its nested descendants or overriding its custom properties from the outside.",
     },
   },
   create(context) {
@@ -103,7 +118,16 @@ const noArbitraryChildSelectorsRuleModule: RuleModule = {
           return;
         }
 
-        if (hasArbitraryChildSelectorRegex(stylingAttribute.value, ARBITRARY_CHILD_SELECTOR_REGEX)) {
+        let isViolation = false;
+        if (stylingAttribute.name.name === "style") {
+          isViolation = hasCssVariableStyleProperty(stylingAttribute.value);
+        } else {
+          isViolation =
+            hasArbitraryChildSelectorRegex(stylingAttribute.value, ARBITRARY_CHILD_SELECTOR_REGEX) ||
+            hasArbitraryChildSelectorRegex(stylingAttribute.value, CSS_VARIABLE_OVERRIDE_REGEX);
+        }
+
+        if (isViolation) {
           context.report({
             node: stylingAttribute.name,
             messageId: "noArbitraryChildSelectorOnCustomComponent",

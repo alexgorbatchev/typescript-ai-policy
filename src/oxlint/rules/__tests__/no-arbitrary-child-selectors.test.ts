@@ -15,6 +15,19 @@ ruleTester.run("no-arbitrary-child-selectors", noArbitraryChildSelectorsRuleModu
   valid: [
     {
       code: `
+          export function Panel() {
+            return (
+              <div className="z-[var(--devhost-z-floating-panel)]">
+                <Card />
+              </div>
+            );
+          }
+        `,
+      filename: "src/components/Panel.tsx",
+      languageOptions: languageOpts,
+    },
+    {
+      code: `
           export function Container() {
             return (
               <div className="[&_svg]:size-4">
@@ -122,6 +135,47 @@ ruleTester.run("no-arbitrary-child-selectors", noArbitraryChildSelectorsRuleModu
           }
         `,
       filename: "src/components/Container.tsx",
+      languageOptions: languageOpts,
+      errors: [
+        {
+          messageId: "noArbitraryChildSelectorOnCustomComponent",
+          type: AST_NODE_TYPES.JSXIdentifier,
+        },
+      ],
+      output: null,
+    },
+    // 3. Custom CSS variables declarations/overrides on wrapping elements (Banned when wrapping a component)
+    {
+      code: `
+          export function Panel() {
+            return (
+              <div className="[--card-padding:0]">
+                <Card />
+              </div>
+            );
+          }
+        `,
+      filename: "src/components/Panel.tsx",
+      languageOptions: languageOpts,
+      errors: [
+        {
+          messageId: "noArbitraryChildSelectorOnCustomComponent",
+          type: AST_NODE_TYPES.JSXIdentifier,
+        },
+      ],
+      output: null,
+    },
+    {
+      code: `
+          export function Panel() {
+            return (
+              <div style={{ "--card-padding": "0px" }}>
+                <Card />
+              </div>
+            );
+          }
+        `,
+      filename: "src/components/Panel.tsx",
       languageOptions: languageOpts,
       errors: [
         {
