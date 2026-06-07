@@ -1,33 +1,31 @@
-import { readChildNodes } from "./helpers.ts";
 import type { RuleModule } from "./types.ts";
 import type { TSESTree } from "@typescript-eslint/types";
 
 const ARBITRARY_CHILD_SELECTOR_REGEX = /\[&[^\s]*[_>~+]/;
 
-function hasArbitraryChildSelector(node: TSESTree.Node): boolean {
-  if (node.type === "Literal" && typeof node.value === "string") {
-    return ARBITRARY_CHILD_SELECTOR_REGEX.test(node.value);
-  }
+type TargetNode = TSESTree.Literal | TSESTree.TemplateElement;
 
-  if (node.type === "TemplateElement") {
-    const value = node.value.cooked ?? node.value.raw;
-    return ARBITRARY_CHILD_SELECTOR_REGEX.test(value);
-  }
-
-  for (const child of readChildNodes(node)) {
-    if (hasArbitraryChildSelector(child)) {
-      return true;
+function findClassJSXAttribute(node: TSESTree.Node): TSESTree.JSXAttribute | null {
+  let current: TSESTree.Node | undefined = node.parent;
+  while (current) {
+    if (
+      current.type === "JSXAttribute" &&
+      current.name.type === "JSXIdentifier" &&
+      (current.name.name === "className" || current.name.name === "class")
+    ) {
+      return current;
     }
+    current = current.parent;
   }
-
-  return false;
+  return null;
 }
 
 const noArbitraryChildSelectorsRuleModule: RuleModule = {
   meta: {
     type: "problem",
     docs: {
-      description: "Ban arbitrary child and sibling selectors in className and class attributes",
+      description:
+        "Ban arbitrary child and sibling selectors in className and class attributes, and in string constants",
       guidance:
         "Do not use arbitrary child or sibling selectors to style nested descendants or siblings from the outside. Add proper variant props or sub-component slots to the target component instead.",
     },
@@ -38,22 +36,37 @@ const noArbitraryChildSelectorsRuleModule: RuleModule = {
     },
   },
   create(context) {
-    return {
-      JSXAttribute(node) {
-        if (node.name.type !== "JSXIdentifier") {
-          return;
-        }
+    const reportedAttributes = new Set<TSESTree.JSXAttribute>();
 
-        if (node.name.name !== "className" && node.name.name !== "class") {
-          return;
-        }
-
-        if (node.value && hasArbitraryChildSelector(node.value)) {
+    function checkNode(node: TargetNode, value: string) {
+      if (ARBITRARY_CHILD_SELECTOR_REGEX.test(value)) {
+        const classAttribute = findClassJSXAttribute(node);
+        if (classAttribute) {
+          if (!reportedAttributes.has(classAttribute)) {
+            reportedAttributes.add(classAttribute);
+            context.report({
+              node: classAttribute.name,
+              messageId: "noArbitraryChildSelector",
+            });
+          }
+        } else {
           context.report({
-            node: node.name,
+            node,
             messageId: "noArbitraryChildSelector",
           });
         }
+      }
+    }
+
+    return {
+      Literal(node) {
+        if (typeof node.value === "string") {
+          checkNode(node, node.value);
+        }
+      },
+      TemplateElement(node) {
+        const value = node.value.cooked ?? node.value.raw;
+        checkNode(node, value);
       },
     };
   },
