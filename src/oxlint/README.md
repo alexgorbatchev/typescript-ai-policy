@@ -283,7 +283,7 @@ export interface IuserProfile {
 }
 ```
 
-**Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can apply supported interface renames through the `tsgo` LSP backend. The fixer is intentionally conservative: it only applies mechanical renames when the current interface name can be normalized safely to `I[A-Z][A-Za-z0-9]*`.
+**Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can apply supported interface renames through the `tsc` LSP backend. The fixer is intentionally conservative: it only applies mechanical renames when the current interface name can be normalized safely to `I[A-Z][A-Za-z0-9]*`.
 
 ### `@alexgorbatchev/no-i-prefixed-type-aliases`
 
@@ -316,7 +316,7 @@ export type IURLConfig = {
 };
 ```
 
-**Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can apply supported type-alias renames through the `tsgo` LSP backend. The fixer is intentionally conservative: it only drops the leading `I` when the diagnostic resolves to a concrete `type` alias name that already matches the repository's banned `I[A-Z][A-Za-z0-9]*` shape.
+**Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can apply supported type-alias renames through the `tsc` LSP backend. The fixer is intentionally conservative: it only drops the leading `I` when the diagnostic resolves to a concrete `type` alias name that already matches the repository's banned `I[A-Z][A-Za-z0-9]*` shape.
 
 ### `@alexgorbatchev/no-direct-interface-to-type-assignment`
 

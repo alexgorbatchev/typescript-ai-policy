@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { readMovedFileTextEdits } from "../../readMovedFileTextEdits.ts";
-import { TsgoLspClient } from "./TsgoLspClient.ts";
+import { TscLspClient } from "./TscLspClient.ts";
 import type {
   ApplySemanticFixesOptions,
   FileMove,
@@ -36,7 +36,7 @@ type LspWorkspaceEdit = {
   changes: LspWorkspaceChanges;
 };
 
-type ClientCache = Map<string, TsgoLspClient>;
+type ClientCache = Map<string, TscLspClient>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -134,15 +134,15 @@ function readFailureReason(error: unknown): string {
 async function readClient(
   clientCache: ClientCache,
   context: SemanticFixBackendContext,
-  options: Pick<ApplySemanticFixesOptions, "tsgoExecutablePath">,
-): Promise<TsgoLspClient> {
+  options: Pick<ApplySemanticFixesOptions, "tscExecutablePath">,
+): Promise<TscLspClient> {
   const cachedClient = clientCache.get(context.targetDirectoryPath);
   if (cachedClient) {
     return cachedClient;
   }
 
-  const client = new TsgoLspClient({
-    tsgoExecutablePath: options.tsgoExecutablePath,
+  const client = new TscLspClient({
+    tscExecutablePath: options.tscExecutablePath,
     workspacePath: context.targetDirectoryPath,
   });
   await client.initialize();
@@ -173,8 +173,8 @@ function readPlan(
   };
 }
 
-export function createTsgoLspSemanticFixBackend(
-  options: Pick<ApplySemanticFixesOptions, "tsgoExecutablePath">,
+export function createTscLspSemanticFixBackend(
+  options: Pick<ApplySemanticFixesOptions, "tscExecutablePath">,
 ): SemanticFixBackend {
   const clientCache: ClientCache = new Map();
 
@@ -206,12 +206,12 @@ export function createTsgoLspSemanticFixBackend(
           if (renameResult === null) {
             return {
               kind: "skip",
-              reason: `tsgo returned no edits for ${operation.symbolName}`,
+              reason: `tsc returned no edits for ${operation.symbolName}`,
             };
           }
 
           if (!isLspWorkspaceEdit(renameResult)) {
-            throw new Error(`Unexpected tsgo rename response: ${JSON.stringify(renameResult)}`);
+            throw new Error(`Unexpected tsc rename response: ${JSON.stringify(renameResult)}`);
           }
 
           return {
@@ -246,6 +246,6 @@ export function createTsgoLspSemanticFixBackend(
 
       clientCache.clear();
     },
-    name: "tsgo-lsp+native",
+    name: "tsc-lsp+native",
   };
 }

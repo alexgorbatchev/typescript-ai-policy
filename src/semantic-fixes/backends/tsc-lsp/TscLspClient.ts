@@ -84,8 +84,8 @@ type LspRenameParams = {
   textDocument: LspTextDocumentIdentifier;
 };
 
-type TsgoLspClientOptions = {
-  tsgoExecutablePath: string;
+type TscLspClientOptions = {
+  tscExecutablePath: string;
   workspacePath: string;
 };
 
@@ -142,27 +142,27 @@ function readLspPosition(position: LineAndCharacter): LspPosition {
   };
 }
 
-export class TsgoLspClient {
+export class TscLspClient {
   private readonly pendingRequests = new Map<number, PendingRequest>();
   private readonly process: ReturnType<typeof spawn>;
   private readonly stderrChunks: string[] = [];
   private stdoutBuffer = Buffer.alloc(0);
   private requestId = 0;
 
-  public constructor(private readonly options: TsgoLspClientOptions) {
-    this.process = spawn(this.options.tsgoExecutablePath, ["--lsp", "--stdio"], {
+  public constructor(private readonly options: TscLspClientOptions) {
+    this.process = spawn(this.options.tscExecutablePath, ["--lsp", "--stdio"], {
       cwd: this.options.workspacePath,
       stdio: ["pipe", "pipe", "pipe"],
     });
 
     const stdoutStream = this.process.stdout;
     if (!stdoutStream) {
-      throw new Error("tsgo LSP stdout is unavailable");
+      throw new Error("tsc LSP stdout is unavailable");
     }
 
     const stderrStream = this.process.stderr;
     if (!stderrStream) {
-      throw new Error("tsgo LSP stderr is unavailable");
+      throw new Error("tsc LSP stderr is unavailable");
     }
 
     stdoutStream.on("data", (chunk: Buffer) => {
@@ -180,7 +180,7 @@ export class TsgoLspClient {
 
     this.process.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
       const stderrOutput = this.readStderrOutput();
-      const failureReason = `tsgo LSP exited before the request completed (code=${String(code)}, signal=${String(signal)})${stderrOutput}`;
+      const failureReason = `tsc LSP exited before the request completed (code=${String(code)}, signal=${String(signal)})${stderrOutput}`;
       this.rejectPendingRequests(new Error(failureReason));
     });
   }
@@ -211,7 +211,7 @@ export class TsgoLspClient {
     };
 
     await this.sendRequest("initialize", initializeParams);
-    this.sendNotification("initialized");
+    this.sendNotification("initialized", {}); // Note: param is required in some servers
   }
 
   public prepareRename(filePath: string, position: LineAndCharacter): Promise<unknown> {
@@ -429,7 +429,7 @@ export class TsgoLspClient {
   private writeSerializedMessage(message: Record<string, unknown>): void {
     const stdinStream = this.process.stdin;
     if (!stdinStream || stdinStream.destroyed) {
-      throw new Error(`Cannot write to tsgo LSP stdin${this.readStderrOutput()}`);
+      throw new Error(`Cannot write to tsc LSP stdin${this.readStderrOutput()}`);
     }
 
     const serializedMessage = JSON.stringify(message);

@@ -20,7 +20,7 @@ import { runCheck, runTypescriptAiPolicyCli } from "../cli.ts";
 const FIXTURE_RUNTIME_PATHS = {
   oxlintConfigPath: "/runtime/oxlint.config.ts",
   oxlintExecutablePath: "/runtime/oxlint",
-  tsgoExecutablePath: "/runtime/tsgo.js",
+  tscExecutablePath: "/runtime/tsc",
 };
 
 type TestHarness = {
@@ -39,7 +39,7 @@ type TypescriptAiPolicyCliDependencies = {
   readSemanticFixRuntimePaths: () => {
     oxlintConfigPath: string;
     oxlintExecutablePath: string;
-    tsgoExecutablePath: string;
+    tscExecutablePath: string;
   };
   runCheck: () => Promise<void>;
   writeStderr: (text: string) => void;
@@ -66,7 +66,7 @@ function createTestHarness(options: TestHarnessOptions = {}): TestHarness {
   const guidanceOutput = options.guidanceOutput ?? "";
   const applyResult: ApplySemanticFixesResult = options.applyResult ?? {
     appliedFileCount: 0,
-    backendName: "tsgo-lsp+native",
+    backendName: "tsc-lsp+native",
     changedFilePaths: [],
     plannedFixCount: 0,
     skippedDiagnostics: [],
@@ -139,7 +139,7 @@ it("runs the fix-semantic subcommand through the package CLI", async () => {
   const harness = createTestHarness({
     applyResult: {
       appliedFileCount: 1,
-      backendName: "tsgo-lsp+native",
+      backendName: "tsc-lsp+native",
       changedFilePaths: [join(targetDirectoryPath, "models.ts")],
       plannedFixCount: 1,
       skippedDiagnostics: [],
@@ -195,7 +195,7 @@ it("runs the fix-semantic subcommand through the package CLI", async () => {
         oxlintConfigPath: FIXTURE_RUNTIME_PATHS.oxlintConfigPath,
         oxlintExecutablePath: FIXTURE_RUNTIME_PATHS.oxlintExecutablePath,
         targetDirectoryPath,
-        tsgoExecutablePath: FIXTURE_RUNTIME_PATHS.tsgoExecutablePath,
+        tscExecutablePath: FIXTURE_RUNTIME_PATHS.tscExecutablePath,
       },
     ]);
     expect(harness.stdout.join("")).toBe(
@@ -206,7 +206,7 @@ it("runs the fix-semantic subcommand through the package CLI", async () => {
       planning semantic fix 1/1: Rename UserProfile to IUserProfile
       applying changes: 2 text edit(s) and 0 file move(s) across 1 file(s)
       semantic fix complete: 1 plan(s), 1 changed file(s), 0 skipped diagnostic(s)
-      backend: tsgo-lsp+native
+      backend: tsc-lsp+native
       planned fixes: 1
       applied files: 1
       changed files:
@@ -224,7 +224,7 @@ it("passes the dry-run flag through the fix-semantic subcommand", async () => {
   const harness = createTestHarness({
     applyResult: {
       appliedFileCount: 0,
-      backendName: "tsgo-lsp+native",
+      backendName: "tsc-lsp+native",
       changedFilePaths: [join(targetDirectoryPath, "__tests__/useAccount.test.ts")],
       plannedFixCount: 1,
       skippedDiagnostics: [
@@ -286,7 +286,7 @@ it("passes the dry-run flag through the fix-semantic subcommand", async () => {
         oxlintConfigPath: FIXTURE_RUNTIME_PATHS.oxlintConfigPath,
         oxlintExecutablePath: FIXTURE_RUNTIME_PATHS.oxlintExecutablePath,
         targetDirectoryPath,
-        tsgoExecutablePath: FIXTURE_RUNTIME_PATHS.tsgoExecutablePath,
+        tscExecutablePath: FIXTURE_RUNTIME_PATHS.tscExecutablePath,
       },
     ]);
     expect(harness.stdout.join("")).toBe(
@@ -297,7 +297,7 @@ it("passes the dry-run flag through the fix-semantic subcommand", async () => {
       planning semantic fix 1/1: Move useAccount.test.ts to __tests__/useAccount.test.ts
       dry run: 1 text edit(s) and 1 file move(s) across 1 file(s)
       semantic fix complete: 1 plan(s), 1 changed file(s), 1 skipped diagnostic(s)
-      backend: tsgo-lsp+native
+      backend: tsc-lsp+native
       planned fixes: 1
       applied files: 0
       changed files:

@@ -9,7 +9,7 @@ function readExpectedFileContent(text: string): string {
   return `${dedentString(text)}\n`;
 }
 
-it("prefers the narrowest overlapping edit when tsgo returns a redundant wider rename span with the same replacement", async () => {
+it("prefers the narrowest overlapping edit when tsc returns a redundant wider rename span with the same replacement", async () => {
   const projectPath = await mkdtemp(join(tmpdir(), "apply-text-edits-test-"));
   const filePath = join(projectPath, "bundlers.ts");
 

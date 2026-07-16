@@ -209,7 +209,7 @@ token-efficient lint output.
 
 ## CLI tooling
 
-The package includes the `typescript-ai-policy` CLI. Its `fix-semantic` command is backed by `tsgo --lsp --stdio`, and
+The package includes the `typescript-ai-policy` CLI. Its `fix-semantic` command is backed by `tsc --lsp --stdio`, and
 its `guidance` command prints authoritative repair guidance for the local `@alexgorbatchev/*` rules as a wrapped
 Markdown bullet list with bold rule names or as JSON.
 

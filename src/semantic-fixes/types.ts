@@ -139,7 +139,7 @@ export type ApplySemanticFixesOptions = {
   oxlintConfigPath: string;
   oxlintExecutablePath: string;
   targetDirectoryPath: string;
-  tsgoExecutablePath: string;
+  tscExecutablePath: string;
 };
 
 export type SkippedDiagnostic = {

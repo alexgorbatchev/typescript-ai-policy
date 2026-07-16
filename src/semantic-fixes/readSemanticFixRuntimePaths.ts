@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 export type SemanticFixRuntimePaths = {
   oxlintConfigPath: string;
   oxlintExecutablePath: string;
-  tsgoExecutablePath: string;
+  tscExecutablePath: string;
 };
 
 const require = createRequire(import.meta.url);
@@ -25,14 +25,19 @@ export function readSemanticFixRuntimePaths(): SemanticFixRuntimePaths {
     "oxlint",
     'Missing peer dependency "oxlint". Install oxlint in the consuming project so the semantic-fix CLI can run repository policy checks.',
   );
-  const tsgoPackageRootPath = readInstalledPackageRootPath(
-    "@typescript/native-preview",
-    'Missing peer dependency "@typescript/native-preview". Install @typescript/native-preview in the consuming project to use the semantic-fix CLI.',
-  );
+  let tscPackageRootPath: string;
+  try {
+    tscPackageRootPath = readInstalledPackageRootPath("@typescript/native", "");
+  } catch {
+    tscPackageRootPath = readInstalledPackageRootPath(
+      "typescript",
+      'Missing peer dependency "typescript" or "@typescript/native". Install typescript 7+ (or use the @typescript/native alias) in the consuming project to use the semantic-fix CLI.',
+    );
+  }
 
   return {
     oxlintConfigPath: resolve(packageRootPath, "src/oxlint/oxlint.config.ts"),
     oxlintExecutablePath: resolve(oxlintPackageRootPath, "bin/oxlint"),
-    tsgoExecutablePath: resolve(tsgoPackageRootPath, "bin/tsgo.js"),
+    tscExecutablePath: resolve(tscPackageRootPath, "bin/tsc"),
   };
 }

@@ -1,6 +1,6 @@
 import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { applyFileChanges } from "./applyFileChanges.ts";
-import { createTsgoLspSemanticFixBackend } from "./backends/tsgo-lsp/createTsgoLspSemanticFixBackend.ts";
+import { createTscLspSemanticFixBackend } from "./backends/tsc-lsp/createTscLspSemanticFixBackend.ts";
 import { createInterfaceNamingConventionSemanticFixProvider } from "./providers/createInterfaceNamingConventionSemanticFixProvider.ts";
 import { createNoIPrefixedTypeAliasesSemanticFixProvider } from "./providers/createNoIPrefixedTypeAliasesSemanticFixProvider.ts";
 import { createTestFileLocationConventionSemanticFixProvider } from "./providers/createTestFileLocationConventionSemanticFixProvider.ts";
@@ -115,8 +115,8 @@ export async function applySemanticFixes(options: ApplySemanticFixesOptions): Pr
       createTestFileLocationConventionSemanticFixProvider(),
     ].map((semanticFixProvider) => [semanticFixProvider.ruleCode, semanticFixProvider]),
   );
-  const semanticFixBackend = createTsgoLspSemanticFixBackend({
-    tsgoExecutablePath: options.tsgoExecutablePath,
+  const semanticFixBackend = createTscLspSemanticFixBackend({
+    tscExecutablePath: options.tscExecutablePath,
   });
 
   try {

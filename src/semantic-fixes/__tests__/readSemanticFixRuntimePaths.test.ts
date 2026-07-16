@@ -17,7 +17,7 @@ it("resolves runtime paths from the installed package layout instead of the curr
     expect(readSemanticFixRuntimePaths()).toEqual({
       oxlintConfigPath: resolve(repositoryRootPath, "src/oxlint/oxlint.config.ts"),
       oxlintExecutablePath: resolve(repositoryRootPath, "node_modules/oxlint/bin/oxlint"),
-      tsgoExecutablePath: resolve(repositoryRootPath, "node_modules/@typescript/native-preview/bin/tsgo.js"),
+      tscExecutablePath: resolve(repositoryRootPath, "node_modules/@typescript/native/bin/tsc"),
     });
   } finally {
     process.chdir(originalWorkingDirectoryPath);

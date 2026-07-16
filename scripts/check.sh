@@ -12,8 +12,8 @@ bun x oxfmt --check .
 echo "==> oxlint"
 bun x oxlint .
 
-echo "==> tsgo"
-bun x tsgo --noEmit
+echo "==> tsc"
+bun x tsc --noEmit
 
 echo "==> build"
 bun run build

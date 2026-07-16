@@ -48,7 +48,7 @@ type TypescriptAiPolicyCliDependencies = {
   readSemanticFixRuntimePaths: () => {
     oxlintConfigPath: string;
     oxlintExecutablePath: string;
-    tsgoExecutablePath: string;
+    tscExecutablePath: string;
   };
   runCheck: () => Promise<void>;
   writeStderr: (text: string) => void;
@@ -191,7 +191,7 @@ function createTypescriptAiPolicyCli(dependencies: TypescriptAiPolicyCliDependen
         oxlintConfigPath: runtimePaths.oxlintConfigPath,
         oxlintExecutablePath: runtimePaths.oxlintExecutablePath,
         targetDirectoryPath: arguments_.targetDirectoryPath,
-        tsgoExecutablePath: runtimePaths.tsgoExecutablePath,
+        tscExecutablePath: runtimePaths.tscExecutablePath,
       });
 
       writeStdoutLine(dependencies, `backend: ${result.backendName}`);

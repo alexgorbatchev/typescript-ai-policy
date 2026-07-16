@@ -34,11 +34,11 @@ function readOptions(targetDirectoryPath: string) {
     oxlintConfigPath: resolve(process.cwd(), "src/oxlint/oxlint.config.ts"),
     oxlintExecutablePath: resolve(process.cwd(), "node_modules/.bin/oxlint"),
     targetDirectoryPath,
-    tsgoExecutablePath: resolve(process.cwd(), "node_modules/.bin/tsgo"),
+    tscExecutablePath: resolve(process.cwd(), "node_modules/.bin/tsc"),
   };
 }
 
-it("applies interface naming fixes through the tsgo LSP backend", async () => {
+it("applies interface naming fixes through the tsc LSP backend", async () => {
   const projectPath = await createProject([
     {
       content: readProjectFileContent(`
@@ -84,7 +84,7 @@ it("applies interface naming fixes through the tsgo LSP backend", async () => {
 
     expect(result).toEqual({
       appliedFileCount: 2,
-      backendName: "tsgo-lsp+native",
+      backendName: "tsc-lsp+native",
       changedFilePaths: [join(projectPath, "consumer.ts"), join(projectPath, "models.ts")],
       plannedFixCount: 1,
       skippedDiagnostics: [],
@@ -114,7 +114,7 @@ it("applies interface naming fixes through the tsgo LSP backend", async () => {
   }
 });
 
-it("applies type-alias prefix fixes through the tsgo LSP backend", async () => {
+it("applies type-alias prefix fixes through the tsc LSP backend", async () => {
   const projectPath = await createProject([
     {
       content: readProjectFileContent(`
@@ -160,7 +160,7 @@ it("applies type-alias prefix fixes through the tsgo LSP backend", async () => {
 
     expect(result).toEqual({
       appliedFileCount: 2,
-      backendName: "tsgo-lsp+native",
+      backendName: "tsc-lsp+native",
       changedFilePaths: [join(projectPath, "consumer.ts"), join(projectPath, "models.ts")],
       plannedFixCount: 1,
       skippedDiagnostics: [],
@@ -334,7 +334,7 @@ it("moves misplaced .test.ts files into a sibling __tests__ directory and rewrit
 
     expect(result).toEqual({
       appliedFileCount: 1,
-      backendName: "tsgo-lsp+native",
+      backendName: "tsc-lsp+native",
       changedFilePaths: [join(projectPath, "widgets/__tests__/SignalPanel.test.ts")],
       plannedFixCount: 1,
       skippedDiagnostics: [],
@@ -397,7 +397,7 @@ it("skips misplaced .test.ts moves when the canonical __tests__ file already exi
 
     expect(result).toEqual({
       appliedFileCount: 0,
-      backendName: "tsgo-lsp+native",
+      backendName: "tsc-lsp+native",
       changedFilePaths: [],
       plannedFixCount: 0,
       skippedDiagnostics: [
@@ -448,7 +448,7 @@ it("reports dry-run plans without mutating files", async () => {
 
     expect(result).toEqual({
       appliedFileCount: 0,
-      backendName: "tsgo-lsp+native",
+      backendName: "tsc-lsp+native",
       changedFilePaths: [join(projectPath, "models.ts")],
       plannedFixCount: 1,
       skippedDiagnostics: [],
@@ -497,7 +497,7 @@ it("skips interface names that cannot be safely normalized mechanically", async 
 
     expect(result).toEqual({
       appliedFileCount: 0,
-      backendName: "tsgo-lsp+native",
+      backendName: "tsc-lsp+native",
       changedFilePaths: [],
       plannedFixCount: 0,
       skippedDiagnostics: [
