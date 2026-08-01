@@ -33,11 +33,16 @@ Upstream Oxlint, TypeScript, and Jest rules stay enabled as baseline correctness
 bun add -d @alexgorbatchev/typescript-ai-policy oxfmt oxlint
 ```
 
-If you want to use the `typescript-ai-policy fix-semantic` command, install its optional peer dependencies too:
+If you want to use the `typescript-ai-policy fix-semantic` command, install its optional peer dependencies:
 
-```bash
-bun add -d typescript @typescript/native-preview
-```
+- If your project is already using **TypeScript 7+**:
+  ```bash
+  bun add -d typescript
+  ```
+- If your project is on **TypeScript 6** (you must also install the native preview LSP backend for the fixer to run):
+  ```bash
+  bun add -d typescript @typescript/native-preview
+  ```
 
 The published package ships compiled `.js` runtime files plus `.d.ts` declarations. The installed `typescript-ai-policy`
 CLI runs through Bun, so Bun is required to execute the package-installed bin. The `fix-semantic` command still
