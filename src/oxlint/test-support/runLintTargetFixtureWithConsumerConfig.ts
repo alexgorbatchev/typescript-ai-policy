@@ -41,6 +41,8 @@ function readFilenameStyleLine(filenameStyle: CreateOxlintConfigOptions["filenam
       return "  filenameStyle: FilenameStyle.PascalCase,";
     case FilenameStyle.DashCase:
       return "  filenameStyle: FilenameStyle.DashCase,";
+    default:
+      return null;
   }
 }
 

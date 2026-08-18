@@ -1,6 +1,9 @@
-import { FilenameStyle } from "./FilenameStyle.js";
+export const FilenameStyle = {
+  PascalCase: 0,
+  DashCase: 1,
+} as const;
 
-export { FilenameStyle };
+export type FilenameStyle = (typeof FilenameStyle)[keyof typeof FilenameStyle];
 
 export const DEFAULT_FILENAME_STYLE = FilenameStyle.PascalCase;
 
@@ -14,6 +17,8 @@ export function readFilenameStyleLabel(filenameStyle: FilenameStyle): string {
       return "[use]PascalCase";
     case FilenameStyle.DashCase:
       return "dash-case";
+    default:
+      return "[use]PascalCase";
   }
 }
 
