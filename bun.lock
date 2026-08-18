@@ -20,13 +20,11 @@
         "typescript": "6.0.3",
       },
       "peerDependencies": {
-        "@typescript/native-preview": "*",
         "oxfmt": "^0.49.0",
         "oxlint": "^1.64.0",
         "typescript": ">=6.0.3",
       },
       "optionalPeers": [
-        "@typescript/native-preview",
         "typescript",
       ],
     },

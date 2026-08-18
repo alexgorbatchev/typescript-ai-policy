@@ -181,15 +181,30 @@ function readRequiresStoryPlay(
   }, true);
 }
 
-function hasPlayProperty(expression: TSESTree.Expression): boolean {
+function readPlayProperty(expression: TSESTree.Expression): TSESTree.Property | null {
   const storyObjectExpression = readStoryObjectExpression(expression);
   if (!storyObjectExpression) {
+    return null;
+  }
+
+  const matchingProperty = storyObjectExpression.properties.find((property) => {
+    return property.type === "Property" && readPropertyName(property) === "play";
+  });
+
+  return matchingProperty?.type === "Property" ? matchingProperty : null;
+}
+
+function isEmptyPlayFunction(expression: TSESTree.Expression): boolean {
+  const unwrappedExpression = unwrapTypeScriptExpression(expression);
+  if (unwrappedExpression.type !== "ArrowFunctionExpression" && unwrappedExpression.type !== "FunctionExpression") {
     return false;
   }
 
-  return storyObjectExpression.properties.some((property) => {
-    return property.type === "Property" && readPropertyName(property) === "play";
-  });
+  if (unwrappedExpression.body.type === "BlockStatement") {
+    return unwrappedExpression.body.body.length === 0;
+  }
+
+  return false;
 }
 
 function isStoryDeclarator(declarator: TSESTree.VariableDeclarator): declarator is StoryCandidateEntry["declarator"] {
@@ -326,10 +341,10 @@ const storyExportContractRule: RuleModule = {
         "Annotate this story binding as `: Story`. Do not rely on inference for story objects.",
       unexpectedStoryTypeAssertion:
         "Replace this story assertion with a const type annotation. Keep story types on the binding, not on the object expression.",
-      missingStoryPlay:
-        'Add a `play` property to this story object. Only stories excluded from Storybook test runs with `"!test"` may omit it.',
+      emptyStoryPlay: "Provide a non-empty `play` function with story assertions.",
+      missingStoryPlay: "Add a `play` function to this story object.",
       invalidSingleStoryExportShape:
-        "Use the single-story export shape for single-story files. Export one `Default` binding and re-export it as the sibling component name.",
+        "Declare `const Default: Story = { ... };` locally and re-export it using `export { Default as {{componentName}} };`.",
       invalidMultiStoryExportShape:
         "Export multiple stories directly from their declarations. Do not re-export local story bindings through an export list.",
     },
@@ -378,14 +393,19 @@ const storyExportContractRule: RuleModule = {
             });
           }
 
-          if (
-            readRequiresStoryPlay(storyEntry.declarator.init, metaTagDirectives) &&
-            !hasPlayProperty(storyEntry.declarator.init)
-          ) {
-            context.report({
-              node: readStoryObjectExpression(storyEntry.declarator.init) ?? storyEntry.declarator,
-              messageId: "missingStoryPlay",
-            });
+          const playProperty = readPlayProperty(storyEntry.declarator.init);
+          if (readRequiresStoryPlay(storyEntry.declarator.init, metaTagDirectives)) {
+            if (!playProperty) {
+              context.report({
+                node: readStoryObjectExpression(storyEntry.declarator.init) ?? storyEntry.declarator,
+                messageId: "missingStoryPlay",
+              });
+            } else if (isExpressionPropertyValue(playProperty.value) && isEmptyPlayFunction(playProperty.value)) {
+              context.report({
+                node: playProperty.value,
+                messageId: "emptyStoryPlay",
+              });
+            }
           }
         });
 

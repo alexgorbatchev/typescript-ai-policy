@@ -15,14 +15,14 @@ const EXPECTED_STORY_EXPORT_CONTRACT_GUIDANCE =
   'Keep story exports limited to the approved Storybook surface. Give each exported story a typed `Story` binding and a `play` function unless `meta.tags` or `story.tags` remove the built-in `test` tag with `"!test"`. Move helper bindings and support code out of story files.';
 
 const EXPECTED_STORY_EXPORT_CONTRACT_MESSAGES = {
+  emptyStoryPlay: "Provide a non-empty `play` function with story assertions.",
   invalidMultiStoryExportShape:
     "Export multiple stories directly from their declarations. Do not re-export local story bindings through an export list.",
   invalidSingleStoryExportShape:
-    "Use the single-story export shape for single-story files. Export one `Default` binding and re-export it as the sibling component name.",
+    "Declare `const Default: Story = { ... };` locally and re-export it using `export { Default as {{componentName}} };`.",
   missingStoryExport:
     "Export at least one story object after the default meta. Keep story files focused on the approved Storybook surface.",
-  missingStoryPlay:
-    'Add a `play` property to this story object. Only stories excluded from Storybook test runs with `"!test"` may omit it.',
+  missingStoryPlay: "Add a `play` function to this story object.",
   missingStoryTypeAnnotation: "Annotate this story binding as `: Story`. Do not rely on inference for story objects.",
   unexpectedStoryTypeAssertion:
     "Replace this story assertion with a const type annotation. Keep story types on the binding, not on the object expression.",
@@ -51,7 +51,9 @@ ruleTester.run("story-export-contract enforces story export shapes and play func
         type Story = StoryObj<typeof meta>;
 
         const Default: Story = {
-          play: async () => {},
+          play: async () => {
+            console.log('play');
+          },
         };
 
         export { Default as Button };
@@ -73,12 +75,16 @@ ruleTester.run("story-export-contract enforces story export shapes and play func
         type Story = StoryObj<typeof meta>;
 
         export const Default: Story = {
-          play: async () => {},
+          play: async () => {
+            console.log('play');
+          },
         };
 
         export const WithProps: Story = {
           args: { isReady: true },
-          play: async () => {},
+          play: async () => {
+            console.log('play');
+          },
         };
       `,
       filename: "src/accounts/components/stories/AccountPanel.stories.tsx",
@@ -142,8 +148,38 @@ ruleTester.run("story-export-contract enforces story export shapes and play func
 
         type Story = StoryObj<typeof meta>;
 
-        export const Default: Story = {
+        const Default: Story = {
           play: async () => {},
+        };
+
+        export { Default as Button };
+      `,
+      filename: "src/accounts/components/stories/Button.stories.tsx",
+      languageOptions: languageOpts,
+      errors: [
+        {
+          messageId: "emptyStoryPlay",
+        },
+      ],
+      output: null,
+    },
+    {
+      code: `
+        import type { Meta, StoryObj } from '@storybook/react';
+        import { Button } from '../Button';
+
+        const meta: Meta<typeof Button> = {
+          component: Button,
+        };
+
+        export default meta;
+
+        type Story = StoryObj<typeof meta>;
+
+        export const Default: Story = {
+          play: async () => {
+            console.log('play');
+          },
         };
       `,
       filename: "src/accounts/components/stories/Button.stories.tsx",
@@ -230,11 +266,15 @@ ruleTester.run("story-export-contract enforces story export shapes and play func
         type Story = StoryObj<typeof meta>;
 
         const Default: Story = {
-          play: async () => {},
+          play: async () => {
+            console.log('play');
+          },
         };
 
         const WithProps: Story = {
-          play: async () => {},
+          play: async () => {
+            console.log('play');
+          },
         };
 
         export { Default, WithProps };

@@ -32,8 +32,7 @@ describe("story lint-target integration", () => {
           column: 24,
           filePath: "src/accounts/components/stories/AccountPanel.stories.tsx",
           line: 13,
-          message:
-            'Add a `play` property to this story object. Only stories excluded from Storybook test runs with `"!test"` may omit it.',
+          message: "Add a `play` function to this story object.",
           ruleId: "@alexgorbatchev(story-export-contract)",
           severity: "error",
         },

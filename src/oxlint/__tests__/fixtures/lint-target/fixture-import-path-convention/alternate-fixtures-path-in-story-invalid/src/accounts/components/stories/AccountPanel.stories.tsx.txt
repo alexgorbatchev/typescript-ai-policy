@@ -15,7 +15,9 @@ const Default: Story = {
   args: {
     rows: fixture_accountPanel,
   },
-  play: async () => {},
+  play: async () => {
+    console.log("play");
+  },
 };
 
 export { Default as AccountPanel };
