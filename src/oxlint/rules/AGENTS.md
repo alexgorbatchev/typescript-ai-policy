@@ -1,211 +1,33 @@
-# AGENTS
+# src/oxlint/rules
 
-This directory contains the local **Oxlint rule modules** used by `../plugin.ts`.
+Oxlint custom rule modules (`*.ts`), shared rule helpers (`helpers.ts`), and unit tests (`__tests__/*.test.ts`).
 
-## Core rule-format contract
+## Commands
 
-**Write rule files exactly like ESLint 9+ rule files, but keep them in TypeScript files.**
+- Test single rule: `bun test src/oxlint/rules/__tests__/my-rule.test.ts`
+- Test all rules: `bun test src/oxlint/rules/__tests__`
 
-Oxlint's JS plugin API is documented as **ESLint v9+ compatible**. In practice, that means:
+## Local conventions
 
-- Rule modules use the normal ESLint shape: `export default { meta, create(context) { ... } }`
-- Rule files now live as **`.ts` ESM modules** in this repository
-- Visitors are standard ESLint/ESTree visitors like `Program`, `CallExpression`, `JSXAttribute`, etc.
-- `context.report(...)`, `messageId`, `fix(fixer)`, `schema`, `messages`, and `fixable` should be used exactly like normal ESLint 9+ rules
-- `meta.messages` is required for stable testing; do not rely on ad-hoc raw messages
+- Format: Write rule modules in TypeScript `.ts` as ESLint 9+ compatible rules (`export default { meta, create(context) { ... } }`).
+- Naming & IDs: Kebab-case filenames matching plugin rule IDs (`no-*` for bans, `require-*` for required patterns, `*-convention` / `consistent-*` for structure).
+- Shared helpers: Place reusable AST/path helpers in `helpers.ts`.
+- Steering diagnostics: Max 2 short, direct sentences. Do not include current token or identifier spelling in message text. Do not offer escape hatches or policy workarounds.
+- Guidance: Put detailed context in `meta.docs.guidance` (contributes to `bun run cli -- guidance`).
+- Multi-line highlights: Override `loc` for large declarations to highlight only the first line.
 
-If you know how to write an ESLint 9+ custom rule, you already know how to write the Oxlint rules in this folder.
+## Local gotchas
 
-## Folder intent
+- **Mandatory Red/Green Workflow:** Every rule or policy change MUST be developed red/green. Write or update the test first, verify it fails (RED), then implement the fix and verify it passes (GREEN). Never edit rule code before proving test failure.
 
-- each `*.ts` file in this directory is a single rule module
-- `helpers.ts` contains shared helpers reused by multiple rules
-- `../plugin.ts` registers these rule modules under the plugin name
-- `__tests__/` contains Bun + `RuleTester` tests for the local rules
+## Boundaries
 
-## Expected rule shape
+- Always: any time code is changed such that results from running that code are changed, a test file must be changed as well; 90% code coverage is required (scripts/ folder is excluded from this rule)
+- Always: follow the mandatory red/green workflow for every rule or policy change
+- Ask first: removing a rule or relaxing an existing steering check
+- Never: rely on ad-hoc raw messages without `meta.messages`, or include current token/identifier spelling in reported diagnostics
 
-```js
-export default {
-  meta: {
-    type: "problem",
-    docs: {
-      description: "Describe the rule clearly",
-    },
-    schema: [],
-    messages: {
-      someMessage: "Message text",
-    },
-    fixable: "code",
-  },
-  create(context) {
-    return {
-      SomeAstNode(node) {
-        context.report({
-          node,
-          messageId: "someMessage",
-        });
-      },
-    };
-  },
-};
-```
+## References
 
-## Rule-writing requirements
-
-When adding or changing rules here:
-
-1. Follow **ESLint 9+ custom rule conventions** first.
-2. Keep each rule in its own `.ts` file and export a single rule module as the default export.
-3. Put reusable shared helpers in `helpers.ts` instead of duplicating them across rules.
-4. Keep rule file names aligned with plugin rule ids in kebab-case whenever possible.
-5. Prefer conventional ESLint-style rule ids: use `no-*` for bans, `require-*` for must-exist policies, and `*-convention` / `consistent-*` for naming or formatting rules.
-6. Keep each rule focused on one repository policy.
-7. Prefer clear `meta.docs.description`, `schema`, and `messages` over ad-hoc reporting.
-8. Use `messageId` + `data` in `context.report(...)` when the rule defines `meta.messages`. However, **do not include the names of reported things in the message text** (for example node names, identifiers, attribute names, or the reported token's current spelling) because the lint harness already points to the offending syntax.
-9. **Do not suggest escape hatches in rule messages.** Do not offer alternate easy outs, policy workarounds, or mechanically convenient exceptions that let an agent silence the rule without fixing the ownership or placement problem.
-10. **Keep steering messages strict, direct, and grammatical.** Rule messages must be a maximum of 2 short sentences that provide a strict, direct instruction on what to fix.
-11. **Prefer a single sentence when it fully specifies the repair.** Add a second short sentence only when it is required to disambiguate the fix. Put rationale, edge cases, and full policy detail in `meta.docs.guidance`, not repeated diagnostics.
-12. **Format path references consistently in diagnostics.** Write directory names with a trailing slash such as `"stories/"` or `"__tests__/"`, write filenames without a trailing slash such as `"index.ts"`, and preserve glob or pattern syntax when the repair itself is pattern-based such as `"*.test.ts"`.
-13. **Use only the approved message shapes.** Use `Rename ...`, `Place ...`, `Create ...`, `Use ...`, or `Export ...` for direct repairs, and use `Only ... are allowed in ".../".` for directory allowlist rules.
-14. **Allowed patterns may appear when they are the repair.** It is acceptable to include canonical filenames, globs, or allowlist patterns in diagnostics, but do not include the offending identifier, path, or current spelling.
-15. **Keep `meta.docs.guidance` concrete and specific.** Guidance is the detailed layer for the CLI output, so name the exact directories, filenames, patterns, and file roles that the rule enforces instead of vague terms such as `surface`, `area`, or `canonical location`.
-16. **Keep `meta.docs.guidance` scoped to this rule's contract.** Do not describe neighboring policies or repairs enforced by other rules.
-17. **Avoid multi-line highlights unless the violating syntax is itself multi-line.** Prefer the most specific violating subnode or token. For declaration-style rules whose natural node spans a full function, class, hook, component, `if` block, JSX element, or other large body, override `loc` so the diagnostic highlights only the first line when that first line fully captures the violation.
-18. Put file-scoping exceptions in Oxlint config when possible, not inside rule heuristics.
-19. If a rule applies to a path-glob-addressable file role such as `index.ts`, `constants.ts`, or `types.ts`, require narrow `overrides[].files` activation in `../oxlint.config.ts` instead of global `rules`.
-20. If a rule is fixable, implement it with standard ESLint fixer callbacks.
-
-## Authoritative agent guidance output
-
-Each local rule's `meta.docs.guidance` contributes to the package's authoritative aggregate agent guidance output.
-
-When you need to inspect the full published guidance surface for agents, use the repository-local CLI instead of inferring it from a subset of rule files:
-
-```bash
-bun run cli -- guidance
-bun run cli -- guidance --json
-```
-
-- use the wrapped Markdown output for human review
-- use `--json` when another tool or agent needs structured rule-name-to-guidance data
-- treat this CLI output as the authoritative aggregate guidance for the local `@alexgorbatchev/*` rules
-- reconcile the package-level guidance against the consuming repository's actual `oxlint.config.ts` before applying file-specific repairs
-
-## Mandatory red/green workflow for policy changes
-
-**Every policy change in this directory must be developed red/green. No exceptions.**
-
-If you add, tighten, relax, or re-scope a rule or its config wiring, do the work in this order:
-
-1. **Write or update the test first** so it captures the intended policy change.
-2. **Run the test and observe it fail** against the current implementation. This is the required **red** state.
-3. **Only after the failure is proven**, change the rule/config/docs to implement the policy.
-4. **Run the same test again and make it pass.** This is the required **green** state.
-5. **Run the broader affected suite** so the policy still works as part of the whole system.
-
-Do **not** change rule code first and “backfill” tests later. A policy change without a prior failing test is an invalid change process in this repository.
-
-### What must go red first
-
-- **Rule semantics change** → start with a `RuleTester` test in `__tests__/` for the rule module.
-- **Config wiring / override scope / file-role behavior change** → start with an integration test under `src/oxlint/__tests__/` that exercises the real shared config.
-- **Cross-rule or whole-policy behavior change** → add both:
-  - the narrow `RuleTester` coverage for the local rule behavior
-  - the integration coverage for the full configured policy surface
-
-### Integration-test requirement
-
-If the change affects any of the following, you must add or update the lint-target integration harness first and prove the failing case there before fixing implementation:
-
-- override `files` globs
-- rule enable/disable scope
-- interactions between story, test, hook, fixture, or component file roles
-- conflicts where one rule reports a file that should be owned by another rule
-- any bug that reproduces only when the full shared config is loaded
-
-### Minimum validation commands
-
-Run the smallest relevant red/green command first, then the broader validation:
-
-- Single rule test: `bun test src/oxlint/rules/__tests__/my-rule.test.ts`
-- Shared-config integration tests: `bun test src/oxlint/__tests__`
-- Full repository validation: `bun run check`
-
-## Rule test instructions
-
-Use the same structure for every Oxlint rule test in `__tests__/`.
-
-- Test files are **TypeScript**: `*.test.ts`
-- Rule modules under test live in **TypeScript** and are imported from `../*.ts`
-- Tests run with **Bun** and `@typescript-eslint/rule-tester`
-- Prefer **`RuleTester` rule tests** over ad-hoc subprocess wrappers
-- Use the shared language options from `./__tests__/helpers.ts`
-- Do **not** invent one-off helpers like `runOxlint()` inside a test file when the same behavior can be expressed with `RuleTester`
-
-### Required test structure
-
-```ts
-import { afterAll, describe, it } from "bun:test";
-import { RuleTester } from "@typescript-eslint/rule-tester";
-import { languageOpts } from "./helpers.ts";
-import ruleModule from "../my-rule.ts";
-
-RuleTester.afterAll = afterAll;
-RuleTester.describe = describe;
-RuleTester.it = it;
-RuleTester.itOnly = it.only;
-
-const ruleTester = new RuleTester();
-
-ruleTester.run("my-rule", ruleModule, {
-  valid: [
-    {
-      code: `export function Example() { return <div />; }`,
-      filename: "Example.tsx",
-      languageOptions: languageOpts,
-    },
-  ],
-  invalid: [
-    {
-      code: `export function Example() { return <div bad />; }`,
-      filename: "Example.tsx",
-      languageOptions: languageOpts,
-      errors: [
-        {
-          messageId: "someMessageId",
-        },
-      ],
-      output: null,
-    },
-  ],
-});
-```
-
-### Assertion rules
-
-- Assert rule errors with `messageId`
-- Include `data` whenever the message contains placeholders
-- For **non-fixable** rules, set `output: null`
-- For **fixable** rules, assert the exact fixed output string
-
-### Repository-specific expectations
-
-- Test the **rule module directly** with `RuleTester`
-- Import rule modules from `../*.ts`, not through `plugin.ts`
-- Reuse `languageOpts` from `./__tests__/helpers.ts`
-- Keep tests colocated in `__tests__/`
-- Keep naming aligned between source rule files and test files
-
-## Source of truth
-
-When unsure, consult:
-
-- Oxlint JS plugin docs
-- ESLint 9+ plugin docs
-- ESLint 9+ custom rule docs
-- `../AGENTS.md` for plugin-entry guidance
-
-The important repo-specific assumption is simple:
-
-> In this folder, **Oxlint rule files are authored as ESLint 9+ lint files in TypeScript `.ts` module format**, and their tests live in `__tests__/` as `*.test.ts` files.
+- `src/oxlint/AGENTS.md`
+- `AGENTS.md`
