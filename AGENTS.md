@@ -22,6 +22,10 @@ Shared Oxfmt and Oxlint configurations plus local Oxlint JS plugin enforcing cod
 - Whole-policy compatibility: Evaluate enabled policy surface as one coupled system. Report any mutually incompatible rule interactions immediately to the user.
 - Sibling registry sync: Keep sibling registry skills in `../ai-registry/skills/` (`storybook`, `react-development`, `react-testing`, `typescript-code-quality`, `typescript-testing`) synchronized whenever published guidance or contracts change.
 
+## Tool compatibility
+
+- Keep Oxfmt and Oxlint consumer compatibility in peer dependencies; test dependency upgrades with the shared configs and integration suite before widening supported ranges.
+
 ## Release gotchas
 
 - Release protocol: Do not publish or push release tags without an explicit user request. Version in `package.json` and git tag must agree before tag creation. Edit GitHub Release notes after release.

@@ -43,6 +43,10 @@ export function createFixtureRepo(fixturePath: string): string {
   const fixtureRepositoryPath = mkdtempSync(
     join(REPOSITORY_TMP_DIRECTORY_PATH, `typescript-ai-policy-${fixtureDirectoryPrefix}-`),
   );
+  const gitInit = Bun.spawnSync(["git", "init", "--quiet", fixtureRepositoryPath]);
+  if (gitInit.exitCode !== 0) {
+    throw new Error(`Could not initialize fixture repository: ${new TextDecoder().decode(gitInit.stderr)}`);
+  }
   copyFixtureDirectory(sourceFixtureDirectoryPath, fixtureRepositoryPath);
 
   const packageJsonPath = join(fixtureRepositoryPath, "package.json");

@@ -18,6 +18,10 @@ describe("createFixtureRepo", () => {
     const fixtureRepositoryPath = createFixtureRepo("stories-directory-file-convention/invalid-stories-directory-file");
     createdFixtureRepositoryPaths.add(fixtureRepositoryPath);
 
+    const repositoryRoot = Bun.spawnSync(["git", "rev-parse", "--show-toplevel"], { cwd: fixtureRepositoryPath });
+    expect(repositoryRoot.exitCode).toBe(0);
+    expect(new TextDecoder().decode(repositoryRoot.stdout).trim()).toBe(fixtureRepositoryPath);
+
     assert(fixtureRepositoryPath.startsWith(`${REPOSITORY_TMP_DIRECTORY_PATH}/`));
     expect(fixtureRepositoryPath).toContain(
       "typescript-ai-policy-stories-directory-file-convention-invalid-stories-directory-file-",
