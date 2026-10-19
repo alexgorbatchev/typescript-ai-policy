@@ -1,4 +1,5 @@
 import type { TSESTree } from "@typescript-eslint/types";
+import { isReactClientEntrypoint } from "./helpers.ts";
 import type {
   AstDeclarationWithIdentifiers,
   AstExportNamedDeclaration,
@@ -263,6 +264,7 @@ const componentFileContractRule: RuleModule = {
 
     return {
       Program(node) {
+        if (isReactClientEntrypoint(context.filename, node)) return;
         const rawRuntimeExportEntries = readRuntimeExportEntries(node);
 
         const validComponentRuntimeExportEntries = rawRuntimeExportEntries.filter(isValidMainComponentRuntimeExport);

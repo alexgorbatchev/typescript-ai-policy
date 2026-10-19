@@ -1,4 +1,5 @@
 import type { AstNode, AstProgram, RuleModule } from "./types.ts";
+import { isReactClientEntrypoint } from "./helpers.ts";
 import { dirname, join } from "node:path";
 import {
   findDescendantFilePath,
@@ -85,6 +86,7 @@ const componentStoryFileConventionRule: RuleModule = {
 
     return {
       Program(node: AstProgram) {
+        if (isReactClientEntrypoint(context.filename, node)) return;
         const requiredStoriesDirectoryPath = readRequiredStoriesDirectoryPath(context.filename);
         const requiredStoryFileName = readRequiredStoryFileName(context.filename);
         if (findDescendantFilePath(requiredStoriesDirectoryPath, requiredStoryFileName)) {

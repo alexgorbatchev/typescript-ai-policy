@@ -700,3 +700,87 @@ export function readDefaultExportName(declaration: TSESTree.ExportDefaultDeclara
 
   return null;
 }
+
+/** Recognize a module-only React bootstrap, without exempting components named main. */
+export function isReactClientEntrypoint(filename: string, program: AstProgram): boolean {
+  if (
+    getBaseName(filename) !== "main.tsx" ||
+    COMPONENT_OWNERSHIP_DIRECTORY_NAMES.some((directory) => hasPathSegment(filename, directory)) ||
+    program.body.some(
+      (statement) =>
+        statement.type === "ExportNamedDeclaration" ||
+        statement.type === "ExportDefaultDeclaration" ||
+        statement.type === "ExportAllDeclaration" ||
+        statement.type === "TSExportAssignment" ||
+        statement.type === "FunctionDeclaration" ||
+        statement.type === "ClassDeclaration",
+    )
+  ) {
+    return false;
+  }
+
+  const factoryNames = new Set<string>();
+  for (const statement of program.body) {
+    if (
+      statement.type === "ImportDeclaration" &&
+      statement.importKind !== "type" &&
+      statement.source.value === "react-dom/client"
+    ) {
+      for (const specifier of statement.specifiers) {
+        if (
+          specifier.type === "ImportSpecifier" &&
+          specifier.importKind !== "type" &&
+          specifier.imported.type === "Identifier" &&
+          specifier.imported.name === "createRoot"
+        ) {
+          factoryNames.add(specifier.local.name);
+        }
+      }
+    }
+  }
+
+  function isRootFactoryCall(expression: TSESTree.Node): boolean {
+    return (
+      expression.type === "CallExpression" &&
+      expression.callee.type === "Identifier" &&
+      factoryNames.has(expression.callee.name)
+    );
+  }
+
+  const rootNames = new Set<string>();
+  for (const statement of program.body) {
+    if (statement.type !== "VariableDeclaration") continue;
+    for (const declaration of statement.declarations) {
+      if (
+        declaration.init?.type === "ArrowFunctionExpression" ||
+        declaration.init?.type === "FunctionExpression" ||
+        declaration.init?.type === "JSXElement" ||
+        declaration.init?.type === "JSXFragment"
+      ) {
+        return false;
+      }
+      if (declaration.id.type === "Identifier" && declaration.init && isRootFactoryCall(declaration.init)) {
+        rootNames.add(declaration.id.name);
+      }
+    }
+  }
+
+  return program.body.some((statement) => {
+    if (statement.type !== "ExpressionStatement" || statement.expression.type !== "CallExpression") return false;
+    const { callee, arguments: argumentsList } = statement.expression;
+    if (
+      callee.type !== "MemberExpression" ||
+      callee.computed ||
+      callee.property.type !== "Identifier" ||
+      callee.property.name !== "render" ||
+      argumentsList.length !== 1
+    ) {
+      return false;
+    }
+    const [element] = argumentsList;
+    return (
+      (element?.type === "JSXElement" || element?.type === "JSXFragment") &&
+      (isRootFactoryCall(callee.object) || (callee.object.type === "Identifier" && rootNames.has(callee.object.name)))
+    );
+  });
+}

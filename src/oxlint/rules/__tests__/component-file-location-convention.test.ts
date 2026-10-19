@@ -28,6 +28,11 @@ ruleTester.run(
   {
     valid: [
       {
+        code: 'import { createRoot } from "react-dom/client"; import { App } from "./components/App"; createRoot(document.getElementById("root")).render(<App />);',
+        filename: "src/main.tsx",
+        languageOptions: languageOpts,
+      },
+      {
         code: `export function AccountPanel() { return <section />; }`,
         filename: "src/accounts/components/AccountPanel.tsx",
         languageOptions: languageOpts,

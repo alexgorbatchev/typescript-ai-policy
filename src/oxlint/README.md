@@ -88,6 +88,9 @@ on files that cannot meaningfully violate them.
    - `@alexgorbatchev/component-file-contract`
    - `@alexgorbatchev/component-file-naming-convention`
    - `@alexgorbatchev/component-story-file-convention`
+   - The contract, location, and story rules recognize module-only `main.tsx` React bootstraps outside component
+     ownership directories. Recognition requires an imported `react-dom/client` `createRoot` call followed by a
+     top-level JSX render, with no exports or local component declarations. Other checks remain active.
 4. **Canonical component-area directory rules** run only under `**/components/**/*`, `**/templates/**/*`, and `**/layouts/**/*`:
    - `@alexgorbatchev/component-directory-file-convention`
 5. **Story-area compatibility overrides** run on all `**/stories/**/*.tsx` files:

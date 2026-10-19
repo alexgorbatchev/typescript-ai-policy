@@ -6,6 +6,7 @@ import {
   readProgramReportNode,
 } from "./helpers.ts";
 import type { RuleModule } from "./types.ts";
+import { isReactClientEntrypoint } from "./helpers.ts";
 
 const componentFileLocationConventionRule: RuleModule = {
   meta: {
@@ -29,6 +30,7 @@ const componentFileLocationConventionRule: RuleModule = {
 
     return {
       Program(node) {
+        if (isReactClientEntrypoint(context.filename, node)) return;
         if (isInTestsDirectory(context.filename) || hasPathSegment(context.filename, "hooks")) {
           return;
         }

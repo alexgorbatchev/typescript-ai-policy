@@ -151,6 +151,11 @@ component behavior:
 - the same stories also act as the human visual reference for the component
 - component structure and component verification stay in one place instead of drifting across separate ad-hoc test files
 
+A `main.tsx` outside component ownership directories is a React client entrypoint when it has no exports or local
+component declarations and directly renders JSX through an imported `react-dom/client` `createRoot` call (chained
+or assigned to a local root). Such bootstraps do not require a component export, ownership directory, or story.
+All other policy checks still apply; the filename alone does not qualify a file as an entrypoint.
+
 This package does **not** wire your CI for you, but it does enforce the repository shape required for Storybook-driven
 component verification.
 
