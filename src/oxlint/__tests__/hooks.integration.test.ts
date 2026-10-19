@@ -1,4 +1,4 @@
-import { describe, it } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { FilenameStyle } from "../createOxlintConfig.ts";
 import { expectLintTargetFailure, expectLintTargetSuccess } from "../test-support/expectLintTargetResult.ts";
 import { runLintTargetFixture } from "../test-support/runLintTargetFixture.ts";
@@ -92,5 +92,22 @@ describe("hook lint-target integration", () => {
     );
 
     expectLintTargetSuccess(lintTargetResult, FIXTURE_CONFIG_HEADER);
+  });
+});
+
+describe("hook dependency lint-target integration", () => {
+  it("rejects missing effect dependencies as errors", () => {
+    const result = runLintTargetFixture("exhaustive-deps/missing-dependency-invalid");
+
+    expect(result.exitCode).toBe(1);
+    expect(result.issues.map(({ ruleId, severity }) => ({ ruleId, severity }))).toEqual([
+      { ruleId: "react-hooks(exhaustive-deps)", severity: "error" },
+    ]);
+  });
+
+  it("accepts complete effect dependencies", () => {
+    const result = runLintTargetFixture("exhaustive-deps/complete-dependencies-valid");
+
+    expectLintTargetSuccess(result);
   });
 });

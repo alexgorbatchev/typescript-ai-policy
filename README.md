@@ -109,7 +109,7 @@ these TypeScript config entrypoints.
 
 At a glance, the shared policy enforces:
 
-- baseline guardrails such as strict equality and no `any`
+- baseline guardrails such as strict equality, no `any`, and complete React Hook dependency lists (`react/exhaustive-deps` as an error)
 - component ownership files that export exactly one main component or one multipart component family, plus type-only secondary API, and live under canonical `components/`, `templates/`, or `layouts/` directories using `ComponentName.tsx` by default or `component-name.tsx` when `filenameStyle: FilenameStyle.DashCase` is configured
 - hook ownership files that export exactly one main `use*` hook, plus type-only secondary API, and live as direct-child `hooks/useThing.ts[x]` files by default or `hooks/use-thing.ts[x]` when `filenameStyle: FilenameStyle.DashCase` is configured
 - JSX-only React component code instead of `React.createElement(...)`

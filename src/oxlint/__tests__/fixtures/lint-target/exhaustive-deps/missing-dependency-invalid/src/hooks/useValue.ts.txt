@@ -1,0 +1,7 @@
+import { useEffect } from "react";
+
+export function useValue(value: string): void {
+  useEffect(() => {
+    console.log(value);
+  }, []);
+}

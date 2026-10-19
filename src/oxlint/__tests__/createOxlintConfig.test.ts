@@ -121,6 +121,7 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "@alexgorbatchev/no-lint-disable-comments": "error",
       "typescript/no-explicit-any": "error",
+      "react/exhaustive-deps": "error",
     });
 
     expect(oxlintConfig.overrides).toContainEqual({
@@ -369,6 +370,7 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "@alexgorbatchev/no-lint-disable-comments": "error",
       "typescript/no-explicit-any": "error",
+      "react/exhaustive-deps": "error",
     });
     expect(stderr).toEqual([readPackageUsageNotice()]);
   });
@@ -415,6 +417,7 @@ describe("createOxlintConfig", () => {
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "@alexgorbatchev/no-lint-disable-comments": "error",
       "typescript/no-explicit-any": "error",
+      "react/exhaustive-deps": "error",
     });
     expect(stderr).toEqual([readPackageUsageNotice()]);
   });

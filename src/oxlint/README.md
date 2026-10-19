@@ -185,6 +185,12 @@ if (status == "ready") {
 }
 ```
 
+### `react/exhaustive-deps`
+
+**Policy:** Include every reactive value read by an effect, memo, or callback in its dependency list.
+Missing dependencies are errors in the shared config, using Oxlint’s native React plugin.
+Consumers must remove local entries for `react/exhaustive-deps` or its `react-hooks/exhaustive-deps` alias.
+
 ### `typescript/no-explicit-any`
 
 **Policy:** Keep type contracts explicit and reviewable; do not opt out of the type system with `any`.

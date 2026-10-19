@@ -114,6 +114,7 @@ function readDefaultOxlintConfig(filenameStyle: FilenameStyle): OxlintConfig {
       "@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint": "error",
       "@alexgorbatchev/no-lint-disable-comments": "error",
       "typescript/no-explicit-any": "error",
+      "react/exhaustive-deps": "error",
     },
     overrides: [
       {
