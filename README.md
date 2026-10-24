@@ -35,14 +35,12 @@ bun add -d @alexgorbatchev/typescript-ai-policy oxfmt oxlint
 
 If you want to use the `typescript-ai-policy fix-semantic` command, install its optional peer dependencies:
 
-- If your project is already using **TypeScript 7+**:
-  ```bash
-  bun add -d typescript
-  ```
-- If your project is on **TypeScript 6** (you must also install the native preview LSP backend for the fixer to run):
-  ```bash
-  bun add -d typescript @typescript/native-preview
-  ```
+```bash
+bun add -d typescript@npm:@typescript/typescript6@latest @typescript/native@npm:typescript@latest
+```
+
+The `typescript` alias provides the TypeScript 6 compiler API used by semantic fixes. The `@typescript/native`
+alias provides the TypeScript 7 compiler and LSP backend. Help, `check`, and `guidance` work without either compiler.
 
 The published package ships compiled `.js` runtime files plus `.d.ts` declarations. The installed `typescript-ai-policy`
 CLI runs through Bun, so Bun is required to execute the package-installed bin. The `fix-semantic` command still

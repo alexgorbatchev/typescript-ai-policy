@@ -4,7 +4,6 @@ import { existsSync, statSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 import { Command, CommanderError, InvalidArgumentError } from "commander";
 import { readPublishedRuleGuidanceOutput } from "../oxlint/readPublishedRuleGuidanceOutput.ts";
-import { applySemanticFixes } from "../semantic-fixes/applySemanticFixes.ts";
 import { readSemanticFixRuntimePaths } from "../semantic-fixes/readSemanticFixRuntimePaths.ts";
 import type {
   ApplySemanticFixesOptions,
@@ -73,7 +72,10 @@ const DEFAULT_RUN_CHECK_DEPENDENCIES: RunCheckDependencies = {
 };
 
 const defaultDependencies: TypescriptAiPolicyCliDependencies = {
-  applySemanticFixes,
+  async applySemanticFixes(options) {
+    const { applySemanticFixes } = await import("../semantic-fixes/applySemanticFixes.ts");
+    return applySemanticFixes(options);
+  },
   readPublishedRuleGuidanceOutput,
   readSemanticFixRuntimePaths,
   runCheck,

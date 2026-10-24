@@ -9,7 +9,6 @@ export type SemanticFixRuntimePaths = {
 };
 
 const require = createRequire(import.meta.url);
-const packageRootPath = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function readInstalledPackageRootPath(packageName: string, resolutionFailureMessage: string): string {
   try {
@@ -36,7 +35,14 @@ export function readSemanticFixRuntimePaths(): SemanticFixRuntimePaths {
   }
 
   return {
-    oxlintConfigPath: resolve(packageRootPath, "src/oxlint/oxlint.config.ts"),
+    oxlintConfigPath: fileURLToPath(
+      new URL(
+        import.meta.url.endsWith("/readSemanticFixRuntimePaths.ts")
+          ? "../oxlint/oxlint.config.ts"
+          : "../semantic-fix-config.js",
+        import.meta.url,
+      ),
+    ),
     oxlintExecutablePath: resolve(oxlintPackageRootPath, "bin/oxlint"),
     tscExecutablePath: resolve(tscPackageRootPath, "bin/tsc"),
   };

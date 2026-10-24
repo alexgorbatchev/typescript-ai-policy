@@ -2,7 +2,7 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig({
   deps: {
-    skipNodeModulesBundle: true,
+    neverBundle: true,
   },
   dts: {
     resolver: "tsc",
@@ -12,6 +12,7 @@ export default defineConfig({
     "oxfmt-config": "src/oxfmt/createOxfmtConfig.ts",
     "oxlint-config": "src/oxlint/createOxlintConfig.ts",
     "oxlint-plugin": "src/oxlint/plugin.ts",
+    "semantic-fix-config": "src/oxlint/oxlint.config.ts",
   },
   format: ["esm"],
   hash: false,
