@@ -26,13 +26,14 @@ const hookTestFileConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Require every hook ownership file to have a matching "basename.test.ts" or ".test.tsx" file under a sibling "__tests__/" directory',
+        'Require every hook ownership file to have a matching test with the same basename and source extension under a sibling "__tests__/" directory',
       guidance:
-        "Place hook tests in the canonical adjacent `__tests__` role. Do not leave hook tests beside runtime hook files or in unrelated folders.",
+        "Place hook tests under the adjacent `__tests__/` directory with the same basename and source extension: `.ts` hooks require `.test.ts`, and `.tsx` hooks require `.test.tsx`. Do not leave hook tests beside runtime hook files or in unrelated folders.",
     },
     schema: [],
     messages: {
-      missingHookTestFile: 'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory.',
+      missingHookTestFile:
+        'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory, using the same extension as the hook source.',
     },
   },
   create(context) {

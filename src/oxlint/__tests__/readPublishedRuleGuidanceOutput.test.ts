@@ -120,9 +120,10 @@ it("prints authoritative published rule guidance for every local rule", () => {
       exported hook using the \`use...\` contract. Use "useThing.ts{,x}" by default,
       or "use-thing.ts{,x}" when the shared config uses \`FilenameStyle.DashCase\`. Do
       not use filenames that hide or contradict hook ownership.
-    - **@alexgorbatchev/hook-test-file-convention**: Place hook tests in the
-      canonical adjacent \`__tests__\` role. Do not leave hook tests beside runtime
-      hook files or in unrelated folders.
+    - **@alexgorbatchev/hook-test-file-convention**: Place hook tests under the
+      adjacent \`__tests__/\` directory with the same basename and source extension:
+      \`.ts\` hooks require \`.test.ts\`, and \`.tsx\` hooks require \`.test.tsx\`. Do not
+      leave hook tests beside runtime hook files or in unrelated folders.
     - **@alexgorbatchev/test-file-location-convention**: Keep committed tests under
       \`__tests__/\` and name them \`*.test.ts\` or \`*.test.tsx\`. Move misplaced test
       files into the canonical test area.

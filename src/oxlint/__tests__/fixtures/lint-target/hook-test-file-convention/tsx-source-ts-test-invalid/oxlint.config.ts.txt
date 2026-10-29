@@ -1,0 +1,6 @@
+import { fileURLToPath } from "node:url";
+
+export default {
+  jsPlugins: [{ name: "@alexgorbatchev", specifier: fileURLToPath(new URL("../../src/oxlint/plugin.ts", import.meta.url)) }],
+  overrides: [{ files: ["**/hooks/use*.tsx"], rules: { "@alexgorbatchev/hook-test-file-convention": "error" } }],
+};

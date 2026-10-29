@@ -113,7 +113,7 @@ At a glance, the shared policy enforces:
 - JSX-only React component code instead of `React.createElement(...)`
 - matching Storybook files for component ownership files under sibling `stories/` directories, with story support files limited to `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
 - Storybook project support `.tsx` files under direct or nested `.storybook/` paths without treating them as component ownership files
-- matching test files for hook ownership files under sibling `__tests__/` directories, with test support files limited to `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
+- matching test files for hook ownership files under sibling `__tests__/` directories, preserving the source basename and extension (`.ts` hooks require `.test.ts`; `.tsx` hooks require `.test.tsx`), with test support files limited to `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
 - typed Storybook meta with package-relative titles, typed story exports, and required `play` functions
 - deterministic component test ids such as `ComponentName` and `ComponentName--child`, plus required root test ids for exported ownership components
 - canonical component ownership directories (`components/`, `templates/`, `layouts/`) as the only product `.tsx` surface allowed to render raw intrinsic JSX or pass direct `className` / `style` props, with file-role carve-outs for story/test support and Storybook `.storybook/` support files

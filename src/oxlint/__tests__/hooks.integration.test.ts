@@ -24,11 +24,51 @@ describe("hook lint-target integration", () => {
         column: 1,
         filePath: "src/accounts/hooks/useAccount.ts",
         line: 1,
-        message: 'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory.',
+        message:
+          'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory, using the same extension as the hook source.',
         ruleId: "@alexgorbatchev(hook-test-file-convention)",
         severity: "error",
       },
     ]);
+  });
+
+  it("allows TSX hook ownership files with matching TSX sibling tests", () => {
+    expectLintTargetSuccess(runLintTargetFixture("hook-test-file-convention/valid-tsx-with-adjacent-test"), {
+      configPath: "(target nested configuration)",
+      targetPath: "<fixture-root>",
+    });
+  });
+
+  it("explains why a TSX test does not satisfy a TS hook ownership file", () => {
+    expectLintTargetFailure(runLintTargetFixture("hook-test-file-convention/ts-source-tsx-test-invalid"), [
+      {
+        column: 1,
+        filePath: "src/accounts/hooks/useAccount.ts",
+        line: 1,
+        message:
+          'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory, using the same extension as the hook source.',
+        ruleId: "@alexgorbatchev(hook-test-file-convention)",
+        severity: "error",
+      },
+    ]);
+  });
+
+  it("explains why a TS test does not satisfy a TSX hook ownership file", () => {
+    expectLintTargetFailure(
+      runLintTargetFixture("hook-test-file-convention/tsx-source-ts-test-invalid"),
+      [
+        {
+          column: 1,
+          filePath: "src/accounts/hooks/useAccount.tsx",
+          line: 1,
+          message:
+            'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory, using the same extension as the hook source.',
+          ruleId: "@alexgorbatchev(hook-test-file-convention)",
+          severity: "error",
+        },
+      ],
+      { configPath: "(target nested configuration)", targetPath: "<fixture-root>" },
+    );
   });
 
   it("reports exported hooks outside canonical hooks ownership files", () => {

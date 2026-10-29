@@ -1027,8 +1027,8 @@ is configured. This is a global leak guard so misplaced hooks are reported where
 
 ### `@alexgorbatchev/hook-test-file-convention`
 
-**Policy:** Every hook ownership file must have a matching `basename.test.ts` or `.test.tsx` file somewhere under a
-sibling `__tests__/` directory, and the test extension must still match the source extension.
+**Policy:** Every hook ownership file must have a test with the same basename and source extension somewhere under a
+sibling `__tests__/` directory: `.ts` hooks require `basename.test.ts`, and `.tsx` hooks require `basename.test.tsx`.
 
 ## Test execution and layout policies
 
