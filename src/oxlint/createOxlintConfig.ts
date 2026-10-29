@@ -221,6 +221,12 @@ function readDefaultOxlintConfig(filenameStyle: FilenameStyle): OxlintConfig {
       {
         files: readHookOwnershipFileGlobs(filenameStyle),
         rules: {
+          "@alexgorbatchev/testid-naming-convention": "off",
+          "@alexgorbatchev/require-component-root-testid": "off",
+          "@alexgorbatchev/component-file-location-convention": "off",
+          "@alexgorbatchev/component-file-contract": "off",
+          "@alexgorbatchev/component-file-naming-convention": "off",
+          "@alexgorbatchev/component-story-file-convention": "off",
           "@alexgorbatchev/hook-file-contract": "error",
           "@alexgorbatchev/hook-file-naming-convention": ["error", { filenameStyle: filenameStyleLabel }],
           "@alexgorbatchev/hook-test-file-convention": "error",

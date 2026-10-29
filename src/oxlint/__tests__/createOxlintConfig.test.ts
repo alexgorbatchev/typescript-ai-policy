@@ -253,6 +253,12 @@ describe("createOxlintConfig", () => {
     expect(oxlintConfig.overrides).toContainEqual({
       files: ["**/use[A-Z]*.ts", "**/use[A-Z]*.tsx"],
       rules: {
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/component-file-location-convention": "off",
+        "@alexgorbatchev/component-file-contract": "off",
+        "@alexgorbatchev/component-file-naming-convention": "off",
+        "@alexgorbatchev/component-story-file-convention": "off",
         "@alexgorbatchev/hook-file-contract": "error",
         "@alexgorbatchev/hook-file-naming-convention": ["error", { filenameStyle: "[use]PascalCase" }],
         "@alexgorbatchev/hook-test-file-convention": "error",
@@ -314,6 +320,12 @@ describe("createOxlintConfig", () => {
     expect(oxlintConfig.overrides).toContainEqual({
       files: ["**/use-*.ts", "**/use-*.tsx"],
       rules: {
+        "@alexgorbatchev/testid-naming-convention": "off",
+        "@alexgorbatchev/require-component-root-testid": "off",
+        "@alexgorbatchev/component-file-location-convention": "off",
+        "@alexgorbatchev/component-file-contract": "off",
+        "@alexgorbatchev/component-file-naming-convention": "off",
+        "@alexgorbatchev/component-story-file-convention": "off",
         "@alexgorbatchev/hook-file-contract": "error",
         "@alexgorbatchev/hook-file-naming-convention": ["error", { filenameStyle: "dash-case" }],
         "@alexgorbatchev/hook-test-file-convention": "error",

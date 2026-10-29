@@ -110,6 +110,7 @@ At a glance, the shared policy enforces:
 - baseline guardrails such as strict equality, no `any`, and complete React Hook dependency lists (`react/exhaustive-deps` as an error)
 - component ownership files that export exactly one main component or one multipart component family, plus type-only secondary API, and live under canonical `components/`, `templates/`, or `layouts/` directories using `ComponentName.tsx` by default or `component-name.tsx` when `filenameStyle: FilenameStyle.DashCase` is configured
 - hook ownership files that export exactly one main `use*` hook, plus type-only secondary API, and live as direct-child `hooks/useThing.ts[x]` files by default or `hooks/use-thing.ts[x]` when `filenameStyle: FilenameStyle.DashCase` is configured
+- hook-owned `.tsx` files use hook contracts and matching tests instead of component naming, test-id, or Storybook ownership requirements; shared raw-JSX and direct-styling boundaries still apply
 - JSX-only React component code instead of `React.createElement(...)`
 - matching Storybook files for component ownership files under sibling `stories/` directories, with story support files limited to `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
 - Storybook project support `.tsx` files under direct or nested `.storybook/` paths without treating them as component ownership files

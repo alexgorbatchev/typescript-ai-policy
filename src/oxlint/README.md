@@ -118,6 +118,8 @@ on files that cannot meaningfully violate them.
 - default `filenameStyle: FilenameStyle.PascalCase`: `**/use[A-Z]*.ts`, `**/use[A-Z]*.tsx`
 - optional `filenameStyle: FilenameStyle.DashCase`: `**/use-*.ts`, `**/use-*.tsx`
 
+- hook ownership files explicitly turn off component naming, location, export-contract, test-id, and sibling-story rules; `.tsx` hook files retain the shared raw-intrinsic JSX and direct-styling boundaries
+
 - `@alexgorbatchev/hook-file-contract`
 - `@alexgorbatchev/hook-file-naming-convention`
 - `@alexgorbatchev/hook-test-file-convention`

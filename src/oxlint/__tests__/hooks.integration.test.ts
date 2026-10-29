@@ -10,6 +10,28 @@ const FIXTURE_CONFIG_HEADER = {
 };
 
 describe("hook lint-target integration", () => {
+  it("retains raw JSX and direct-styling boundaries for TSX hooks", () => {
+    expectLintTargetFailure(runLintTargetFixture("hook-test-file-convention/tsx-hook-raw-markup-invalid"), [
+      {
+        column: 11,
+        filePath: "src/accounts/hooks/useAccount.tsx",
+        line: 2,
+        message:
+          'Raw DOM markup only allowed inside component ownership files in "components/", "templates/", or "layouts/".',
+        ruleId: "@alexgorbatchev(no-intrinsic-elements-outside-component-globs)",
+        severity: "error",
+      },
+      {
+        column: 15,
+        filePath: "src/accounts/hooks/useAccount.tsx",
+        line: 2,
+        message:
+          "Move styling into a component ownership file. Expose necessary variants instead of passing styling props here.",
+        ruleId: "@alexgorbatchev(no-classname-style-props-outside-component-globs)",
+        severity: "error",
+      },
+    ]);
+  });
   it("allows hook ownership files with adjacent sibling tests", () => {
     const lintTargetResult = runLintTargetFixture("hook-test-file-convention/valid-with-adjacent-test");
 
@@ -33,10 +55,7 @@ describe("hook lint-target integration", () => {
   });
 
   it("allows TSX hook ownership files with matching TSX sibling tests", () => {
-    expectLintTargetSuccess(runLintTargetFixture("hook-test-file-convention/valid-tsx-with-adjacent-test"), {
-      configPath: "(target nested configuration)",
-      targetPath: "<fixture-root>",
-    });
+    expectLintTargetSuccess(runLintTargetFixture("hook-test-file-convention/valid-tsx-with-adjacent-test"));
   });
 
   it("explains why a TSX test does not satisfy a TS hook ownership file", () => {
@@ -54,20 +73,41 @@ describe("hook lint-target integration", () => {
   });
 
   it("explains why a TS test does not satisfy a TSX hook ownership file", () => {
-    expectLintTargetFailure(
-      runLintTargetFixture("hook-test-file-convention/tsx-source-ts-test-invalid"),
-      [
-        {
-          column: 1,
-          filePath: "src/accounts/hooks/useAccount.tsx",
-          line: 1,
-          message:
-            'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory, using the same extension as the hook source.',
-          ruleId: "@alexgorbatchev(hook-test-file-convention)",
-          severity: "error",
-        },
-      ],
-      { configPath: "(target nested configuration)", targetPath: "<fixture-root>" },
+    expectLintTargetFailure(runLintTargetFixture("hook-test-file-convention/tsx-source-ts-test-invalid"), [
+      {
+        column: 1,
+        filePath: "src/accounts/hooks/useAccount.tsx",
+        line: 1,
+        message:
+          'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory, using the same extension as the hook source.',
+        ruleId: "@alexgorbatchev(hook-test-file-convention)",
+        severity: "error",
+      },
+    ]);
+  });
+
+  it("requires a sibling test for TSX hook ownership files", () => {
+    expectLintTargetFailure(runLintTargetFixture("hook-test-file-convention/tsx-source-missing-test-invalid"), [
+      {
+        column: 1,
+        filePath: "src/accounts/hooks/useAccount.tsx",
+        line: 1,
+        message:
+          'Create the matching ".test.ts" or ".test.tsx" file under a sibling "__tests__/" directory, using the same extension as the hook source.',
+        ruleId: "@alexgorbatchev(hook-test-file-convention)",
+        severity: "error",
+      },
+    ]);
+  });
+
+  it("allows configured dash-case TSX hooks without component ownership requirements", () => {
+    expectLintTargetSuccess(
+      runLintTargetFixtureWithConsumerConfig(
+        "hook-test-file-convention/valid-dash-case-tsx-with-adjacent-test",
+        {},
+        { filenameStyle: FilenameStyle.DashCase },
+      ),
+      FIXTURE_CONFIG_HEADER,
     );
   });
 
