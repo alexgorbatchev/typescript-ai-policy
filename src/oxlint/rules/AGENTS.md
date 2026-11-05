@@ -1,11 +1,19 @@
+---
+created_on: 2026-11-05 03:25
+last_modified: 2026-11-05 03:25
+status: current
+---
+
 # src/oxlint/rules
 
 Oxlint custom rule modules (`*.ts`), shared rule helpers (`helpers.ts`), and unit tests (`__tests__/*.test.ts`).
 
 ## Commands
 
-- Test single rule: `bun test src/oxlint/rules/__tests__/my-rule.test.ts`
-- Test all rules: `bun test src/oxlint/rules/__tests__`
+- Test single rule: `bun run test src/oxlint/rules/__tests__/story-file-location-convention.test.ts`
+- Test all rules: `bun run test src/oxlint/rules/__tests__`
+
+Run these commands from the repository root. Use the test script so its supervisor owns temporary files, tool caches, and descendant processes; do not invoke `bun test` directly.
 
 ## Local conventions
 
