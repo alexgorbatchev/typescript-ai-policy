@@ -50,9 +50,9 @@ test-coverage:
 build *args:
     bun run tsdown "$@"
 
-# Validate the build without writing output
+# Validate the build without changing existing output
 build-check:
-    bun run tsdown --no-write
+    bun run tsdown --no-write --no-clean
 
 fix-semantic *args:
     bun src/cli/cli.ts fix-semantic "$@"

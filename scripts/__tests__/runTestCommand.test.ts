@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { execa } from "execa";
 import assert from "node:assert/strict";
-import { mkdir, mkdtempDisposable, readdir, stat } from "node:fs/promises";
+import { cp, mkdir, mkdtempDisposable, readdir, stat, symlink } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { runTestCommand } from "../runTestCommand.ts";
 import {
@@ -22,6 +22,40 @@ interface IProcessReceipt {
 
 const TEST_ROOT = process.env.POLICY_TEST_ROOT ?? resolve(".tmp");
 const FACTORY_PATH = resolve("src/oxlint/test-support/createFixtureRepo.ts");
+
+test.each([
+  { outcome: "success", suffix: '\nexport const buildCheckProbe = "changed";\n', exitCode: 0 },
+  { outcome: "failure", suffix: "\nexport const = ;\n", exitCode: 1 },
+])(
+  "build validation preserves existing package output after $outcome",
+  async ({ suffix, exitCode }) => {
+    await using directory = await mkdtempDisposable(join(TEST_ROOT, "build-check regression-"));
+    await cp(resolve("src"), join(directory.path, "src"), { recursive: true });
+    for (const path of ["justfile", "package.json", "tsconfig.json", "tsdown.config.ts", "scripts/constants.ts"]) {
+      await Bun.write(join(directory.path, path), Bun.file(resolve(path)));
+    }
+    await symlink(resolve("node_modules"), join(directory.path, "node_modules"), "dir");
+    const options = { cwd: directory.path, timeout: 20000, killDescendants: true, reject: false };
+    expect(await execa("just", ["build"], options)).toMatchObject({ exitCode: 0, timedOut: false });
+    const outputPath = join(directory.path, "dist");
+    await Bun.write(join(outputPath, ".retained", "caller.txt"), "caller-owned output\n");
+    const outputEntries = (await readdir(outputPath, { recursive: true })).sort();
+    const outputFiles = await Array.fromAsync(
+      new Bun.Glob("**/*").scan({ cwd: outputPath, dot: true, onlyFiles: true }),
+    );
+    const contents = await Promise.all(
+      outputFiles.map(async (path) => ({ path, bytes: await Bun.file(join(outputPath, path)).bytes() })),
+    );
+    const sourcePath = join(directory.path, "src/oxfmt/createOxfmtConfig.ts");
+    await Bun.write(sourcePath, (await Bun.file(sourcePath).text()) + suffix);
+
+    expect(await execa("just", ["build-check"], options)).toMatchObject({ exitCode, timedOut: false });
+
+    expect((await readdir(outputPath, { recursive: true })).sort()).toEqual(outputEntries);
+    for (const { path, bytes } of contents) expect(await Bun.file(join(outputPath, path)).bytes()).toEqual(bytes);
+  },
+  30000,
+);
 
 test.each([0, 7])("test commands preserve caller artifacts and remove owned output after exit %s", async (exitCode) => {
   await mkdir(TEST_ROOT, { recursive: true });
