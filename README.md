@@ -234,15 +234,7 @@ The published `guidance` output is package-level repair guidance, not a reposito
 still inspect the consuming repository's actual `oxlint.config.ts` before applying file-specific guidance in another
 codebase.
 
-Repository-local development usage:
-
-- `bun run cli -- guidance` — run the repository-local CLI entrypoint directly from TypeScript source.
-- `bun run cli -- guidance --json` — print the same repository-local guidance output as JSON.
-- `bun run cli -- fix-semantic <target-directory>` — run the repository-local CLI entrypoint for semantic fixes.
-- `bun run fix:semantic -- <target-directory>` — run the same `fix-semantic` command from this repository checkout while developing the package itself.
-
-The repository-local development command uses Bun to execute the TypeScript source directly. The published npm package
-also uses a compiled Bun-targeted bin.
+Repository development commands are documented in [AGENTS.md](AGENTS.md).
 
 Today the framework applies three conservative semantic fixes:
 

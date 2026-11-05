@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 import type { Identifier, Node, SourceFile } from "typescript";
 import { readTypeScriptModule } from "../readTypeScriptModule.ts";
-import type { OxlintDiagnostic, SemanticFixProviderContext, SymbolRenameOperation } from "../types.ts";
+import type { OxlintDiagnostic, SemanticFixContext, SymbolRenameOperation } from "../types.ts";
 
 const ts = readTypeScriptModule();
 
@@ -14,10 +14,7 @@ type NamedDeclarationMatcher<TDeclaration extends NamedDeclarationWithIdentifier
   node: Node,
 ) => node is TDeclaration;
 
-export function readAbsoluteDiagnosticFilePath(
-  diagnostic: OxlintDiagnostic,
-  context: SemanticFixProviderContext,
-): string {
+export function readAbsoluteDiagnosticFilePath(diagnostic: OxlintDiagnostic, context: SemanticFixContext): string {
   if (isAbsolute(diagnostic.filename)) {
     return diagnostic.filename;
   }
@@ -25,10 +22,7 @@ export function readAbsoluteDiagnosticFilePath(
   return resolve(context.targetDirectoryPath, diagnostic.filename);
 }
 
-export function readDiagnosticSourceFile(
-  diagnostic: OxlintDiagnostic,
-  context: SemanticFixProviderContext,
-): SourceFile {
+export function readDiagnosticSourceFile(diagnostic: OxlintDiagnostic, context: SemanticFixContext): SourceFile {
   const filePath = readAbsoluteDiagnosticFilePath(diagnostic, context);
   const content = readFileSync(filePath, "utf8");
 

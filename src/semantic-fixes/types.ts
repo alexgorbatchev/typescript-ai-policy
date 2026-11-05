@@ -6,7 +6,6 @@ export type OxlintSpan = {
 };
 
 export type OxlintLabel = {
-  label?: string;
   span: OxlintSpan;
 };
 
@@ -16,10 +15,6 @@ export type OxlintDiagnostic = {
   labels: readonly OxlintLabel[];
   message: string;
   severity: string;
-};
-
-export type OxlintJsonReport = {
-  diagnostics: readonly OxlintDiagnostic[];
 };
 
 export type LineAndCharacter = {
@@ -79,21 +74,17 @@ export type SemanticFixPlanSkip = {
 
 export type SemanticFixPlanResult = SemanticFixPlanSkip | SemanticFixPlanSuccess;
 
-export type SemanticFixProviderContext = {
+export type SemanticFixContext = {
   targetDirectoryPath: string;
 };
 
 export type SemanticFixProvider = {
-  createOperation: (diagnostic: OxlintDiagnostic, context: SemanticFixProviderContext) => SemanticFixOperation | null;
+  createOperation: (diagnostic: OxlintDiagnostic, context: SemanticFixContext) => SemanticFixOperation | null;
   ruleCode: string;
 };
 
-export type SemanticFixBackendContext = {
-  targetDirectoryPath: string;
-};
-
 export type SemanticFixBackend = {
-  createPlan: (operation: SemanticFixOperation, context: SemanticFixBackendContext) => Promise<SemanticFixPlanResult>;
+  createPlan: (operation: SemanticFixOperation, context: SemanticFixContext) => Promise<SemanticFixPlanResult>;
   dispose: () => Promise<void>;
   name: string;
 };

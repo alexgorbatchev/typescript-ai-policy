@@ -1,10 +1,5 @@
 import { basename, dirname, join } from "node:path";
-import type {
-  OxlintDiagnostic,
-  SemanticFixOperation,
-  SemanticFixProvider,
-  SemanticFixProviderContext,
-} from "../types.ts";
+import type { OxlintDiagnostic, MoveFileOperation, SemanticFixProvider, SemanticFixContext } from "../types.ts";
 import { readAbsoluteDiagnosticFilePath } from "./helpers.ts";
 
 const REQUIRED_TEST_FILE_NAME_PATTERN = /\.test\.tsx?$/u;
@@ -14,7 +9,7 @@ function isInTestsDirectory(filePath: string): boolean {
   return TESTS_DIRECTORY_PATH_PATTERN.test(filePath.replaceAll("\\", "/"));
 }
 
-function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixProviderContext): SemanticFixOperation | null {
+function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixContext): MoveFileOperation | null {
   const filePath = readAbsoluteDiagnosticFilePath(diagnostic, context);
   const baseName = basename(filePath);
   if (!REQUIRED_TEST_FILE_NAME_PATTERN.test(baseName) || isInTestsDirectory(filePath)) {
@@ -34,7 +29,7 @@ function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixProvide
 
 export function createTestFileLocationConventionSemanticFixProvider(): SemanticFixProvider {
   return {
-    createOperation(diagnostic, context): SemanticFixOperation | null {
+    createOperation(diagnostic, context): MoveFileOperation | null {
       return readOperation(diagnostic, context);
     },
     ruleCode: "@alexgorbatchev/test-file-location-convention",

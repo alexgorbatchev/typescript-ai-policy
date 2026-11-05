@@ -5,6 +5,7 @@ import type {
   AstExportSpecifier,
   AstProgram,
   AstProgramStatement,
+  RuntimeExportNameEntry,
   RuleModule,
 } from "./types.ts";
 import {
@@ -38,11 +39,6 @@ function readExportedSpecifierName(specifier: AstExportSpecifier): string {
 
   return String(specifier.exported.value);
 }
-
-type RuntimeExportNameEntry = {
-  name: string;
-  reportNode: TSESTree.Node;
-};
 
 function readRuntimeExportNameEntries(program: AstProgram): RuntimeExportNameEntry[] {
   return program.body.flatMap((statement) => {

@@ -25,7 +25,6 @@ import {
 type WrappedFunctionExpressionState = TSESTree.FunctionExpression | false | null;
 
 type ComponentRuntimeExportEntry = {
-  declarationKind?: TSESTree.VariableDeclaration["kind"];
   declarator?: AstVariableDeclarator;
   kind:
     | "class-declaration"
@@ -182,7 +181,6 @@ function readDeclarationRuntimeExportEntries(
     const declarationNames = readPatternIdentifierNames(declarator.id);
 
     return declarationNames.map((name) => ({
-      declarationKind: declaration.kind,
       declarator,
       kind: declaration.kind === "const" ? ("const-variable" as const) : ("variable-declaration" as const),
       name,

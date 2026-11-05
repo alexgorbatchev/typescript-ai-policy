@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolveCommand } from "package-manager-detector/commands";
 import { detect, getUserAgent } from "package-manager-detector/detect";
+import type { TextWriter } from "./TextWriter.ts";
 
 type PackageMetadata = {
   name: string;
@@ -12,8 +13,6 @@ type GuidanceCommand = {
   args: string[];
   command: string;
 };
-
-type PackageUsageNoticeWriter = (text: string) => void;
 
 const PACKAGE_USAGE_NOTICE_EMITTED = Symbol.for("@alexgorbatchev/typescript-ai-policy.package-usage-notice-emitted");
 const PACKAGE_USAGE_NOTICE_WRITER = Symbol.for("@alexgorbatchev/typescript-ai-policy.package-usage-notice-writer");
@@ -71,7 +70,7 @@ function writePackageUsageNoticeToStderr(text: string): void {
   process.stderr.write(text);
 }
 
-function readPackageUsageNoticeWriter(): PackageUsageNoticeWriter {
+function readPackageUsageNoticeWriter(): TextWriter {
   const writer = Reflect.get(globalThis, PACKAGE_USAGE_NOTICE_WRITER);
 
   return typeof writer === "function" ? writer : writePackageUsageNoticeToStderr;
@@ -84,7 +83,7 @@ export function readPackageUsageNotice(): string {
   return `${packageMetadata.name}@${packageMetadata.version} is being used, see '${packageGuidanceCommand}'\n`;
 }
 
-export function printPackageUsageNoticeOnce(writer?: PackageUsageNoticeWriter): void {
+export function printPackageUsageNoticeOnce(writer?: TextWriter): void {
   if (Reflect.get(globalThis, PACKAGE_USAGE_NOTICE_EMITTED) === true) {
     return;
   }
@@ -98,6 +97,6 @@ export function resetPackageUsageNoticeForTests(): void {
   Reflect.deleteProperty(globalThis, PACKAGE_USAGE_NOTICE_EMITTED);
 }
 
-export function setPackageUsageNoticeWriterForTests(writer: PackageUsageNoticeWriter): void {
+export function setPackageUsageNoticeWriterForTests(writer: TextWriter): void {
   Reflect.set(globalThis, PACKAGE_USAGE_NOTICE_WRITER, writer);
 }

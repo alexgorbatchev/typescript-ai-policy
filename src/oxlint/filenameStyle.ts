@@ -7,10 +7,6 @@ export type FilenameStyle = (typeof FilenameStyle)[keyof typeof FilenameStyle];
 
 export const DEFAULT_FILENAME_STYLE = FilenameStyle.PascalCase;
 
-export type FilenameStyleOptions = {
-  filenameStyle?: FilenameStyle;
-};
-
 export function readFilenameStyleLabel(filenameStyle: FilenameStyle): string {
   switch (filenameStyle) {
     case FilenameStyle.PascalCase:

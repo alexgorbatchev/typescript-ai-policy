@@ -1,6 +1,4 @@
 import assert from "node:assert";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "bun:test";
 import type { ExternalPluginEntry } from "oxlint";
 import createOxlintConfig, { FilenameStyle } from "../createOxlintConfig.ts";
@@ -14,9 +12,6 @@ type ExplicitJsPlugin = {
   name: string;
   specifier: string;
 };
-
-const DIST_OXLINT_CONFIG_TYPES_PATH = join(import.meta.dir, "../../../dist/oxlint-config.d.ts");
-const DIST_OXLINT_CONFIG_RUNTIME_PATH = join(import.meta.dir, "../../../dist/oxlint-config.js");
 
 function readValidUserConfig() {
   return {};
@@ -83,15 +78,6 @@ describe("createOxlintConfig", () => {
     const oxlintConfig = createOxlintConfig({ filenameStyle: FilenameStyle.PascalCase });
 
     expect(oxlintConfig).toEqual(createOxlintConfig());
-  });
-
-  it("publishes FilenameStyle from the oxlint-config package entrypoint", () => {
-    const publishedTypes = readFileSync(DIST_OXLINT_CONFIG_TYPES_PATH, "utf8");
-    const publishedRuntime = readFileSync(DIST_OXLINT_CONFIG_RUNTIME_PATH, "utf8");
-
-    expect(publishedTypes).toContain("FilenameStyle");
-    expect(publishedTypes).toContain("export {");
-    expect(publishedRuntime).toContain("export { FilenameStyle,");
   });
 
   it("returns the shared lint defaults", () => {

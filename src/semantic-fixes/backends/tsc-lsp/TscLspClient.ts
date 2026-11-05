@@ -5,39 +5,36 @@ import type { LineAndCharacter } from "../../types.ts";
 
 type JsonRpcIdentifier = number | string | null;
 
+type JsonRpcEnvelope = {
+  jsonrpc: "2.0";
+};
+
 type JsonRpcError = {
   code: number;
   message: string;
 };
 
-type JsonRpcErrorResponse = {
+type JsonRpcErrorResponse = JsonRpcEnvelope & {
   error: JsonRpcError;
   id: JsonRpcIdentifier;
-  jsonrpc: string;
 };
 
-type JsonRpcRequestMessage = {
+type JsonRpcRequestMessage = JsonRpcEnvelope & {
   id?: JsonRpcIdentifier;
-  jsonrpc: string;
   method: string;
   params?: unknown;
 };
 
-type JsonRpcSuccessResponse = {
+type JsonRpcSuccessResponse = JsonRpcEnvelope & {
   id: JsonRpcIdentifier;
-  jsonrpc: string;
   result?: unknown;
 };
 
 type JsonRpcResponse = JsonRpcErrorResponse | JsonRpcSuccessResponse;
+type JsonRpcMessage = JsonRpcRequestMessage | JsonRpcResponse;
 
 type LspTextDocumentIdentifier = {
   uri: string;
-};
-
-type LspPosition = {
-  character: number;
-  line: number;
 };
 
 type LspWorkspaceFolder = {
@@ -74,13 +71,13 @@ type LspInitializeParams = {
 };
 
 type LspPrepareRenameParams = {
-  position: LspPosition;
+  position: LineAndCharacter;
   textDocument: LspTextDocumentIdentifier;
 };
 
 type LspRenameParams = {
   newName: string;
-  position: LspPosition;
+  position: LineAndCharacter;
   textDocument: LspTextDocumentIdentifier;
 };
 
@@ -135,7 +132,7 @@ function isJsonRpcResponse(value: unknown): value is JsonRpcResponse {
   return Reflect.has(value, "result");
 }
 
-function readLspPosition(position: LineAndCharacter): LspPosition {
+function readLspPosition(position: LineAndCharacter): LineAndCharacter {
   return {
     character: position.character,
     line: position.line,
@@ -402,7 +399,7 @@ export class TscLspClient {
   }
 
   private writeMessage(method: string, id?: JsonRpcIdentifier, params?: unknown): void {
-    const message: Record<string, unknown> = {
+    const message: JsonRpcRequestMessage = {
       jsonrpc: "2.0",
       method,
     };
@@ -426,7 +423,7 @@ export class TscLspClient {
     });
   }
 
-  private writeSerializedMessage(message: Record<string, unknown>): void {
+  private writeSerializedMessage(message: JsonRpcMessage): void {
     const stdinStream = this.process.stdin;
     if (!stdinStream || stdinStream.destroyed) {
       throw new Error(`Cannot write to tsc LSP stdin${this.readStderrOutput()}`);

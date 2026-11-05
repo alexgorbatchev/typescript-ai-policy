@@ -1,5 +1,5 @@
 import type { TSESTree } from "@typescript-eslint/types";
-import type { AstProgram, AstProgramStatement, RuleContext, RuleModule } from "./types.ts";
+import type { AstFunctionLike, AstProgram, AstProgramStatement, RuleContext, RuleModule } from "./types.ts";
 import {
   isAstNode,
   isNestedClassNode,
@@ -12,10 +12,6 @@ import {
   unwrapExpression,
 } from "./helpers.ts";
 
-type ComponentFunctionNode =
-  | TSESTree.ArrowFunctionExpression
-  | TSESTree.FunctionDeclaration
-  | TSESTree.FunctionExpression;
 type ComponentClassNode = TSESTree.ClassDeclaration;
 type ComponentDefinition =
   | {
@@ -28,7 +24,7 @@ type ComponentDefinition =
       isExported: boolean;
       kind: "function";
       name: string;
-      node: ComponentFunctionNode;
+      node: AstFunctionLike;
     };
 type TestIdEntry = {
   candidates: string[];
@@ -226,7 +222,7 @@ function readDefaultComponentDefinitions(
   return [{ name: componentNode.id.name, kind: "function", node: componentNode, isExported }];
 }
 
-function readWrappedFunctionLike(initializer: TSESTree.Expression | null | undefined): ComponentFunctionNode | null {
+function readWrappedFunctionLike(initializer: TSESTree.Expression | null | undefined): AstFunctionLike | null {
   if (!initializer) {
     return null;
   }
@@ -275,7 +271,7 @@ function readClassRenderReturnExpressions(classDeclaration: ComponentClassNode):
   return readReturnExpressionsFromBlock(renderMethod.value.body, renderMethod.value);
 }
 
-function readFunctionReturnExpressions(functionNode: ComponentFunctionNode): TSESTree.Expression[] {
+function readFunctionReturnExpressions(functionNode: AstFunctionLike): TSESTree.Expression[] {
   if (functionNode.body.type !== "BlockStatement") {
     return [functionNode.body];
   }

@@ -1,4 +1,5 @@
 import { defineConfig } from "tsdown";
+import { BUILD_ENTRIES } from "./scripts/constants.ts";
 
 export default defineConfig({
   deps: {
@@ -7,13 +8,7 @@ export default defineConfig({
   dts: {
     resolver: "tsc",
   },
-  entry: {
-    "bin/typescript-ai-policy": "src/cli/cli.ts",
-    "oxfmt-config": "src/oxfmt/createOxfmtConfig.ts",
-    "oxlint-config": "src/oxlint/createOxlintConfig.ts",
-    "oxlint-plugin": "src/oxlint/plugin.ts",
-    "semantic-fix-config": "src/oxlint/oxlint.config.ts",
-  },
+  entry: BUILD_ENTRIES,
   format: ["esm"],
   hash: false,
   outExtensions: () => ({

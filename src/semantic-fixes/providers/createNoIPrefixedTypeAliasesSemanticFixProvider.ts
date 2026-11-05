@@ -1,10 +1,5 @@
 import { readTypeScriptModule } from "../readTypeScriptModule.ts";
-import type {
-  OxlintDiagnostic,
-  SemanticFixOperation,
-  SemanticFixProvider,
-  SemanticFixProviderContext,
-} from "../types.ts";
+import type { OxlintDiagnostic, SymbolRenameOperation, SemanticFixProvider, SemanticFixContext } from "../types.ts";
 import {
   readDiagnosticSourceFile,
   readNamedDeclarationFromDiagnosticLabel,
@@ -21,7 +16,7 @@ function readNormalizedTypeAliasName(typeAliasName: string): string | null {
   return typeAliasName.slice(1);
 }
 
-function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixProviderContext): SemanticFixOperation | null {
+function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixContext): SymbolRenameOperation | null {
   const label = diagnostic.labels[0];
   if (!label) {
     return null;
@@ -43,7 +38,7 @@ function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixProvide
 
 export function createNoIPrefixedTypeAliasesSemanticFixProvider(): SemanticFixProvider {
   return {
-    createOperation(diagnostic, context): SemanticFixOperation | null {
+    createOperation(diagnostic, context): SymbolRenameOperation | null {
       return readOperation(diagnostic, context);
     },
     ruleCode: "@alexgorbatchev/no-i-prefixed-type-aliases",

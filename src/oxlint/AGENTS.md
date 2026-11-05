@@ -4,8 +4,8 @@ Local Oxlint plugin entrypoint (`plugin.ts`), shared Oxlint config creation (`cr
 
 ## Commands
 
-- Run integration tests: `bun run test src/oxlint/__tests__`
-- Check all: `bun run check`
+- Run integration tests: `just test src/oxlint/__tests__`
+- Check all: `just check`
 
 ## Local conventions
 

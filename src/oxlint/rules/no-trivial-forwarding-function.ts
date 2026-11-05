@@ -1,14 +1,9 @@
 import type { TSESTree } from "@typescript-eslint/types";
-import type { RuleContext, RuleModule } from "./types.ts";
+import type { AstFunctionLike, RuleContext, RuleModule } from "./types.ts";
 import { isAstNode } from "./helpers.ts";
 
 type ForwardingArgumentNode = TSESTree.CallExpressionArgument | TSESTree.Expression;
 type PropertyKeyNode = TSESTree.Expression | TSESTree.PrivateIdentifier;
-type SupportedFunctionNode =
-  | TSESTree.ArrowFunctionExpression
-  | TSESTree.FunctionDeclaration
-  | TSESTree.FunctionExpression;
-
 type ForwardingAnalysis = {
   forwardedParameterNames: string[];
   hasExternalTarget: boolean;
@@ -21,7 +16,7 @@ function readParentNode(node: TSESTree.Node): TSESTree.Node | undefined {
   return isAstNode(parentNode) ? parentNode : undefined;
 }
 
-function readReportNode(node: SupportedFunctionNode): TSESTree.Node {
+function readReportNode(node: AstFunctionLike): TSESTree.Node {
   if (node.type === "FunctionDeclaration" && node.id) {
     return node.id;
   }
@@ -34,7 +29,7 @@ function readReportNode(node: SupportedFunctionNode): TSESTree.Node {
   return node;
 }
 
-function readFunctionName(node: SupportedFunctionNode): string | null {
+function readFunctionName(node: AstFunctionLike): string | null {
   if (node.type === "FunctionDeclaration" && node.id) {
     return node.id.name;
   }
@@ -47,7 +42,7 @@ function readFunctionName(node: SupportedFunctionNode): string | null {
   return null;
 }
 
-function isSupportedFunctionNode(node: SupportedFunctionNode): boolean {
+function isSupportedFunctionNode(node: AstFunctionLike): boolean {
   if (node.type === "FunctionDeclaration") {
     return true;
   }
@@ -56,7 +51,7 @@ function isSupportedFunctionNode(node: SupportedFunctionNode): boolean {
   return parentNode?.type === "VariableDeclarator" || parentNode?.type === "ExportDefaultDeclaration";
 }
 
-function readReturnedExpression(node: SupportedFunctionNode): TSESTree.Expression | null {
+function readReturnedExpression(node: AstFunctionLike): TSESTree.Expression | null {
   if (node.body.type !== "BlockStatement") {
     return node.body;
   }
@@ -85,7 +80,7 @@ function readForwardedParameterName(parameter: TSESTree.Parameter): string | nul
   return null;
 }
 
-function readForwardedParameterNames(node: SupportedFunctionNode): readonly string[] | null {
+function readForwardedParameterNames(node: AstFunctionLike): readonly string[] | null {
   const parameterNames: string[] = [];
 
   for (const parameter of node.params) {
@@ -254,7 +249,7 @@ function analyzeForwardingExpression(
   };
 }
 
-function reportIfTrivialForwardingFunction(context: RuleContext, node: SupportedFunctionNode): void {
+function reportIfTrivialForwardingFunction(context: RuleContext, node: AstFunctionLike): void {
   if (node.async || node.generator || !isSupportedFunctionNode(node)) {
     return;
   }

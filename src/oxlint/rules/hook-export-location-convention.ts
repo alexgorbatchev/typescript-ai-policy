@@ -28,7 +28,6 @@ const HOOK_DIRECTORY_NAMES = new Set(["hooks"]);
 const ALLOWED_HOOK_EXTENSIONS = new Set([".ts", ".tsx"]);
 
 type HookExportEntry = {
-  exportedName: string;
   node: AstVariableDeclarator | AstDeclarationWithIdentifiers | AstExportSpecifier;
 };
 
@@ -79,11 +78,10 @@ function readStatementRuntimeHookExportEntries(statement: AstProgramStatement): 
 
   return statement.specifiers
     .filter((specifier) => !isTypeOnlyExportSpecifier(specifier, statement))
+    .filter((specifier) => readExportedSpecifierName(specifier).startsWith("use"))
     .map((specifier) => ({
-      exportedName: readExportedSpecifierName(specifier),
       node: specifier,
-    }))
-    .filter((entry) => entry.exportedName.startsWith("use"));
+    }));
 }
 
 function readDeclarationRuntimeHookExportEntries(declaration: AstDeclarationWithIdentifiers): HookExportEntry[] {
@@ -93,8 +91,7 @@ function readDeclarationRuntimeHookExportEntries(declaration: AstDeclarationWith
 
   return readDeclarationIdentifierNames(declaration)
     .filter((name) => name.startsWith("use"))
-    .map((name) => ({
-      exportedName: name,
+    .map(() => ({
       node: declaration,
     }));
 }
@@ -105,8 +102,7 @@ function readVariableDeclarationRuntimeHookExportEntries(declaration: AstVariabl
 
     return declarationNames
       .filter((name) => name.startsWith("use"))
-      .map((name) => ({
-        exportedName: name,
+      .map(() => ({
         node: declarator,
       }));
   });

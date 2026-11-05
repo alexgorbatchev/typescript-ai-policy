@@ -9,7 +9,7 @@ const MARKDOWN_BULLET_LINE_LENGTH = 80;
 const MARKDOWN_BULLET_PREFIX = "- ";
 const MARKDOWN_CONTINUATION_PREFIX = "  ";
 
-type PublishedRuleGuidanceOutputOptions = {
+export type PublishedRuleGuidanceOutputOptions = {
   json?: boolean;
 };
 

@@ -1,10 +1,10 @@
 import type {
   AstExportNamedDeclaration,
   AstExportSpecifier,
-  AstNode,
   AstProgram,
   AstProgramStatement,
   RuleModule,
+  RuntimeExportNameEntry,
 } from "./types.ts";
 import {
   getFilenameWithoutExtension,
@@ -37,12 +37,7 @@ function readExportedSpecifierName(specifier: AstExportSpecifier): string {
   return String(specifier.exported.value);
 }
 
-type HookRuntimeExportEntry = {
-  name: string;
-  reportNode: AstNode;
-};
-
-function readFirstRuntimeExportEntry(program: AstProgram): HookRuntimeExportEntry | null {
+function readFirstRuntimeExportEntry(program: AstProgram): RuntimeExportNameEntry | null {
   for (const statement of program.body) {
     const exportEntry = readStatementRuntimeExportEntry(statement);
     if (exportEntry !== null) {
@@ -53,7 +48,7 @@ function readFirstRuntimeExportEntry(program: AstProgram): HookRuntimeExportEntr
   return null;
 }
 
-function readStatementRuntimeExportEntry(statement: AstProgramStatement): HookRuntimeExportEntry | null {
+function readStatementRuntimeExportEntry(statement: AstProgramStatement): RuntimeExportNameEntry | null {
   if (statement.type !== "ExportNamedDeclaration") {
     return null;
   }

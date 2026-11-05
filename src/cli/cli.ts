@@ -4,6 +4,7 @@ import { existsSync, statSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 import { Command, CommanderError, InvalidArgumentError } from "commander";
 import { readPublishedRuleGuidanceOutput } from "../oxlint/readPublishedRuleGuidanceOutput.ts";
+import type { PublishedRuleGuidanceOutputOptions } from "../oxlint/readPublishedRuleGuidanceOutput.ts";
 import { readSemanticFixRuntimePaths } from "../semantic-fixes/readSemanticFixRuntimePaths.ts";
 import type {
   ApplySemanticFixesOptions,
@@ -12,6 +13,7 @@ import type {
   SkippedDiagnostic,
 } from "../semantic-fixes/types.ts";
 import { printPackageUsageNoticeOnce } from "../shared/packageUsageNotice.ts";
+import type { TextWriter } from "../shared/TextWriter.ts";
 
 type EnvironmentVariables = Record<string, string | undefined>;
 
@@ -21,16 +23,6 @@ type RunCheckDependencies = {
   env: EnvironmentVariables;
   runCommand: CheckRunner;
 };
-
-type GuidanceCommandOptions = {
-  json?: boolean;
-};
-
-type GuidanceOutputOptions = {
-  json?: boolean;
-};
-
-type CliWrite = (text: string) => void;
 
 type FixSemanticCommandArguments = {
   dryRun: boolean;
@@ -43,7 +35,7 @@ type FixSemanticCommandOptions = {
 
 type TypescriptAiPolicyCliDependencies = {
   applySemanticFixes: (options: ApplySemanticFixesOptions) => Promise<ApplySemanticFixesResult>;
-  readPublishedRuleGuidanceOutput: (options?: GuidanceOutputOptions) => string;
+  readPublishedRuleGuidanceOutput: typeof readPublishedRuleGuidanceOutput;
   readSemanticFixRuntimePaths: () => {
     oxlintConfigPath: string;
     oxlintExecutablePath: string;
@@ -159,7 +151,7 @@ function createTypescriptAiPolicyCli(dependencies: TypescriptAiPolicyCliDependen
   const program = new Command().name("typescript-ai-policy").showHelpAfterError();
 
   program.configureOutput({
-    outputError(text: string, write: CliWrite) {
+    outputError(text: string, write: TextWriter) {
       write(text);
     },
     writeErr(text: string) {
@@ -220,7 +212,7 @@ function createTypescriptAiPolicyCli(dependencies: TypescriptAiPolicyCliDependen
   const guidanceCommand = new Command("guidance")
     .description("Print authoritative rule guidance for AI agents")
     .option("--json", "Print guidance as JSON")
-    .action(async (options: GuidanceCommandOptions) => {
+    .action(async (options: PublishedRuleGuidanceOutputOptions) => {
       dependencies.writeStdout(dependencies.readPublishedRuleGuidanceOutput({ json: options.json ?? false }));
     });
 

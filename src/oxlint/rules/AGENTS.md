@@ -10,10 +10,10 @@ Oxlint custom rule modules (`*.ts`), shared rule helpers (`helpers.ts`), and uni
 
 ## Commands
 
-- Test single rule: `bun run test src/oxlint/rules/__tests__/story-file-location-convention.test.ts`
-- Test all rules: `bun run test src/oxlint/rules/__tests__`
+- Test single rule: `just test src/oxlint/rules/__tests__/story-file-location-convention.test.ts`
+- Test all rules: `just test src/oxlint/rules/__tests__`
 
-Run these commands from the repository root. Use the test script so its supervisor owns temporary files, tool caches, and descendant processes; do not invoke `bun test` directly.
+Run these commands from the repository root. Use the test recipe so its supervisor owns temporary files, tool caches, and descendant processes; do not invoke `bun test` directly.
 
 ## Local conventions
 
@@ -21,7 +21,7 @@ Run these commands from the repository root. Use the test script so its supervis
 - Naming & IDs: Kebab-case filenames matching plugin rule IDs (`no-*` for bans, `require-*` for required patterns, `*-convention` / `consistent-*` for structure).
 - Shared helpers: Place reusable AST/path helpers in `helpers.ts`.
 - Steering diagnostics: Max 2 short, direct sentences. Do not include current token or identifier spelling in message text. Do not offer escape hatches or policy workarounds.
-- Guidance: Put detailed context in `meta.docs.guidance` (contributes to `bun run cli -- guidance`).
+- Guidance: Put detailed context in `meta.docs.guidance` (contributes to `just run guidance`).
 - Multi-line highlights: Override `loc` for large declarations to highlight only the first line.
 
 ## Local gotchas

@@ -31,14 +31,6 @@ export function normalizeFilename(filename: string): string {
   return filename.replaceAll("\\", "/");
 }
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-export function normalizeGlobPattern(globPattern: string): string {
-  return normalizeFilename(globPattern).replace(/^\.\//u, "");
-}
-
 export function getPathSegments(filename: string): string[] {
   return normalizeFilename(filename).split("/").filter(Boolean);
 }
@@ -90,16 +82,6 @@ export function readPathFromDirectory(filename: string, expectedDirectoryName: s
   return pathSegments.slice(directoryIndex + 1).join("/");
 }
 
-export function readAbbreviatedPath(path: string, segmentCount = 3): string {
-  const displayedPathSegments = getPathSegments(path).slice(-segmentCount);
-
-  return `.../${displayedPathSegments.join("/")}`;
-}
-
-export function readAbbreviatedSiblingDirectoryPath(filename: string, siblingDirectoryName: string): string {
-  return readAbbreviatedPath(`${dirname(filename)}/${siblingDirectoryName}`);
-}
-
 export function readProgramReportNode(program: AstProgram): AstNode {
   return program.body[0] ?? program;
 }
@@ -137,12 +119,6 @@ export function isInComponentOwnershipDirectory(filename: string): boolean {
 
 export function isInStoriesSubtree(path: string): boolean {
   return path === "stories" || path.startsWith("stories/") || path.includes("/stories/");
-}
-
-export function isDirectChildOfDirectory(filename: string, expectedDirectoryName: string): boolean {
-  const relativePath = readPathFromDirectory(filename, expectedDirectoryName);
-
-  return relativePath !== null && relativePath !== "" && !relativePath.includes("/");
 }
 
 export function isDirectChildOfAnyDirectory(filename: string, expectedDirectoryNames: DirectoryNames): boolean {
@@ -320,15 +296,6 @@ export function readPackageRelativePath(filename: string): string | null {
   }
 
   return normalizeFilename(relative(packageRootPath, resolve(filename)));
-}
-
-export function readConfigRelativePath(filename: string): string {
-  const packageRelativePath = readPackageRelativePath(filename);
-  if (packageRelativePath !== null) {
-    return packageRelativePath;
-  }
-
-  return normalizeFilename(relative(process.cwd(), resolve(filename)));
 }
 
 export function isStoryOrTestTsxFile(filename: string): boolean {

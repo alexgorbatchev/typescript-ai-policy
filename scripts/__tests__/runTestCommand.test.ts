@@ -159,11 +159,11 @@ test.each([
 ])(
   "declared test command cleans fixtures and preserves inherited caches after $outcome",
   async ({ outcome, exitCode, source }) => {
-    await using directory = await mkdtempDisposable(join(TEST_ROOT, "package-regression-"));
+    await using directory = await mkdtempDisposable(join(TEST_ROOT, "recipe regression-"));
     await Bun.write(join(directory.path, "lifecycle.test.ts"), source);
     await mkdir(join(directory.path, "caller-runtime"));
     await Bun.write(join(directory.path, "scratch", "unowned.txt"), "preserve");
-    const result = await execa(process.execPath, ["run", "test", join(directory.path, "lifecycle.test.ts")], {
+    const result = await execa("just", ["test", join(directory.path, "lifecycle.test.ts")], {
       env: {
         POLICY_TEST_ROOT: join(directory.path, "scratch"),
         POLICY_CONSUMER_ROOT: directory.path,

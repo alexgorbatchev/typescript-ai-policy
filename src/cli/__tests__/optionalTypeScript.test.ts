@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, expect, it } from "bun:test";
-import { cp, mkdir, mkdtemp, rm, symlink } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
@@ -9,14 +9,12 @@ let consumerPath = "";
 let cliPath = "";
 
 beforeAll(async () => {
-  const build = Bun.spawnSync([process.execPath, "run", "build"], { cwd: repositoryPath });
-  expect(build.exitCode).toBe(0);
-
   consumerPath = await mkdtemp(join(process.env.POLICY_CONSUMER_ROOT ?? tmpdir(), "policy-without-typescript-"));
   expect(Bun.spawnSync(["git", "init", "--quiet", consumerPath]).exitCode).toBe(0);
   const policyPath = join(consumerPath, "node_modules/@alexgorbatchev/typescript-ai-policy");
   await mkdir(policyPath, { recursive: true });
-  await cp(join(repositoryPath, "dist"), join(policyPath, "dist"), { recursive: true });
+  const build = Bun.spawnSync(["just", "build", "--out-dir", join(policyPath, "dist")], { cwd: repositoryPath });
+  expect(build.exitCode).toBe(0);
   await Bun.write(join(policyPath, "package.json"), Bun.file(join(repositoryPath, "package.json")));
   await Bun.write(
     join(consumerPath, "package.json"),
@@ -83,6 +81,28 @@ it("prints rule guidance without the optional TypeScript peer", () => {
   expect(result.exitCode).toBe(0);
   const guidance: unknown = JSON.parse(result.stdout);
   expect(guidance).toEqual(expect.arrayContaining([expect.objectContaining({ ruleName: expect.any(String) })]));
+});
+
+it("publishes FilenameStyle for typed consumers of the oxlint-config package entrypoint", async () => {
+  const sourcePath = join(consumerPath, "filenameStyle.ts");
+  await Bun.write(
+    sourcePath,
+    'import createOxlintConfig, { FilenameStyle } from "@alexgorbatchev/typescript-ai-policy/oxlint-config";\n' +
+      'console.log(JSON.stringify(createOxlintConfig({ filenameStyle: FilenameStyle.DashCase }).rules?.["@alexgorbatchev/hook-export-location-convention"]));\n',
+  );
+  const typecheck = Bun.spawnSync(
+    [join(repositoryPath, "node_modules/.bin/tsc"), "--noEmit", "--module", "NodeNext", "--skipLibCheck", sourcePath],
+    { cwd: consumerPath },
+  );
+  expect({
+    exitCode: typecheck.exitCode,
+    stdout: typecheck.stdout.toString(),
+    stderr: typecheck.stderr.toString(),
+  }).toEqual({ exitCode: 0, stdout: "", stderr: "" });
+
+  const runtime = Bun.spawnSync([process.execPath, sourcePath], { cwd: consumerPath });
+  expect(runtime.exitCode).toBe(0);
+  expect(runtime.stdout.toString()).toBe('["error",{"filenameStyle":"dash-case"}]\n');
 });
 
 it("applies semantic fixes using only the published package files", async () => {

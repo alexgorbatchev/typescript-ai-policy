@@ -1,10 +1,5 @@
 import { readTypeScriptModule } from "../readTypeScriptModule.ts";
-import type {
-  OxlintDiagnostic,
-  SemanticFixOperation,
-  SemanticFixProvider,
-  SemanticFixProviderContext,
-} from "../types.ts";
+import type { OxlintDiagnostic, SymbolRenameOperation, SemanticFixProvider, SemanticFixContext } from "../types.ts";
 import {
   readDiagnosticSourceFile,
   readNamedDeclarationFromDiagnosticLabel,
@@ -29,7 +24,7 @@ function readNormalizedInterfaceName(interfaceName: string): string | null {
   return normalizedInterfaceName;
 }
 
-function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixProviderContext): SemanticFixOperation | null {
+function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixContext): SymbolRenameOperation | null {
   const label = diagnostic.labels[0];
   if (!label) {
     return null;
@@ -52,7 +47,7 @@ function readOperation(diagnostic: OxlintDiagnostic, context: SemanticFixProvide
 
 export function createInterfaceNamingConventionSemanticFixProvider(): SemanticFixProvider {
   return {
-    createOperation(diagnostic, context): SemanticFixOperation | null {
+    createOperation(diagnostic, context): SymbolRenameOperation | null {
       return readOperation(diagnostic, context);
     },
     ruleCode: "@alexgorbatchev/interface-naming-convention",

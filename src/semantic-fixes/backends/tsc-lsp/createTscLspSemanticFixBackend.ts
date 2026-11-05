@@ -5,9 +5,10 @@ import { TscLspClient } from "./TscLspClient.ts";
 import type {
   ApplySemanticFixesOptions,
   FileMove,
+  LineAndCharacter,
   MoveFileOperation,
   SemanticFixBackend,
-  SemanticFixBackendContext,
+  SemanticFixContext,
   SemanticFixOperation,
   SemanticFixPlan,
   SemanticFixPlanResult,
@@ -15,14 +16,9 @@ import type {
   TextEdit,
 } from "../../types.ts";
 
-type LspPosition = {
-  character: number;
-  line: number;
-};
-
 type LspRange = {
-  end: LspPosition;
-  start: LspPosition;
+  end: LineAndCharacter;
+  start: LineAndCharacter;
 };
 
 type LspTextEdit = {
@@ -42,7 +38,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function isLspPosition(value: unknown): value is LspPosition {
+function isLspPosition(value: unknown): value is LineAndCharacter {
   if (!isRecord(value)) {
     return false;
   }
@@ -133,7 +129,7 @@ function readFailureReason(error: unknown): string {
 
 async function readClient(
   clientCache: ClientCache,
-  context: SemanticFixBackendContext,
+  context: SemanticFixContext,
   options: Pick<ApplySemanticFixesOptions, "tscExecutablePath">,
 ): Promise<TscLspClient> {
   const cachedClient = clientCache.get(context.targetDirectoryPath);
