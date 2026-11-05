@@ -42,7 +42,7 @@ bun add -d typescript@npm:@typescript/typescript6@latest @typescript/native@npm:
 The `typescript` alias provides the TypeScript 6 compiler API used by semantic fixes. The `@typescript/native`
 alias provides the TypeScript 7 compiler and LSP backend. Help, `check`, and `guidance` work without either compiler.
 
-Story ownership resolution uses the package's runtime dependencies, `oxc-parser` and `oxc-resolver`; it does not
+Story ownership resolution uses the package's runtime dependencies, `oxc-parser`, `oxc-resolver`, and `oxc-walker`; it does not
 require the optional TypeScript compiler peers. The resolver reads component sources, barrels, package boundaries,
 and applicable TypeScript path configuration from the consuming repository.
 
@@ -163,10 +163,17 @@ the same source file **and symbol**, within the same nearest package and the sam
 `layouts/` area. Imports, aliases, and re-exports establish that relationship; titles, group names, and same-named
 files do not. A story bound to one `Button.tsx` cannot cover another `Button.tsx` elsewhere in the area.
 
+Metadata and compound objects must remain statically resolvable. Visible mutations, calls that can mutate an object,
+and untracked escapes invalidate its initializer, including through aliases. Accessor-bearing objects are unknown.
+A later explicit `component` can override an unknown spread, but mutating the completed metadata still invalidates it.
+
 Ownership resolution uses a fresh module graph for each linted file. It reads counterpart files from disk and does
 not retain a process-wide ownership cache, so later lint passes can observe changed components, barrels, package
 boundaries, and resolver configuration. See the [ownership resolution contract](src/oxlint/README.md#resolving-story-ownership)
 for metadata spread precedence and unsupported bindings.
+
+Existing module paths are canonicalized across checkout symlinks. The current linted source remains authoritative
+for that physical file, including unsaved editor contents; new buffers without a disk file retain their absolute path.
 
 A `main.tsx` outside component ownership directories is a React client entrypoint when it has no exports or local
 component declarations and directly renders JSX through an imported `react-dom/client` `createRoot` call (chained

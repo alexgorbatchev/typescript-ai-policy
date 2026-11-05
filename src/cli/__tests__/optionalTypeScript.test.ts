@@ -36,6 +36,7 @@ beforeAll(async () => {
     "package-manager-detector",
     "oxc-parser",
     "oxc-resolver",
+    "oxc-walker",
     "oxfmt",
     "oxlint",
   ]) {

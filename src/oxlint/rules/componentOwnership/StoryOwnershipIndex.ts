@@ -32,7 +32,7 @@ export class StoryOwnershipIndex {
     const query = type.typeArguments.params[0];
     if (query?.type !== "TSTypeQuery") return null;
     const names = readBindingPath(query.exprName);
-    const component = this.graph.readProperty(filename, binding.declarator.init, "component");
+    const component = this.graph.readProperty(filename, defaultExport.declaration, "component");
     if (!names || component.kind !== "value") return null;
     const typedOwner = this.graph.resolveBinding(filename, names);
     const valueOwner = this.graph.resolveExpression(filename, component.expression);

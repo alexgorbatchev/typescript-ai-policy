@@ -1,9 +1,16 @@
-import type { Expression, Program, VariableDeclarator } from "oxc-parser";
+import type { Expression, ImportDeclarationSpecifier, Program, VariableDeclarator } from "oxc-parser";
+import type { StaticBindingSafety } from "./StaticBindingSafety.ts";
 
 export type ModuleSymbol = { filename: string; name: string };
 export type ExportResolution = ModuleSymbol | "unresolved" | null;
+export type ModuleImportBinding = {
+  kind: "import";
+  source: string;
+  names: string[];
+  specifier: ImportDeclarationSpecifier;
+};
 export type ModuleBinding =
-  | { kind: "import"; source: string; names: string[] }
+  | ModuleImportBinding
   | { kind: "const"; declarator: VariableDeclarator }
   | { kind: "runtime" }
   | { kind: "unknown" };
@@ -16,5 +23,6 @@ export type ParsedModule = {
   bindings: Map<string, ModuleBinding>;
   exports: Map<string, ModuleExport>;
   starExports: string[];
+  safety: StaticBindingSafety;
 };
 export type StaticProperty = { kind: "value"; expression: Expression } | { kind: "absent" } | { kind: "unknown" };

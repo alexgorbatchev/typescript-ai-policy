@@ -102,8 +102,9 @@ it("prints authoritative published rule guidance for every local rule", () => {
     - **@alexgorbatchev/story-meta-type-annotation**: Bind Storybook meta to a typed
       top-level const and default-export that identifier. Do not type story meta
       with object assertions.
-    - **@alexgorbatchev/story-title-convention**: Set each story title from the
-      owned component path and role. Do not invent ad-hoc Storybook titles.
+    - **@alexgorbatchev/story-title-convention**: Set each story title from its
+      package-relative catalog path, preserving functional groups. Do not invent
+      ad-hoc Storybook titles.
     - **@alexgorbatchev/story-export-contract**: Keep story exports limited to the
       approved Storybook surface. Give each exported story a typed \`Story\` binding
       and a \`play\` function unless \`meta.tags\` or \`story.tags\` remove the built-in

@@ -611,6 +611,18 @@ Metadata resolution follows object-property order. Resolvable local const spread
 ambiguous, cyclic, malformed, or conflicting bindings do not establish ownership. Keep the typed and effective
 component bindings explicit when the resolver cannot prove the relationship.
 
+The resolver checks lexical binding identity with [`oxc-walker`](https://github.com/oxc-project/oxc-walker), including
+shadowing and const aliases. It conservatively rejects visible property writes, deletion, updates, method calls,
+and untracked escapes of metadata or compound objects. Accessor-bearing objects are unknown because evaluating a
+getter can change later properties. This analysis is flow-insensitive: a visible mutation invalidates the object
+without trying to prove execution order or whether a branch runs. Shallow spread copies have independent own
+properties, but nested values retain shared identity. A later explicit `component` can override an unknown spread;
+it cannot repair a mutation of the resulting metadata object. Ordinary reads and `typeof meta` do not invalidate it.
+
+Imported aliases are compared by their resolved export identity. An unsafe namespace import conservatively
+invalidates ownership through objects exported by that namespace, including barrels. Passing an extracted compound
+member to external code also makes its containing object unknown; the analysis does not prove member-specific effects.
+
 The package uses [`oxc-parser`](https://oxc.rs/docs/guide/usage/parser) and
 [`oxc-resolver`](https://oxc.rs/docs/guide/usage/resolver) as runtime dependencies for counterpart parsing and module
 resolution, including applicable TypeScript path aliases, JavaScript-to-TypeScript extension aliases, and re-exports.
@@ -618,6 +630,9 @@ Optional TypeScript compiler peers are not required for this analysis. Each rule
 a fresh module graph and resolver, reads the current file from its lint context, and reads counterpart sources from
 disk. Graph-local parsing and resolution state is discarded after that invocation; no process-wide ownership cache
 hides later changes to components, barrels, package boundaries, or resolver configuration.
+
+Module identity uses canonical filesystem paths so symlinked checkout paths share ownership and the current lint
+buffer with their physical file. A buffer whose file does not exist yet keeps its absolute path.
 
 ### `@alexgorbatchev/testid-naming-convention`
 

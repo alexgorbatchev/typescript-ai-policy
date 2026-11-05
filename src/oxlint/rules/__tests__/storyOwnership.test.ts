@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { renameSync, rmSync, writeFileSync } from "node:fs";
+import { renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { StoryOwnershipIndex } from "../componentOwnership/StoryOwnershipIndex.ts";
 import { createStoryOwnershipFixture, readStoryOwnershipDiagnostics } from "./helpers.ts";
 
 const BUTTON_SOURCE = "export function Button() { return <button />; }";
@@ -10,6 +11,36 @@ const STORY_PATH = "src/components/stories/catalog/Button.stories.tsx";
 const COMPONENT_PATH = "src/components/feature/Button.tsx";
 
 describe("resolved story ownership", () => {
+  it("preserves ownership and current source through a symlinked checkout", () => {
+    using repository = createStoryOwnershipFixture({
+      "real/package.json": '{"name":"linked-project","type":"module"}',
+      [`real/${COMPONENT_PATH}`]: BUTTON_SOURCE,
+      [`real/${STORY_PATH}`]: STORY_SOURCE,
+    });
+    const realRoot = join(repository.path, "real");
+    const linkedRoot = join(repository.path, "linked");
+    symlinkSync(realRoot, linkedRoot, "junction");
+    expect(readStoryOwnershipDiagnostics(linkedRoot, STORY_PATH)).toEqual([]);
+    expect(readStoryOwnershipDiagnostics(linkedRoot, COMPONENT_PATH)).toEqual([]);
+
+    const realStory = join(realRoot, STORY_PATH);
+    const linkedStory = join(linkedRoot, STORY_PATH);
+    expect(new StoryOwnershipIndex(linkedStory, "export default {};").readOwner(realStory)).toBeNull();
+    expect(new StoryOwnershipIndex(realStory, "export default {};").readOwner(linkedStory)).toBeNull();
+    const source = "export function Renamed() { return <button />; }";
+    expect(
+      new StoryOwnershipIndex(join(linkedRoot, COMPONENT_PATH), source).hasStory(join(realRoot, COMPONENT_PATH)),
+    ).toBe(false);
+  });
+
+  it("resolves an unsaved story buffer before its file exists", () => {
+    using repository = createStoryOwnershipFixture({ [COMPONENT_PATH]: BUTTON_SOURCE });
+    const filename = join(repository.path, STORY_PATH);
+    expect(new StoryOwnershipIndex(filename, STORY_SOURCE).readOwner(filename)).toBe(
+      join(repository.path, COMPONENT_PATH),
+    );
+  });
+
   it("finds a feature component independently of its catalog group", () => {
     using repository = createStoryOwnershipFixture({ [COMPONENT_PATH]: BUTTON_SOURCE, [STORY_PATH]: STORY_SOURCE });
     expect(readStoryOwnershipDiagnostics(repository.path, STORY_PATH)).toEqual([]);

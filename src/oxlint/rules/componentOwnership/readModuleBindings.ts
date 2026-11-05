@@ -1,5 +1,6 @@
 import type { Declaration, ModuleExportName, Program } from "oxc-parser";
 import type { ModuleBinding, ModuleExport, ParsedModule } from "./types.ts";
+import { StaticBindingSafety } from "./StaticBindingSafety.ts";
 
 function readExportName(name: ModuleExportName): string {
   return name.type === "Identifier" ? name.name : name.value;
@@ -38,7 +39,7 @@ export function readModuleBindings(program: Program): ParsedModule {
           specifier.type === "ImportNamespaceSpecifier"
             ? []
             : [specifier.type === "ImportDefaultSpecifier" ? "default" : readExportName(specifier.imported)];
-        bindings.set(specifier.local.name, { kind: "import", source: statement.source.value, names });
+        bindings.set(specifier.local.name, { kind: "import", source: statement.source.value, names, specifier });
       }
     } else if (statement.type === "ExportNamedDeclaration") {
       if (statement.exportKind === "type") continue;
@@ -75,5 +76,5 @@ export function readModuleBindings(program: Program): ParsedModule {
       addDeclaration(bindings, statement);
     }
   }
-  return { program, bindings, exports, starExports };
+  return { program, bindings, exports, starExports, safety: new StaticBindingSafety(program) };
 }

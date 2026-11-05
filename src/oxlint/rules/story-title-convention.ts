@@ -125,7 +125,8 @@ const storyTitleConventionRule: RuleModule = {
     docs: {
       description:
         'Require Storybook meta.title to match the package-relative story file path with structural "src/" and "stories/" segments removed',
-      guidance: "Set each story title from the owned component path and role. Do not invent ad-hoc Storybook titles.",
+      guidance:
+        "Set each story title from its package-relative catalog path, preserving functional groups. Do not invent ad-hoc Storybook titles.",
     },
     schema: [],
     messages: {

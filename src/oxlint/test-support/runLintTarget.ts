@@ -149,10 +149,14 @@ export function runLintTarget(fixtureRepositoryPath: string): LintTargetResult {
   };
 }
 
-export function runLintTargetWithConfigPath(fixtureRepositoryPath: string, configPath: string): LintTargetResult {
+export function runLintTargetWithConfigPath(
+  fixtureRepositoryPath: string,
+  configPath: string,
+  targets = ["."],
+): LintTargetResult {
   using runtime = mkdtempDisposableSync(join(fixtureRepositoryPath, ".git", "lint-runtime-"));
   const lintTargetProcess = Bun.spawnSync({
-    cmd: [OXLINT_BINARY_PATH, "--config", configPath, "--disable-nested-config", "--format", "json", "."],
+    cmd: [OXLINT_BINARY_PATH, "--config", configPath, "--disable-nested-config", "--format", "json", ...targets],
     cwd: fixtureRepositoryPath,
     env: { ...process.env, TMPDIR: runtime.path, NODE_COMPILE_CACHE: join(runtime.path, "node-compile-cache") },
     stderr: "pipe",

@@ -4,6 +4,7 @@ import {
   isExemptSupportBasename,
   readNearestPackageRootPath,
 } from "../helpers.ts";
+import { resolveModulePath } from "./resolveModulePath.ts";
 
 type ComponentOwnershipRole = {
   packagePath: string;
@@ -12,6 +13,7 @@ type ComponentOwnershipRole = {
 };
 
 export function readComponentOwnershipRole(filename: string): ComponentOwnershipRole | null {
+  filename = resolveModulePath(filename);
   const packagePath = readNearestPackageRootPath(filename);
   if (!packagePath) return null;
 
