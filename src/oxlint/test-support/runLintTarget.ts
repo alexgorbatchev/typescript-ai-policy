@@ -1,4 +1,4 @@
-import { realpathSync } from "node:fs";
+import { mkdtempDisposableSync, realpathSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 export type LintTargetIssue = {
@@ -116,9 +116,11 @@ function readIssues(oxlintJsonOutput: OxlintJsonOutput): LintTargetIssue[] {
 }
 
 export function runLintTarget(fixtureRepositoryPath: string): LintTargetResult {
+  using runtime = mkdtempDisposableSync(join(fixtureRepositoryPath, ".git", "lint-runtime-"));
   const lintTargetProcess = Bun.spawnSync({
     cmd: ["bash", LINT_TARGET_SCRIPT_PATH, fixtureRepositoryPath, "--format", "json"],
     cwd: REPOSITORY_ROOT_PATH,
+    env: { ...process.env, TMPDIR: runtime.path, NODE_COMPILE_CACHE: join(runtime.path, "node-compile-cache") },
     stderr: "pipe",
     stdout: "pipe",
   });
@@ -148,9 +150,11 @@ export function runLintTarget(fixtureRepositoryPath: string): LintTargetResult {
 }
 
 export function runLintTargetWithConfigPath(fixtureRepositoryPath: string, configPath: string): LintTargetResult {
+  using runtime = mkdtempDisposableSync(join(fixtureRepositoryPath, ".git", "lint-runtime-"));
   const lintTargetProcess = Bun.spawnSync({
     cmd: [OXLINT_BINARY_PATH, "--config", configPath, "--disable-nested-config", "--format", "json", "."],
     cwd: fixtureRepositoryPath,
+    env: { ...process.env, TMPDIR: runtime.path, NODE_COMPILE_CACHE: join(runtime.path, "node-compile-cache") },
     stderr: "pipe",
     stdout: "pipe",
   });

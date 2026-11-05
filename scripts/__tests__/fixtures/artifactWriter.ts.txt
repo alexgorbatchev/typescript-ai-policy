@@ -1,0 +1,5 @@
+await Bun.write(process.env.TMPDIR + "/extracted/package.txt", "temporary");
+await Bun.write(process.env.NODE_COMPILE_CACHE + "/compiled.cache", "cache");
+await Bun.write(process.env.npm_config_logs_dir + "/debug.log", "diagnostic");
+console.log("written");
+process.exitCode = Number(process.argv.at(-1));

@@ -25,6 +25,7 @@ async function writeProjectFiles(projectPath: string, projectFiles: readonly Pro
 
 async function createProject(projectFiles: readonly ProjectFile[]): Promise<string> {
   const projectPath = await mkdtemp(join(tmpdir(), "semantic-fixes-test-"));
+  expect(Bun.spawnSync(["git", "init", "--quiet", projectPath]).exitCode).toBe(0);
   await writeProjectFiles(projectPath, projectFiles);
   return projectPath;
 }

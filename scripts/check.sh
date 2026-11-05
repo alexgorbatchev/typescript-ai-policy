@@ -18,5 +18,5 @@ bun x tsc --noEmit
 echo "==> build"
 bun run build
 
-echo "==> bun test"
-bun test
+echo "==> bun run test"
+bun run test

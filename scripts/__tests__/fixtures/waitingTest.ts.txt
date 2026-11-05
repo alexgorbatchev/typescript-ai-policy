@@ -1,0 +1,7 @@
+import { test } from "bun:test";
+test("wait while a synchronous fixture worker is active", () => {
+  const result = Bun.spawnSync([process.execPath, process.env.FIXTURE_TREE_PATH, "parent", process.env.FIXTURE_READY_URL, process.env.FIXTURE_EVIDENCE_PATH], {
+    stdout: "inherit", stderr: "inherit",
+  });
+  process.exitCode = result.exitCode;
+}, 60000);

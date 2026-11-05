@@ -4,8 +4,9 @@ Shared Oxfmt and Oxlint configurations plus local Oxlint JS plugin enforcing cod
 
 ## Shared commands
 
-- Install dependencies: `bun install`
+- Install dependencies with Bun 1.4.4: `bun install`
 - Check all (format, lint, tsc, build, test): `bun run check`
+- Run tests with owned temporary files and process cleanup: `bun run test` (append Bun test arguments to select files or enable coverage)
 - Print agent guidance: `bun run cli -- guidance` (or `bun run cli -- guidance --json`)
 - Lint target project: `./scripts/lint-target.sh /path/to/target` (or `bun run lint:target -- /path/to/target`)
 
@@ -29,6 +30,8 @@ Shared Oxfmt and Oxlint configurations plus local Oxlint JS plugin enforcing cod
 ## Tool compatibility
 
 - Keep Oxfmt and Oxlint consumer compatibility in peer dependencies; test dependency upgrades with the shared configs and integration suite before widening supported ranges.
+- Use `bun run test` for test execution. Its supervisor owns `POLICY_TEST_ROOT`, temporary files, tool caches, and descendant processes through success, failure, timeout, and cancellation. Fixture helpers use that root and dispose individual repositories when their synchronous operation finishes. Do not place test artifacts outside the assigned root or inherit caller cache paths in spawned tooling.
+- Packaged-consumer tests need a separate disposable `POLICY_CONSUMER_ROOT` beneath the original OS temporary directory: Node module resolution walks past Git boundaries and otherwise finds this checkout's optional compiler peers. The supervisor owns and removes this tree after joining its children. If redirecting `TMPDIR` before launching the supervisor, first preserve the original OS temporary directory in `POLICY_CONSUMER_ROOT`. Ordinary fixtures remain under repository `.tmp`.
 
 ## Release gotchas
 

@@ -1,0 +1,13 @@
+const [role, readyUrl, evidence] = process.argv.slice(-3);
+const { createFixtureRepo } = await import(process.env.FIXTURE_FACTORY_URL);
+const fixture = createFixtureRepo("fixture-import-path-convention/nested-test-valid-relative-fixtures");
+const child = role === "parent" ? Bun.spawn([process.execPath, import.meta.path, "child", readyUrl, evidence], {
+  stdout: "inherit", stderr: "inherit",
+}) : undefined;
+const timer = setInterval(() => {}, 1000);
+process.once("SIGTERM", async () => {
+  await Bun.write(evidence + "/" + role, "terminated");
+  await child?.exited;
+  clearInterval(timer);
+});
+await fetch(readyUrl, {method: "POST", body: JSON.stringify({role, pid: process.pid, scratch: process.env.POLICY_TEST_ROOT, fixture: fixture.path, consumerRoot: process.env.POLICY_CONSUMER_ROOT})});

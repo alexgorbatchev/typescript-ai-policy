@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, expect, it } from "bun:test";
 import { cp, mkdir, mkdtemp, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
 
 const repositoryPath = resolve(import.meta.dir, "../../..");
@@ -11,7 +12,8 @@ beforeAll(async () => {
   const build = Bun.spawnSync([process.execPath, "run", "build"], { cwd: repositoryPath });
   expect(build.exitCode).toBe(0);
 
-  consumerPath = await mkdtemp(join(tmpdir(), "policy-without-typescript-"));
+  consumerPath = await mkdtemp(join(process.env.POLICY_CONSUMER_ROOT ?? tmpdir(), "policy-without-typescript-"));
+  expect(Bun.spawnSync(["git", "init", "--quiet", consumerPath]).exitCode).toBe(0);
   const policyPath = join(consumerPath, "node_modules/@alexgorbatchev/typescript-ai-policy");
   await mkdir(policyPath, { recursive: true });
   await cp(join(repositoryPath, "dist"), join(policyPath, "dist"), { recursive: true });
@@ -21,6 +23,14 @@ beforeAll(async () => {
     `${JSON.stringify({ name: "consumer", type: "module" }, null, 2)}\n`,
   );
   await Bun.write(join(consumerPath, "example.ts"), 'export const message = "ready";\n');
+  await Bun.write(
+    join(consumerPath, "oxlint.config.ts"),
+    'import createOxlintConfig from "@alexgorbatchev/typescript-ai-policy/oxlint-config";\n\nexport default createOxlintConfig();\n',
+  );
+  await Bun.write(
+    join(consumerPath, "oxfmt.config.ts"),
+    'import createOxfmtConfig from "@alexgorbatchev/typescript-ai-policy/oxfmt-config";\n\nexport default createOxfmtConfig();\n',
+  );
 
   for (const dependency of ["commander", "minimatch", "package-manager-detector", "oxfmt", "oxlint"]) {
     await symlink(join(repositoryPath, "node_modules", dependency), join(consumerPath, "node_modules", dependency));
@@ -56,6 +66,9 @@ it.each([{ args: ["--help"] }, { args: ["fix-semantic", "--help"] }, { args: ["c
 );
 
 it("reports missing compiler dependencies only when semantic fixes are requested", () => {
+  const require = createRequire(cliPath);
+  expect(() => require.resolve("typescript/package.json")).toThrow();
+  expect(() => require.resolve("@typescript/native/package.json")).toThrow();
   const result = runCli(["fix-semantic", consumerPath, "--dry-run"]);
   expect(result.exitCode).toBe(1);
   expect(result.stdout).toBe("");

@@ -1,5 +1,4 @@
-import { afterAll } from "bun:test";
-import { rmSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { FilenameStyle, type CreateOxlintConfigOptions } from "../createOxlintConfig.ts";
 import { createFixtureRepo } from "./createFixtureRepo.ts";
@@ -7,14 +6,7 @@ import { runLintTargetWithConfigPath, type LintTargetResult } from "./runLintTar
 
 type ConsumerSettings = Record<string, unknown>;
 
-const createdFixtureRepositoryPaths = new Set<string>();
 const REPOSITORY_ROOT_PATH = resolve(import.meta.dir, "../../..");
-
-afterAll(() => {
-  createdFixtureRepositoryPaths.forEach((fixtureRepositoryPath) => {
-    rmSync(fixtureRepositoryPath, { recursive: true, force: true });
-  });
-});
 
 function readFixtureConfigText(settings: ConsumerSettings, options: CreateOxlintConfigOptions): string {
   const filenameStyleLine = readFilenameStyleLine(options.filenameStyle);
@@ -51,11 +43,10 @@ export function runLintTargetFixtureWithConsumerConfig(
   settings: ConsumerSettings,
   options: CreateOxlintConfigOptions = {},
 ): LintTargetResult {
-  const fixtureRepositoryPath = createFixtureRepo(fixturePath);
-  createdFixtureRepositoryPaths.add(fixtureRepositoryPath);
-  const configPath = join(fixtureRepositoryPath, "oxlint.config.ts");
+  using fixtureRepository = createFixtureRepo(fixturePath);
+  const configPath = join(fixtureRepository.path, "oxlint.config.ts");
 
   writeFileSync(configPath, readFixtureConfigText(settings, options), "utf8");
 
-  return runLintTargetWithConfigPath(fixtureRepositoryPath, configPath);
+  return runLintTargetWithConfigPath(fixtureRepository.path, configPath);
 }

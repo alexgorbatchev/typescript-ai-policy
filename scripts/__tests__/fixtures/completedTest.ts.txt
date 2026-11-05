@@ -1,0 +1,7 @@
+import { expect, test } from "bun:test";
+test("fixture lifecycle", async () => {
+  const { createFixtureRepo } = await import(process.env.FIXTURE_FACTORY_URL);
+  createFixtureRepo("fixture-import-path-convention/nested-test-valid-relative-fixtures");
+  await Bun.write(process.env.FIXTURE_CONSUMER_RECEIPT, process.env.POLICY_CONSUMER_ROOT);
+  expect(process.env.FIXTURE_OUTCOME).toBe("pass");
+});
