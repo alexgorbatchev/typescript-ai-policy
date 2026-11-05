@@ -1,6 +1,6 @@
 {
   "name": "@alexgorbatchev/typescript-ai-policy",
-  "version": "14.0.3",
+  "version": "15.0.0",
   "description": "Shared TypeScript AI policy configs and Oxlint rules",
   "homepage": "https://github.com/alexgorbatchev/typescript-ai-policy#readme",
   "repository": {
@@ -64,6 +64,8 @@
   "dependencies": {
     "commander": "^15.0.0",
     "minimatch": "^10.2.6",
+    "oxc-parser": "0.157.0",
+    "oxc-resolver": "11.24.2",
     "package-manager-detector": "^1.9.0"
   }
 }

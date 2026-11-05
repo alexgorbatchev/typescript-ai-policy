@@ -19,8 +19,10 @@ afterAll(() => {
 });
 
 function createComponentDirectoryPath(name: string): string {
-  const directoryPath = join(tempRootDirectoryPath, name, "components");
+  const packagePath = join(tempRootDirectoryPath, name);
+  const directoryPath = join(packagePath, "components");
   mkdirSync(directoryPath, { recursive: true });
+  writeFileSync(join(packagePath, "package.json"), JSON.stringify({ type: "module" }));
   return directoryPath;
 }
 
@@ -50,42 +52,62 @@ mkdirSync(join(missingSiblingComponentDirectoryPath, "stories", "catalog"), { re
 const ruleTester = new RuleTester();
 
 ruleTester.run(
-  "story-file-location-convention requires story files under stories and mapped to a sibling component basename",
+  "story-file-location-convention requires story files under stories with exact typed component ownership",
   storyFileLocationConventionRuleModule,
   {
     valid: [
       {
-        code: `export default {};`,
+        code: `
+          import type { Meta } from "@storybook/react";
+          import { Button } from "../Button";
+          const meta: Meta<typeof Button> = { component: Button };
+          export default meta;
+        `,
         filename: join(validDirectStoryComponentDirectoryPath, "stories", "Button.stories.tsx"),
         languageOptions: languageOpts,
       },
       {
-        code: `export default {};`,
+        code: `
+          import type { Meta } from "@storybook/react";
+          import { AccountPanel } from "../../account-panel";
+          const meta: Meta<typeof AccountPanel> = { component: AccountPanel };
+          export default meta;
+        `,
         filename: join(validNestedStoryComponentDirectoryPath, "stories", "catalog", "account-panel.stories.tsx"),
         languageOptions: languageOpts,
       },
     ],
     invalid: [
       {
-        code: `export default {};`,
+        code: `
+          import type { Meta } from "@storybook/react";
+          import { Button } from "./Button";
+          const meta: Meta<typeof Button> = { component: Button };
+          export default meta;
+        `,
         filename: join(missingStoriesDirectoryComponentDirectoryPath, "Button.stories.tsx"),
         languageOptions: languageOpts,
         errors: [
           {
             messageId: "invalidStoryFileLocation",
-            type: AST_NODE_TYPES.ExportDefaultDeclaration,
+            type: AST_NODE_TYPES.ImportDeclaration,
           },
         ],
         output: null,
       },
       {
-        code: `export default {};`,
+        code: `
+          import type { Meta } from "@storybook/react";
+          import { Missing } from "../../Missing";
+          const meta: Meta<typeof Missing> = { component: Missing };
+          export default meta;
+        `,
         filename: join(missingSiblingComponentDirectoryPath, "stories", "catalog", "Missing.stories.tsx"),
         languageOptions: languageOpts,
         errors: [
           {
             messageId: "missingSiblingComponent",
-            type: AST_NODE_TYPES.ExportDefaultDeclaration,
+            type: AST_NODE_TYPES.ImportDeclaration,
           },
         ],
         output: null,

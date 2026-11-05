@@ -154,12 +154,13 @@ on files that cannot meaningfully violate them.
 16. **Fixture-entrypoint and fixture-area rules** run on nested `fixtures.ts`, `fixtures.tsx`, and `fixtures/`
     directories anywhere under `__tests__/` or `stories/`, depending on the rule.
 
-This staged configuration is part of the contract. The global rules still protect ingress and leak paths, but canonical
-role directories are now enforced for component ownership files (`components/`, `templates/`, `layouts/`), story areas
-(`stories/`), exported hooks (`hooks/`), and tests (`__tests__/`). Raw intrinsic JSX and direct styling props are only
-allowed inside canonical component ownership areas. Story, Storybook project-support, and test support `.tsx` files are
-intentionally carved out of the component-owner rules so the overall policy surface stays satisfiable instead of
-reporting contradictory file roles.
+This staged configuration is part of the contract. Global rules protect ingress and leak paths; canonical role
+directories establish component ownership (`components/`, `templates/`, `layouts/`), stories (`stories/`), exported
+hooks (`hooks/`), and tests (`__tests__/`). Component areas may contain canonical story, test, and hook subtrees, which
+remain subject to their respective role rules. Story, Storybook project-support, and test support `.tsx` files are
+carved out of component-owner rules and retain their raw DOM styling allowance. The verified native-primitive styling
+allowance applies only to runtime component implementations. These distinctions require no additional factory option
+or consumer-configured scope.
 
 ## Enabled rules
 
@@ -294,7 +295,7 @@ export interface IuserProfile {
 }
 ```
 
-**Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can apply supported interface renames through the `tsc` LSP backend. The fixer is intentionally conservative: it only applies mechanical renames when the current interface name can be normalized safely to `I[A-Z][A-Za-z0-9]*`.
+**Companion semantic fix:** From this repository root, `just fix-semantic <target-directory>` can apply supported interface renames through the `tsc` LSP backend. The fixer is intentionally conservative: it only applies mechanical renames when the current interface name can be normalized safely to `I[A-Z][A-Za-z0-9]*`.
 
 ### `@alexgorbatchev/no-i-prefixed-type-aliases`
 
@@ -327,7 +328,7 @@ export type IURLConfig = {
 };
 ```
 
-**Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can apply supported type-alias renames through the `tsc` LSP backend. The fixer is intentionally conservative: it only drops the leading `I` when the diagnostic resolves to a concrete `type` alias name that already matches the repository's banned `I[A-Z][A-Za-z0-9]*` shape.
+**Companion semantic fix:** From this repository root, `just fix-semantic <target-directory>` can apply supported type-alias renames through the `tsc` LSP backend. The fixer is intentionally conservative: it only drops the leading `I` when the diagnostic resolves to a concrete `type` alias name that already matches the repository's banned `I[A-Z][A-Za-z0-9]*` shape.
 
 ### `@alexgorbatchev/no-direct-interface-to-type-assignment`
 
@@ -585,8 +586,38 @@ The shared config derives the component-owned TSX surface from canonical directo
 
 - component ownership `.tsx` files live under `components/`, `templates/`, or `layouts/`
 - nested subdirectories inside those areas are allowed but not required
-- sibling `stories/` trees are allowed inside those areas
-- raw intrinsic JSX and direct `className` / `style` props are allowed only inside those canonical component areas
+- canonical `stories/`, `__tests__/`, and `hooks/` subtrees keep their own strict role rules
+- `stories/` trees may group stories by function independently of runtime component folders
+- raw intrinsic JSX belongs in component areas, with the existing story, test, and Storybook support allowances;
+  the [styling rule](#alexgorbatchevno-classname-style-props-outside-component-globs) also recognizes verified native
+  Base UI primitives in runtime component implementations
+
+### Resolving story ownership
+
+A story belongs to the runtime component resolved from its default-exported, top-level
+`const meta: Meta<typeof Component> = { component: Component, ... }`. The typed reference and effective `component`
+property must resolve to the same source file **and symbol**. Two different exports from one file do not satisfy
+that equality. Named imports, import aliases, namespace members, resolvable local const aliases, and barrel
+re-exports can establish ownership; a title, catalog group, or matching filename alone cannot.
+
+The story must be under a `stories/` tree in the same canonical component area and nearest package as the resolved
+runtime `.tsx` owner. Nested `package.json` boundaries are respected. Stories, tests, hooks, fixtures, and support
+modules cannot own component stories. The story basename matches the **source file** basename, including for compound
+parts: a story bound to `Panel.Header` from `Panel.tsx` uses `Panel.stories.tsx`. Matching filenames elsewhere in the
+area do not let one story cover multiple owners.
+
+Metadata resolution follows object-property order. Resolvable local const spreads participate; a later explicit
+`component` property establishes the effective value, while an unknown later spread can invalidate it. Unresolved,
+ambiguous, cyclic, malformed, or conflicting bindings do not establish ownership. Keep the typed and effective
+component bindings explicit when the resolver cannot prove the relationship.
+
+The package uses [`oxc-parser`](https://oxc.rs/docs/guide/usage/parser) and
+[`oxc-resolver`](https://oxc.rs/docs/guide/usage/resolver) as runtime dependencies for counterpart parsing and module
+resolution, including applicable TypeScript path aliases, JavaScript-to-TypeScript extension aliases, and re-exports.
+Optional TypeScript compiler peers are not required for this analysis. Each rule invocation for a linted file creates
+a fresh module graph and resolver, reads the current file from its lint context, and reads counterpart sources from
+disk. Graph-local parsing and resolution state is discarded after that invocation; no process-wide ownership cache
+hides later changes to components, barrels, package boundaries, or resolver configuration.
 
 ### `@alexgorbatchev/testid-naming-convention`
 
@@ -670,7 +701,24 @@ export function DashboardRoute() {
 
 ### `@alexgorbatchev/no-classname-style-props-outside-component-globs`
 
-**Policy:** Custom/capitalized components must not accept `className` or `style` props in any file (including inside component directories, stories, and tests). For intrinsic HTML elements (like `div`), direct `className` or `style` props are only allowed inside canonical component ownership areas. Non-story, non-test, non-`.storybook/` `.tsx` files outside canonical component ownership areas must not pass styling props on any elements.
+**Policy:** Direct `className` and `style` props belong on intrinsic elements in canonical component ownership areas,
+or on verified native Base UI primitives in runtime component ownership files. Story, test, and `.storybook/` support
+retain their intrinsic-element allowance. Product consumers outside those areas must use component-owned visual props;
+styled custom components remain protected from direct styling everywhere.
+
+Native recognition requires an installed `@base-ui/react` version **1.9.0**, a reviewed public root or subpath export,
+and an exact reviewed primitive or part. It follows lexical import identity for named, renamed, and namespace imports;
+shadowed names, default or type-only imports, local wrapper aliases, unknown symbols, product component re-exports,
+and unsupported package versions do not qualify. A package name alone is insufficient. This allowance belongs to
+runtime component implementations, not story, test, hook, fixture, or other support files.
+
+Use Base UI's documented [`className` and `style` APIs](https://base-ui.com/react/handbook/styling), including their
+state callbacks, within that ownership boundary. If explicit styling accompanies a
+[`render` prop](https://base-ui.com/react/handbook/composition), every visible render link must resolve to an intrinsic
+element or another verified native primitive. JSX elements and resolvable const element aliases can establish the
+terminal. A styled product component, callback, props-supplied target, or unknown later spread cannot. Base UI's
+composition API remains available without explicit styling; it does not permit styling a product component through
+a native wrapper.
 
 **Good**
 
@@ -686,12 +734,26 @@ export function DashboardShell() {
 }
 ```
 
+```tsx
+// src/components/Button.tsx; @base-ui/react 1.9.0
+import { Button as BaseButton } from "@base-ui/react/button";
+
+export function Button() {
+  return <BaseButton className="button" data-testid="Button" />;
+}
+```
+
 **Bad**
 
 ```tsx
 export function DashboardRoute() {
   return <DashboardShell className="dashboard-shell" />;
 }
+```
+
+```tsx
+// A native wrapper cannot override a styled product component.
+<BaseButton className="button" render={<ProductButton />} />
 ```
 
 ### `@alexgorbatchev/no-arbitrary-child-selectors`
@@ -826,8 +888,11 @@ arbitrary feature-local `.tsx` leaves.
 
 ### `@alexgorbatchev/component-directory-file-convention`
 
-**Policy:** A `components/`, `templates/`, or `layouts/` directory may contain only direct-child component ownership
-`.tsx` files, direct-child `constants.ts`, `index.ts`, or `types.ts`, or a direct-child `stories/` tree.
+**Policy:** A `components/`, `templates/`, or `layouts/` area may contain component ownership `.tsx` files,
+`constants.ts`, `index.ts`, and `types.ts`, including in nested feature directories. Canonical `stories/`, `__tests__/`,
+and `hooks/` subtrees are delegated to their own role rules. This permits component-local tests and feature hooks
+without permitting arbitrary runtime modules or malformed support files: `components/helpers.ts`,
+`components/__tests__/types.ts`, and `components/hooks/utils.ts` remain invalid.
 
 ### `@alexgorbatchev/component-file-naming-convention`
 
@@ -835,27 +900,45 @@ arbitrary feature-local `.tsx` leaves.
 
 ### `@alexgorbatchev/component-story-file-convention`
 
-**Policy:** Every component ownership file must have a matching `basename.stories.tsx` file somewhere under a sibling
-`stories/` directory. The component may sit in any folder; the hard requirement is that its Storybook coverage lives
-under `stories/`.
+**Policy:** Every runtime component ownership file must have a matching `basename.stories.tsx` under a `stories/`
+tree in the same package and canonical component area. The story's typed meta and effective `component` property
+must resolve to that exact owner. Functional catalog groups and feature-local story trees are both supported;
+a same-named story for another component does not count. See [resolving story ownership](#resolving-story-ownership).
 
 ### `@alexgorbatchev/stories-directory-file-convention`
 
-**Policy:** A `stories/` directory may contain only `*.stories.tsx`, `helpers.ts`, `helpers.tsx`, `fixtures.ts`,
-`fixtures.tsx`, or files under `fixtures/`.
+**Policy:** Each functional group under `stories/` may contain only `*.stories.tsx`, `helpers.ts`, `helpers.tsx`,
+`fixtures.ts`, `fixtures.tsx`, or files under `fixtures/`. Groups may nest and have local helpers and fixture support;
+fixture directories may contain descendants. Existing fixture entrypoint, export, and import rules still apply.
+Grouping does not admit runtime modules, tests, or arbitrary support filenames into the story tree.
 
 ### `@alexgorbatchev/story-file-location-convention`
 
-**Policy:** A story file must live somewhere under a sibling `stories/` directory and must map back to a sibling
-component ownership file by basename.
+**Policy:** A story file must live under a `stories/` tree, match its resolved component source basename, and satisfy
+the same-package, same-area, exact-binding [ownership contract](#resolving-story-ownership). The catalog group does
+not need to mirror the runtime directory.
 
 **Good**
 
 ```text
-src/accounts/components/AccountPanel.tsx
-src/accounts/components/stories/AccountPanel.stories.tsx
-src/accounts/components/account-panel.tsx
-src/accounts/components/stories/account-panel.stories.tsx
+src/components/accounts/AccountPanel.tsx
+src/components/stories/forms/AccountPanel.stories.tsx
+src/components/accounts/account-panel.tsx
+src/components/accounts/stories/account-panel.stories.tsx
+```
+
+For the first pair, the story establishes ownership through its import and typed meta:
+
+```tsx
+import type { Meta } from "@storybook/react";
+import { AccountPanel } from "../../accounts/AccountPanel";
+
+const meta: Meta<typeof AccountPanel> = {
+  component: AccountPanel,
+  title: "@scope/ui/components/forms/AccountPanel",
+};
+
+export default meta;
 ```
 
 **Bad**
@@ -902,6 +985,7 @@ export default meta;
 ```text
 packages/ui/src/accounts/components/stories/AccountPanel.stories.tsx -> @scope/ui/accounts/components/AccountPanel
 packages/ui/src/emails/templates/stories/receipt-email.stories.tsx -> @scope/ui/emails/templates/receipt-email
+packages/ui/src/components/stories/forms/AccountPanel.stories.tsx -> @scope/ui/components/forms/AccountPanel
 ```
 
 **Good**
@@ -1172,7 +1256,7 @@ import { renderSignalPanel } from "./__tests__/helpers";
 This is a global ingress rule: it intentionally runs outside `__tests__/` so misplaced `.test.ts[x]` files are told
 where to move. `.spec.ts` and `.spec.tsx` files are out of scope for this rule and are ignored.
 
-**Companion semantic fix:** From this repository root, `bun run fix:semantic -- <target-directory>` can move misplaced
+**Companion semantic fix:** From this repository root, `just fix-semantic <target-directory>` can move misplaced
 `.test.ts` / `.test.tsx` files into a sibling `__tests__/` directory as `__tests__/basename.test.ts[x]`. The fixer is
 intentionally conservative: it only handles already-canonical `.test.ts[x]` basenames, rewrites the moved file's
 relative imports, and skips the move if the canonical destination already exists.

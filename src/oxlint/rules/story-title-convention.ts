@@ -1,3 +1,7 @@
+import {
+  readDefaultExportDeclaration,
+  readTopLevelVariableDeclarator,
+} from "./componentOwnership/storyMetaBindings.ts";
 import type { TSESTree } from "@typescript-eslint/types";
 import type { AstProgram, RuleModule } from "./types.ts";
 import {
@@ -7,37 +11,9 @@ import {
   unwrapTypeScriptExpression,
 } from "./helpers.ts";
 
-type MetaBinding = {
-  declaration: TSESTree.VariableDeclaration;
-  declarator: TSESTree.VariableDeclarator;
-};
-
 type ObjectExpressionProperty = TSESTree.Property & {
   value: TSESTree.Expression;
 };
-
-function readDefaultExportDeclaration(program: AstProgram): TSESTree.ExportDefaultDeclaration | null {
-  return program.body.find((statement) => statement.type === "ExportDefaultDeclaration") ?? null;
-}
-
-function readTopLevelVariableDeclarator(program: AstProgram, name: string): MetaBinding | null {
-  for (const statement of program.body) {
-    if (statement.type !== "VariableDeclaration") {
-      continue;
-    }
-
-    for (const declarator of statement.declarations) {
-      if (declarator.id.type === "Identifier" && declarator.id.name === name) {
-        return {
-          declaration: statement,
-          declarator,
-        };
-      }
-    }
-  }
-
-  return null;
-}
 
 type MetaInfo = {
   objectExpression: TSESTree.ObjectExpression;

@@ -1,0 +1,19 @@
+import type { Meta, StoryObj } from "@storybook/react";
+import { Button } from "../../account/Button.js";
+
+const meta: Meta<typeof Button> = {
+  component: Button,
+  title: "ownership-catalog/components/actions/Button",
+};
+
+export default meta;
+
+type Story = StoryObj<typeof Button>;
+
+const Default: Story = {
+  play: async () => {
+    console.log("play");
+  },
+};
+
+export { Default as Button };

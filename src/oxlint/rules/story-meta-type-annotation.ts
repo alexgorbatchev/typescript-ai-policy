@@ -1,34 +1,10 @@
+import {
+  readDefaultExportDeclaration,
+  readTopLevelVariableDeclarator,
+} from "./componentOwnership/storyMetaBindings.ts";
 import type { TSESTree } from "@typescript-eslint/types";
-import type { AstProgram, RuleModule } from "./types.ts";
+import type { RuleModule } from "./types.ts";
 import { readProgramReportNode, unwrapExpression } from "./helpers.ts";
-
-type MetaBinding = {
-  declaration: TSESTree.VariableDeclaration;
-  declarator: TSESTree.VariableDeclarator;
-};
-
-function readDefaultExportDeclaration(program: AstProgram): TSESTree.ExportDefaultDeclaration | null {
-  return program.body.find((statement) => statement.type === "ExportDefaultDeclaration") ?? null;
-}
-
-function readTopLevelVariableDeclarator(program: AstProgram, name: string): MetaBinding | null {
-  for (const statement of program.body) {
-    if (statement.type !== "VariableDeclaration") {
-      continue;
-    }
-
-    for (const declarator of statement.declarations) {
-      if (declarator.id.type === "Identifier" && declarator.id.name === name) {
-        return {
-          declaration: statement,
-          declarator,
-        };
-      }
-    }
-  }
-
-  return null;
-}
 
 function isMetaTypeReference(typeAnnotation: TSESTree.TypeNode | null | undefined): boolean {
   if (typeAnnotation?.type !== "TSTypeReference") {

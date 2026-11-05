@@ -95,7 +95,7 @@ describe("story lint-target integration", () => {
           column: 1,
           filePath: "src/app/App.stories.tsx",
           line: 1,
-          message: 'Place story files in a sibling "stories/" directory.',
+          message: 'Place story files under a "stories/" directory in the owning component area and package.',
           ruleId: "@alexgorbatchev(story-file-location-convention)",
           severity: "error",
         },
@@ -104,7 +104,7 @@ describe("story lint-target integration", () => {
     );
   });
 
-  it("reports story files whose sibling component ownership file is missing", () => {
+  it("reports stories whose typed component binding cannot resolve to an ownership file", () => {
     const lintTargetResult = runLintTargetFixtureWithConsumerConfig(
       "story-file-location-convention/missing-sibling-component-invalid",
       CONSUMER_SETTINGS,
@@ -117,7 +117,8 @@ describe("story lint-target integration", () => {
           column: 1,
           filePath: "src/accounts/components/stories/Missing.stories.tsx",
           line: 1,
-          message: "Rename or move this story to match a sibling component ownership file.",
+          message:
+            "Bind typed meta and its component property to the same runtime component in this ownership area. Match the story basename to that component's source file.",
           ruleId: "@alexgorbatchev(story-file-location-convention)",
           severity: "error",
         },
@@ -140,7 +141,7 @@ describe("story lint-target integration", () => {
           filePath: "src/widgets/components/stories/setup.ts",
           line: 1,
           message:
-            'Only "*.stories.tsx", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/**" are allowed in "stories/".',
+            'Keep only "*.stories.tsx", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/**" in each "stories/" catalog group. Move runtime modules outside the story tree.',
           ruleId: "@alexgorbatchev(stories-directory-file-convention)",
           severity: "error",
         },

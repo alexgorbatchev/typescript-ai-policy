@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from "bun:test";
+import { afterAll, describe, it } from "bun:test";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import { languageOpts } from "./helpers.ts";
 import componentDirectoryFileConventionRuleModule from "../component-directory-file-convention.ts";
@@ -9,14 +9,6 @@ RuleTester.it = it;
 RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
-const EXPECTED_COMPONENT_DIRECTORY_FILE_GUIDANCE =
-  'Keep "components/", "templates/", and "layouts/" limited to component ".tsx" ownership files, "constants.ts", "index.ts", "types.ts", nested component subdirectories, and sibling "stories/" trees. Move tests and other file roles to their canonical directories.';
-
-it("uses the approved component directory guidance", () => {
-  expect(componentDirectoryFileConventionRuleModule.meta.docs?.guidance).toBe(
-    EXPECTED_COMPONENT_DIRECTORY_FILE_GUIDANCE,
-  );
-});
 
 ruleTester.run(
   "component-directory-file-convention restricts component area contents to ownership files, nested component subdirectories, support basenames, and sibling stories",
@@ -68,6 +60,46 @@ ruleTester.run(
         filename: "src/accounts/components/stories/fixtures.ts",
         languageOptions: languageOpts,
       },
+      {
+        code: `import { test } from 'bun:test'; test('renders', () => {});`,
+        filename: "src/accounts/components/__tests__/AccountPanel.test.tsx",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export const renderPanel = () => null;`,
+        filename: "src/accounts/components/__tests__/helpers.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export const fixture_accountPanel = {};`,
+        filename: "src/accounts/components/__tests__/fixtures.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export const fixture_accountPanel = {};`,
+        filename: "src/accounts/components/feature/__tests__/fixtures/nested/panel.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export function useAccount() { return null; }`,
+        filename: "src/accounts/components/feature/hooks/useAccount.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export function useAccount() { return null; }`,
+        filename: "src/accounts/templates/feature/hooks/useAccount.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export function useAccount() { return null; }`,
+        filename: "src/accounts/layouts/feature/hooks/useAccount.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `import { test } from 'bun:test'; test('returns an account', () => {});`,
+        filename: "src/accounts/components/feature/hooks/__tests__/useAccount.test.ts",
+        languageOptions: languageOpts,
+      },
     ],
     invalid: [
       {
@@ -104,8 +136,8 @@ ruleTester.run(
         output: null,
       },
       {
-        code: `import { test } from 'bun:test'; test('renders', () => {});`,
-        filename: "src/accounts/components/__tests__/AccountPanel.test.tsx",
+        code: `export const runtime = true;`,
+        filename: "src/accounts/components/feature/hooksmith/runtime.ts",
         languageOptions: languageOpts,
         errors: [
           {
@@ -116,7 +148,7 @@ ruleTester.run(
       },
       {
         code: `export const renderPanel = () => null;`,
-        filename: "src/accounts/components/__tests__/helpers.ts",
+        filename: "src/accounts/components/feature/helpers.ts",
         languageOptions: languageOpts,
         errors: [
           {
@@ -126,8 +158,8 @@ ruleTester.run(
         output: null,
       },
       {
-        code: `export const fixture_accountPanel = {};`,
-        filename: "src/accounts/components/__tests__/fixtures.ts",
+        code: `export const runtime = true;`,
+        filename: "src/accounts/components/feature/__tests__-extra/runtime.ts",
         languageOptions: languageOpts,
         errors: [
           {

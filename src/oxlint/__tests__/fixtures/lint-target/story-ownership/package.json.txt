@@ -1,0 +1,1 @@
+{"name":"ownership-catalog","type":"module"}

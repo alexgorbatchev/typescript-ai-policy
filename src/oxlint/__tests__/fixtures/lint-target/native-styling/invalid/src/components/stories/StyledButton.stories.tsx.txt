@@ -1,0 +1,8 @@
+import type { Meta, StoryObj } from "@storybook/react";
+import { StyledButton } from "../StyledButton";
+
+const meta: Meta<typeof StyledButton> = { title: "components/StyledButton", component: StyledButton };
+export default meta;
+type Story = StoryObj<typeof StyledButton>;
+const Default: Story = { play: () => { console.log("story"); } };
+export { Default as StyledButton };

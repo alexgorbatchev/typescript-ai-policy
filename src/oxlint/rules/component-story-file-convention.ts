@@ -1,24 +1,8 @@
 import type { AstNode, AstProgram, RuleModule } from "./types.ts";
 import { isReactClientEntrypoint } from "./helpers.ts";
-import { dirname, join } from "node:path";
-import {
-  findDescendantFilePath,
-  getFilenameWithoutExtension,
-  isExemptSupportBasename,
-  isInStoriesDirectory,
-  isInTestsDirectory,
-  readProgramReportNode,
-} from "./helpers.ts";
-
-function readRequiredStoriesDirectoryPath(filename: string): string {
-  return join(dirname(filename), "stories");
-}
-
-function readRequiredStoryFileName(filename: string): string {
-  const sourceBaseName = getFilenameWithoutExtension(filename);
-
-  return `${sourceBaseName}.stories.tsx`;
-}
+import { readProgramReportNode } from "./helpers.ts";
+import { isRuntimeComponentOwnershipFile } from "./componentOwnership/componentOwnershipRole.ts";
+import { StoryOwnershipIndex } from "./componentOwnership/StoryOwnershipIndex.ts";
 
 function readReportNode(program: AstProgram): AstNode {
   for (const statement of program.body) {
@@ -66,30 +50,26 @@ const componentStoryFileConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Require every component ownership file to have a matching "basename.stories.tsx" file under a sibling "stories/" directory',
+        "Require every runtime component ownership file to have a matching story that resolves to its exact source binding",
       guidance:
-        "Place each component story alongside its owned component in the canonical story role. Do not scatter story files outside the expected component/story relationship.",
+        "Add a same-basename story under a stories directory in the same component area and package. Its typed meta and effective component property must resolve to this source; a story for another same-named component does not satisfy ownership.",
     },
     schema: [],
     messages: {
-      missingComponentStoryFile: 'Create the matching ".stories.tsx" file under a sibling "stories/" directory.',
+      missingComponentStoryFile:
+        'Create a matching ".stories.tsx" file whose typed meta and component property resolve to this component. Keep it under a stories directory in the same ownership area.',
     },
   },
   create(context) {
-    if (
-      isExemptSupportBasename(context.filename) ||
-      isInStoriesDirectory(context.filename) ||
-      isInTestsDirectory(context.filename)
-    ) {
+    if (!isRuntimeComponentOwnershipFile(context.filename)) {
       return {};
     }
 
+    const ownership = new StoryOwnershipIndex(context.filename, context.sourceCode.text);
     return {
       Program(node: AstProgram) {
         if (isReactClientEntrypoint(context.filename, node)) return;
-        const requiredStoriesDirectoryPath = readRequiredStoriesDirectoryPath(context.filename);
-        const requiredStoryFileName = readRequiredStoryFileName(context.filename);
-        if (findDescendantFilePath(requiredStoriesDirectoryPath, requiredStoryFileName)) {
+        if (ownership.hasStory(context.filename)) {
           return;
         }
 
