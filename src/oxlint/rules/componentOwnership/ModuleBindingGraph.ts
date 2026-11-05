@@ -1,4 +1,4 @@
-import type { Expression, ObjectExpression, Program } from "oxc-parser";
+import type { Expression, ObjectExpression, ObjectProperty, Program } from "oxc-parser";
 import type { ExportResolution, ModuleImportBinding, ModuleSymbol, ParsedModule, StaticProperty } from "./types.ts";
 import { readFileSync } from "node:fs";
 import { parseSync } from "oxc-parser";
@@ -94,6 +94,16 @@ export class ModuleBindingGraph {
       const module = this.readModule(filename);
       if (!module?.safety.isStable(expression)) return { kind: "unknown" } satisfies StaticProperty;
       if (expression.type === "ObjectExpression") return this.readObjectProperty(filename, expression, name);
+      if (module.safety.isObjectAssignment(expression)) {
+        let value: StaticProperty = { kind: "absent" };
+        for (const source of expression.arguments.slice(1)) {
+          if (source.type === "SpreadElement" || !this.isAssignmentSource(filename, source))
+            return { kind: "unknown" } satisfies StaticProperty;
+          const property = this.readProperty(filename, source, name);
+          if (property.kind !== "absent") value = property;
+        }
+        return value;
+      }
       if (expression.type === "Identifier") {
         const binding = module.bindings.get(expression.name);
         if (binding?.kind === "const" && binding.declarator.init && module.safety.isStable(binding.declarator.id))
@@ -102,6 +112,34 @@ export class ModuleBindingGraph {
       return { kind: "unknown" } satisfies StaticProperty;
     });
     return result ?? { kind: "unknown" };
+  }
+
+  private isAssignmentSource(filename: string, expression: Expression): boolean {
+    return (
+      this.guard(`assignment-source:${filename}:${expression.start}`, () => {
+        const module = this.readModule(filename);
+        if (!module?.safety.isStable(expression)) return false;
+        if (expression.type === "Identifier") {
+          const binding = module.bindings.get(expression.name);
+          return (
+            binding?.kind === "const" &&
+            !!binding.declarator.init &&
+            module.safety.isStable(binding.declarator.id) &&
+            this.isAssignmentSource(filename, binding.declarator.init)
+          );
+        }
+        return (
+          expression.type === "ObjectExpression" &&
+          expression.properties.every((property) => {
+            if (property.type === "SpreadElement") return this.isAssignmentSource(filename, property.argument);
+            const key = this.readPropertyName(property);
+            // Native assignment invokes setters. Unknown/prototype keys and getters
+            // cannot establish a side-effect-free construction even if later overwritten.
+            return property.kind === "init" && key !== null && key !== "__proto__";
+          })
+        );
+      }) ?? false
+    );
   }
 
   private readModule(filename: string): ParsedModule | null {
@@ -228,12 +266,7 @@ export class ModuleBindingGraph {
         if (spread.kind !== "absent") result = spread;
         continue;
       }
-      const key =
-        !property.computed && property.key.type === "Identifier"
-          ? property.key.name
-          : property.key.type === "Literal" && typeof property.key.value === "string"
-            ? property.key.value
-            : null;
+      const key = this.readPropertyName(property);
       if (key === null) result = { kind: "unknown" };
       else if (key === name)
         result =
@@ -242,6 +275,11 @@ export class ModuleBindingGraph {
             : { kind: "unknown" };
     }
     return result;
+  }
+
+  private readPropertyName(property: ObjectProperty): string | null {
+    if (!property.computed && property.key.type === "Identifier") return property.key.name;
+    return property.key.type === "Literal" && typeof property.key.value === "string" ? property.key.value : null;
   }
 
   private guard<T>(key: string, operation: GuardedOperation<T>): T | null {

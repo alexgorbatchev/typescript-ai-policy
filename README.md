@@ -163,6 +163,11 @@ the same source file **and symbol**, within the same nearest package and the sam
 `layouts/` area. Imports, aliases, and re-exports establish that relationship; titles, group names, and same-named
 files do not. A story bound to one `Button.tsx` cannot cover another `Button.tsx` elsewhere in the area.
 
+Compound parts built with native `Object.assign(function Panel() { ... }, { Header })` resolve to their actual
+component bindings. The target must be a fresh function expression and sources must be stable data objects;
+source aliases, spreads, and later-source overrides are followed. Unknown factories, accessors, and prototype
+changes cannot certify compound ownership.
+
 Metadata and compound objects must remain statically resolvable. Visible mutations, calls that can mutate an object,
 and untracked escapes invalidate its initializer, including through aliases. Accessor-bearing objects are unknown.
 A later explicit `component` can override an unknown spread, but mutating the completed metadata still invalidates it.

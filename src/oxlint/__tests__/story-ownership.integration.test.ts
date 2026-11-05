@@ -5,6 +5,30 @@ import { createFixtureRepo } from "../test-support/createFixtureRepo.ts";
 import { runLintTarget, runLintTargetWithConfigPath } from "../test-support/runLintTarget.ts";
 
 describe("resolved story ownership under the complete policy", () => {
+  it("accepts a wrapped compound component's exact part and rejects a mismatched part", () => {
+    using repository = createFixtureRepo("story-ownership");
+    writeFileSync(
+      join(repository.path, "src/components/account/Button.tsx"),
+      'function ButtonIcon() { return <span data-testid="ButtonIcon" />; }\n' +
+        'export const Button = Object.assign(function Button() { return <button data-testid="Button" />; }, { Icon: ButtonIcon });\n',
+    );
+    expect(runLintTarget(repository.path)).toMatchObject({ exitCode: 0, issues: [] });
+    const filename = join(repository.path, "src/components/stories/actions/Button.stories.tsx");
+    const source = readFileSync(filename, "utf8")
+      .replaceAll("typeof Button", "typeof Button.Icon")
+      .replace("component: Button,", "component: Button.Icon,");
+    writeFileSync(filename, source);
+    expect(runLintTarget(repository.path)).toMatchObject({ exitCode: 0, issues: [] });
+
+    writeFileSync(filename, source.replace("component: Button.Icon,", "component: Button,"));
+    const result = runLintTarget(repository.path);
+    expect(result.exitCode).toBe(1);
+    expect(result.issues.map((issue) => issue.ruleId).sort()).toEqual([
+      "@alexgorbatchev(component-story-file-convention)",
+      "@alexgorbatchev(story-file-location-convention)",
+    ]);
+  });
+
   it("rejects metadata retargeted after initialization", () => {
     using repository = createFixtureRepo("story-ownership");
     const filename = join(repository.path, "src/components/stories/actions/Button.stories.tsx");

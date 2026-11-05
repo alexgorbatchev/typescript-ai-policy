@@ -606,6 +606,14 @@ modules cannot own component stories. The story basename matches the **source fi
 parts: a story bound to `Panel.Header` from `Panel.tsx` uses `Panel.stories.tsx`. Matching filenames elsewhere in the
 area do not let one story cover multiple owners.
 
+Wrapped compound exports such as `Object.assign(function Panel() { ... }, { Header })` resolve each part to its
+actual source binding. The native `Object.assign` call must have an unshadowed, unmodified binding and a fresh
+function-expression target. Stable local object sources, their const aliases and spreads, and later-source
+precedence are supported. Getters, unresolved computed keys, prototype-changing keys, spread call arguments,
+and unknown target factories do not establish ownership. The returned function retains its own identity for
+mutation checks, including aliases and its named self-binding. This follows native shallow-copy semantics:
+ordinary source properties are copied, while nested values retain shared identity.
+
 Metadata resolution follows object-property order. Resolvable local const spreads participate; a later explicit
 `component` property establishes the effective value, while an unknown later spread can invalidate it. Unresolved,
 ambiguous, cyclic, malformed, or conflicting bindings do not establish ownership. Keep the typed and effective
