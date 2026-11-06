@@ -615,6 +615,7 @@ mutation checks, including aliases and its named self-binding. This follows nati
 ordinary source properties are copied, while nested values retain shared identity.
 The source-copy exemption requires the entire call to remain safe. A modified built-in, unsafe source, or
 prototype-changing key makes every supplied source escape; ownership through that source is rejected too.
+That requirement includes each source behind const aliases and nested spreads, regardless of mutation-discovery order.
 Visible mutations and escapes of `globalThis`, including const aliases, invalidate native-constructor assumptions.
 
 Metadata resolution follows object-property order. Resolvable local const spreads participate; a later explicit

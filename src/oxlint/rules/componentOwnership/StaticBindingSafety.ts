@@ -74,7 +74,8 @@ export class StaticBindingSafety {
       },
     });
     for (const call of this.objectAssignments) {
-      if (!call.arguments.slice(1).every((source) => this.isAssignmentSource(source))) this.markUnsafe(call, true);
+      if (!call.arguments.slice(1).every((source) => this.isAssignmentSource(source, call)))
+        this.markUnsafe(call, true);
     }
     for (let index = 0; index < this.pending.length; index++) {
       const node = this.pending[index];
@@ -101,12 +102,16 @@ export class StaticBindingSafety {
     );
   }
 
-  private isAssignmentSource(node: Node, active = new Set<Node>()): boolean {
+  private isAssignmentSource(node: Node, call: CallExpression, active = new Set<Node>()): boolean {
+    // Keep every premise of the source proof in the worklist graph. Aliases can
+    // become unsafe later, including identities behind shallow spread copies.
+    this.dependOn(node, call, this.nestedDependencies);
     if (active.has(node) || !this.isStable(node)) return false;
     active.add(node);
     try {
       if (node.type === "Identifier") {
         const binding = this.declarations.get(node);
+        if (binding) this.dependOn(binding, call, this.nestedDependencies);
         const declarator = binding && this.parents.get(binding);
         const declaration = declarator && this.parents.get(declarator);
         return (
@@ -116,13 +121,13 @@ export class StaticBindingSafety {
           declaration?.type === "VariableDeclaration" &&
           declaration.kind === "const" &&
           !!declarator.init &&
-          this.isAssignmentSource(declarator.init, active)
+          this.isAssignmentSource(declarator.init, call, active)
         );
       }
       return (
         node.type === "ObjectExpression" &&
         node.properties.every((property) => {
-          if (property.type === "SpreadElement") return this.isAssignmentSource(property.argument, active);
+          if (property.type === "SpreadElement") return this.isAssignmentSource(property.argument, call, active);
           const key = readObjectPropertyName(property);
           return property.kind === "init" && key !== null && key !== "__proto__";
         })

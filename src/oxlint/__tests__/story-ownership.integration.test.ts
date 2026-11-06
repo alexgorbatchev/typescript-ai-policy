@@ -14,6 +14,10 @@ describe("resolved story ownership under the complete policy", () => {
       "native assignment prototype setter",
       'Object.assign(function Target() {}, { ["__proto__"]: { set payload(value) { value.component = PaymentButton; } } }, { payload: defaults });',
     ],
+    [
+      "alias-mutated assignment spread source",
+      'const source = { label: true }; const alias = source; Object.defineProperty(alias, "__proto__", { enumerable: true, value: { set payload(value) { value.component = PaymentButton; } } }); Object.assign(function Target() {}, { ...source }, { payload: defaults });',
+    ],
   ])("rejects metadata mutated through %s", (_name, operation) => {
     using repository = createFixtureRepo("story-ownership");
     const filename = join(repository.path, "src/components/stories/actions/Button.stories.tsx");

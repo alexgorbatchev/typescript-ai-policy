@@ -30,6 +30,18 @@ describe("native assignment source safety", () => {
       "spread prototype source",
       'const source = { ["__proto__"]: { set payload(value) { value.component = Other; } } }; Object.assign(function Target() {}, { ...source }, { payload: defaults });',
     ],
+    [
+      "alias-mutated spread source",
+      'const source = { label: true }; const alias = source; Object.defineProperty(alias, "__proto__", { enumerable: true, value: { set payload(value) { value.component = Other; } } }); Object.assign(function Target() {}, { ...source }, { payload: defaults });',
+    ],
+    [
+      "alias-mutated nested spread source",
+      'const source = { label: true }; const alias = source; Object.defineProperty(alias, "__proto__", { enumerable: true, value: { set payload(value) { value.component = Other; } } }); const copied = { ...source }; Object.assign(function Target() {}, { ...copied }, { payload: defaults });',
+    ],
+    [
+      "later alias mutation of a spread source",
+      'const source = { label: true }; const alias = source; Object.assign(function Target() {}, { ...source }, { payload: defaults }); Object.defineProperty(alias, "__proto__", { enumerable: true, value: { set payload(value) { value.component = Other; } } });',
+    ],
     ["computed source key", "Object.assign(function Target() {}, { [unknown]: defaults });"],
     [
       "accessor source",
