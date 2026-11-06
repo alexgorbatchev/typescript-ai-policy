@@ -19,10 +19,14 @@ type JsonRpcErrorResponse = JsonRpcEnvelope & {
   id: JsonRpcIdentifier;
 };
 
-type JsonRpcRequestMessage = JsonRpcEnvelope & {
-  id?: JsonRpcIdentifier;
+type JsonRpcRequestEnvelope = JsonRpcEnvelope & {
+  id?: unknown;
   method: string;
   params?: unknown;
+};
+
+type JsonRpcRequestMessage = JsonRpcRequestEnvelope & {
+  id?: JsonRpcIdentifier;
 };
 
 type JsonRpcSuccessResponse = JsonRpcEnvelope & {
@@ -103,7 +107,11 @@ function isJsonRpcError(value: unknown): value is JsonRpcError {
   return typeof value.code === "number" && typeof value.message === "string";
 }
 
-function isJsonRpcRequestMessage(value: unknown): value is JsonRpcRequestMessage {
+function isJsonRpcIdentifier(value: unknown): value is JsonRpcIdentifier {
+  return typeof value === "string" || value === null || (typeof value === "number" && Number.isFinite(value));
+}
+
+function isJsonRpcRequestEnvelope(value: unknown): value is JsonRpcRequestEnvelope {
   if (!isRecord(value)) {
     return false;
   }
@@ -120,8 +128,7 @@ function isJsonRpcResponse(value: unknown): value is JsonRpcResponse {
     return false;
   }
 
-  const hasIdentifier = typeof value.id === "number" || typeof value.id === "string" || value.id === null;
-  if (!hasIdentifier) {
+  if (!isJsonRpcIdentifier(value.id)) {
     return false;
   }
 
@@ -281,7 +288,7 @@ export class TscLspClient {
       return;
     }
 
-    if (isJsonRpcRequestMessage(message)) {
+    if (isJsonRpcRequestEnvelope(message)) {
       this.handleServerRequest(message);
     }
   }
@@ -306,8 +313,17 @@ export class TscLspClient {
     pendingRequest.resolve(message.result ?? null);
   }
 
-  private handleServerRequest(message: JsonRpcRequestMessage): void {
-    if (message.id === undefined) {
+  private handleServerRequest(message: JsonRpcRequestEnvelope): void {
+    if (!Object.hasOwn(message, "id")) {
+      return;
+    }
+
+    if (!isJsonRpcIdentifier(message.id)) {
+      this.writeSerializedMessage({
+        error: { code: -32600, message: "Invalid Request" },
+        id: null,
+        jsonrpc: "2.0",
+      });
       return;
     }
 
