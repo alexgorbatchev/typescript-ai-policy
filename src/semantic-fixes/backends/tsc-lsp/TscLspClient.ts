@@ -327,7 +327,20 @@ export class TscLspClient {
       return;
     }
 
-    this.writeResponse(message.id, this.readServerRequestResult(message.method));
+    switch (message.method) {
+      case "client/registerCapability":
+        this.writeResponse(message.id, null);
+        return;
+      case "workspace/configuration":
+        this.writeResponse(message.id, []);
+        return;
+      default:
+        this.writeSerializedMessage({
+          error: { code: -32601, message: "Method not found" },
+          id: message.id,
+          jsonrpc: "2.0",
+        });
+    }
   }
 
   private readContentLength(headerText: string): number {
@@ -349,17 +362,6 @@ export class TscLspClient {
     }
 
     throw new Error(`Missing Content-Length header: ${headerText}`);
-  }
-
-  private readServerRequestResult(method: string): unknown {
-    switch (method) {
-      case "client/registerCapability":
-        return null;
-      case "workspace/configuration":
-        return [];
-      default:
-        return null;
-    }
   }
 
   private readStderrOutput(): string {
