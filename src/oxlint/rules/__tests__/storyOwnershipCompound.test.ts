@@ -34,6 +34,18 @@ describe("wrapped compound story ownership", () => {
       "other native Object methods",
       `Object.keys({ value: 1 }); export const Button = Object.assign(${TARGET}, { Icon: ButtonIcon });`,
     ],
+    [
+      "global native Object methods",
+      `globalThis.Object.keys({ value: 1 }); export const Button = Object.assign(${TARGET}, { Icon: ButtonIcon });`,
+    ],
+    [
+      "unused global alias",
+      `const globals = globalThis; globals; export const Button = Object.assign(${TARGET}, { Icon: ButtonIcon });`,
+    ],
+    [
+      "shadowed global binding",
+      `function unrelated(globalThis) { globalThis.Object.assign = Other; } export const Button = Object.assign(${TARGET}, { Icon: ButtonIcon });`,
+    ],
   ])("resolves %s to the actual source binding", (_name, source) => {
     using repository = createStoryOwnershipFixture({
       [COMPONENT_PATH]: `${PARTS} ${source} export { ButtonIcon };`,
@@ -92,6 +104,11 @@ describe("wrapped compound story ownership", () => {
       "globalThis replacement",
       `globalThis.Object.assign = factory; export const Button = Object.assign(${TARGET}, { Icon: ButtonIcon });`,
     ],
+    [
+      "globalThis alias replacement",
+      `const globals = globalThis; globals.Object.assign = factory; export const Button = Object.assign(${TARGET}, { Icon: ButtonIcon });`,
+    ],
+    ["globalThis escape", `change(globalThis); export const Button = Object.assign(${TARGET}, { Icon: ButtonIcon });`],
     [
       "function prototype mutation",
       `Function.prototype.Icon = Other; export const Button = Object.assign(${TARGET}, { Icon: ButtonIcon });`,

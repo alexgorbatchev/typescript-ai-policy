@@ -5,6 +5,56 @@ import { createFixtureRepo } from "../test-support/createFixtureRepo.ts";
 import { runLintTarget, runLintTargetWithConfigPath } from "../test-support/runLintTarget.ts";
 
 describe("resolved story ownership under the complete policy", () => {
+  it.each([
+    [
+      "replaced assignment",
+      "Object.assign = function (target, source) { source.component = PaymentButton; return target; }; Object.assign(function Target() {}, defaults);",
+    ],
+    [
+      "native assignment prototype setter",
+      'Object.assign(function Target() {}, { ["__proto__"]: { set payload(value) { value.component = PaymentButton; } } }, { payload: defaults });',
+    ],
+  ])("rejects metadata mutated through %s", (_name, operation) => {
+    using repository = createFixtureRepo("story-ownership");
+    const filename = join(repository.path, "src/components/stories/actions/Button.stories.tsx");
+    const source = readFileSync(filename, "utf8")
+      .replace(
+        "const meta: Meta<typeof Button> = {",
+        'import { Button as PaymentButton } from "../../payment/Button.js";\nconst defaults = { component: Button };\n' +
+          operation +
+          "\nconst meta: Meta<typeof Button> = {",
+      )
+      .replace("component: Button,", "...defaults,");
+    writeFileSync(filename, source);
+    const result = runLintTarget(repository.path);
+    expect(result.exitCode).toBe(1);
+    expect(result.issues.map((issue) => issue.ruleId).sort()).toEqual([
+      "@alexgorbatchev(component-story-file-convention)",
+      "@alexgorbatchev(story-file-location-convention)",
+    ]);
+  });
+
+  it("rejects compound construction through an aliased replacement of Object.assign", () => {
+    using repository = createFixtureRepo("story-ownership");
+    writeFileSync(
+      join(repository.path, "src/components/account/Button.tsx"),
+      'function ButtonIcon() { return <span data-testid="ButtonIcon" />; }\nconst globals = globalThis;\nglobals.Object.assign = function (target) { return target; };\nexport const Button = Object.assign(function Button() { return <button data-testid="Button" />; }, { Icon: ButtonIcon });\n',
+    );
+    const filename = join(repository.path, "src/components/stories/actions/Button.stories.tsx");
+    writeFileSync(
+      filename,
+      readFileSync(filename, "utf8")
+        .replaceAll("typeof Button", "typeof Button.Icon")
+        .replace("component: Button,", "component: Button.Icon,"),
+    );
+    const result = runLintTarget(repository.path);
+    expect(result.exitCode).toBe(1);
+    expect(result.issues.map((issue) => issue.ruleId).sort()).toEqual([
+      "@alexgorbatchev(component-story-file-convention)",
+      "@alexgorbatchev(story-file-location-convention)",
+    ]);
+  });
+
   it("accepts a wrapped compound component's exact part and rejects a mismatched part", () => {
     using repository = createFixtureRepo("story-ownership");
     writeFileSync(

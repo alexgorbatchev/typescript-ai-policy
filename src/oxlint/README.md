@@ -613,6 +613,9 @@ precedence are supported. Getters, unresolved computed keys, prototype-changing 
 and unknown target factories do not establish ownership. The returned function retains its own identity for
 mutation checks, including aliases and its named self-binding. This follows native shallow-copy semantics:
 ordinary source properties are copied, while nested values retain shared identity.
+The source-copy exemption requires the entire call to remain safe. A modified built-in, unsafe source, or
+prototype-changing key makes every supplied source escape; ownership through that source is rejected too.
+Visible mutations and escapes of `globalThis`, including const aliases, invalidate native-constructor assumptions.
 
 Metadata resolution follows object-property order. Resolvable local const spreads participate; a later explicit
 `component` property establishes the effective value, while an unknown later spread can invalidate it. Unresolved,
