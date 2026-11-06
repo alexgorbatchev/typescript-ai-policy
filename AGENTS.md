@@ -48,7 +48,8 @@ Shared Oxfmt and Oxlint configurations plus local Oxlint JS plugin enforcing cod
 
 ## Shared boundaries
 
-- Always: automatically record all new user instructions in the most appropriate `AGENTS.md` file immediately upon receipt (check with user if existing instructions conflict)
+- Always: automatically record only standing project instructions that apply to future tasks in the narrowest applicable `AGENTS.md`; update the relevant rule in place, and clarify unclear scope or unresolved conflicts before persisting
+- Never: record task history, progress, handoffs, or dated user amendments in `AGENTS.md`
 - Always: any time code is changed such that results from running that code are changed, a test file must be changed as well; 90% code coverage is required (scripts/ folder is excluded from this rule)
 - Always: run `just check` before committing changes
 - Ask first: releases, publishing npm tags, breaking config/rule surface changes, or relaxing enforced policies
