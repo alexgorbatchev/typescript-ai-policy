@@ -50,9 +50,20 @@ test.each(["tracked.ts", "new dir/new file.ts", "tracked-ignored.ts"])(
   30000,
 );
 
-test.each(["fmt", "fix"])(
-  "real %s recipe rejects a symbolic-link justfile before formatting its external target",
-  async (recipe) => {
+test.each([
+  {
+    recipe: "fmt",
+    stderr:
+      "bun scripts/runCheckoutTool.ts oxfmt\nSymbolic links are unsupported in checkout checks: justfile\nerror: recipe `fmt` failed on line 20 with exit code 1\n",
+  },
+  {
+    recipe: "fix",
+    stderr:
+      "bun scripts/runCheckoutTool.ts oxlint --fix\nSymbolic links are unsupported in checkout checks: justfile\nerror: recipe `fix` failed on line 31 with exit code 1\n",
+  },
+])(
+  "real $recipe recipe rejects a symbolic-link justfile before formatting its external target",
+  async ({ recipe, stderr }) => {
     await using fixture = await createCheckoutFixture();
     await using external = await mkdtempDisposable(join(TEST_ROOT, "external-justfile-"));
     const justfile = join(fixture.path, "justfile");
@@ -65,7 +76,7 @@ test.each(["fmt", "fix"])(
     const result = await runCheckoutRecipe(fixture.path, recipe);
 
     expect(result).toMatchObject({ exitCode: 1, timedOut: false });
-    expect(result.stderr).toContain("Symbolic links are unsupported in checkout checks: justfile");
+    expect(result.stderr).toBe(stderr);
     expect(await Bun.file(target).text()).toBe(before);
   },
   30000,
