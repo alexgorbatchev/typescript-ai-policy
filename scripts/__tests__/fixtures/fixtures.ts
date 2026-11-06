@@ -10,3 +10,9 @@ export const fixture_coverageReport: BunFile = Bun.file(new URL("./coverage.lcov
 export const fixture_weightedCoverageReport: BunFile = Bun.file(
   new URL("./weightedCoverage.lcov.txt", import.meta.url),
 );
+
+export const fixture_checkoutPlugin: BunFile = Bun.file(new URL("./checkoutPlugin.mjs.txt", import.meta.url));
+export const fixture_checkoutOxlintConfig: BunFile = Bun.file(
+  new URL("./checkoutOxlint.config.ts.txt", import.meta.url),
+);
+export const fixture_checkoutOxfmtConfig: BunFile = Bun.file(new URL("./checkoutOxfmt.config.ts.txt", import.meta.url));

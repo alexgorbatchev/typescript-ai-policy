@@ -1,0 +1,8 @@
+export default {
+  jsPlugins: [{ name: "fixture", specifier: "./plugin.mjs" }],
+  rules: {
+    "fixture/no-debugger": "error",
+    "no-debugger": "off",
+    "prefer-const": "error",
+  },
+};

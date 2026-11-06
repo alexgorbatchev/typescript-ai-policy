@@ -18,19 +18,19 @@ run-ai *args:
 
 fmt:
     just --fmt
-    bun run oxfmt .
+    bun scripts/runCheckoutTool.ts oxfmt
 
 fmt-check:
     just --fmt --check
-    bun run oxfmt --check .
+    bun scripts/runCheckoutTool.ts oxfmt --check
 
 lint:
-    bun run --bun oxlint --deny-warnings .
+    bun scripts/runCheckoutTool.ts oxlint --deny-warnings
 
 fix:
-    bun run --bun oxlint --fix .
+    bun scripts/runCheckoutTool.ts oxlint --fix
     just --fmt
-    bun run oxfmt .
+    bun scripts/runCheckoutTool.ts oxfmt
 
 typecheck:
     bun run tsc --noEmit

@@ -1,0 +1,19 @@
+export default {
+  meta: { name: "checkout-fixture", version: "1.0.0" },
+  rules: {
+    "no-debugger": {
+      meta: {
+        type: "problem",
+        schema: [],
+        messages: { debugger: "Remove the fixture debugger statement." },
+      },
+      create(context) {
+        return {
+          DebuggerStatement(node) {
+            context.report({ node, messageId: "debugger" });
+          },
+        };
+      },
+    },
+  },
+};
