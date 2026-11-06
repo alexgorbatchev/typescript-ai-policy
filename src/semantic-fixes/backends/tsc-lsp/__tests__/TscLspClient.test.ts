@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { exchangeServerMessages } from "./helpers.ts";
+import { exchangeServerMessages, withLanguageServer } from "./helpers.ts";
 
 it.each(["true", "false", "{}", '{"nested":[]}', "[]", "[1]", "1e400", "-1e400"])(
   "rejects request identifier %s without echoing it or interrupting later requests",
@@ -64,4 +64,163 @@ it("does not answer notifications or malformed responses before the next valid r
   ]);
 
   expect(responses).toEqual([{ jsonrpc: "2.0", id: "barrier", result: [] }]);
+});
+
+it.each([
+  { result: null },
+  { result: false },
+  { result: 0 },
+  { result: "" },
+  { result: "café 🎧" },
+  { result: [] },
+  { result: { renamed: true } },
+])("preserves successful response result %j and continues without replying", async ({ result }) => {
+  await withLanguageServer(
+    [[`{"jsonrpc":"2.0","id":$requestId,"result":${JSON.stringify(result)}}`]],
+    async (client, filePath) => {
+      await expect(client.prepareRename(filePath, { line: 0, character: 0 })).resolves.toEqual(result);
+      await expect(client.rename(filePath, { line: 0, character: 0 }, "updated")).resolves.toEqual([]);
+    },
+  );
+});
+
+it("rejects a valid server error and continues without replying", async () => {
+  await withLanguageServer(
+    [
+      [
+        '{"jsonrpc":"2.0","id":$requestId,"error":{"code":-32602,"message":"Rename unavailable","data":{"reason":"symbol"}}}',
+      ],
+    ],
+    async (client, filePath) => {
+      await expect(client.prepareRename(filePath, { line: 0, character: 0 })).rejects.toEqual(
+        new Error("Rename unavailable (code=-32602)"),
+      );
+      await expect(client.rename(filePath, { line: 0, character: 0 }, "updated")).resolves.toEqual([]);
+    },
+  );
+});
+
+it.each([
+  '"jsonrpc":"2.0","result":null,"error":{"code":-32602,"message":"Server error"}',
+  '"jsonrpc":"2.0","result":false,"error":null',
+  '"jsonrpc":"2.0"',
+  '"result":null',
+  '"jsonrpc":"1.0","result":null',
+  '"jsonrpc":2,"result":null',
+  '"jsonrpc":"2.0","error":null',
+  '"jsonrpc":"2.0","error":true',
+  '"jsonrpc":"2.0","error":[]',
+  '"jsonrpc":"2.0","error":{}',
+  '"jsonrpc":"2.0","error":{"message":"Missing code"}',
+  '"jsonrpc":"2.0","error":{"code":-32602}',
+  '"jsonrpc":"2.0","error":{"code":"-32602","message":"String code"}',
+  '"jsonrpc":"2.0","error":{"code":0.5,"message":"Fractional code"}',
+  '"jsonrpc":"2.0","error":{"code":1e400,"message":"Infinite code"}',
+  '"jsonrpc":"2.0","error":{"code":-1e400,"message":"Negative infinite code"}',
+  '"jsonrpc":"2.0","error":{"code":-32602,"message":false}',
+])("rejects the matching malformed response {%s} before a late valid duplicate", async (members) => {
+  await withLanguageServer(
+    [[`{"id":$requestId,${members}}`, '{"jsonrpc":"2.0","id":$requestId,"result":"late duplicate"}']],
+    async (client, filePath) => {
+      await expect(client.prepareRename(filePath, { line: 0, character: 0 })).rejects.toEqual(
+        new Error("Invalid JSON-RPC response"),
+      );
+      await expect(client.rename(filePath, { line: 0, character: 0 }, "updated")).resolves.toEqual([]);
+    },
+  );
+});
+
+it.each(['"$requestId"', "null", "true", "{}", "[]", "-1", "0", "1.5", "1e400"])(
+  "ignores uncorrelated response identifier %s without replying or settling another call",
+  async (identifier) => {
+    await withLanguageServer(
+      [
+        [
+          `{"jsonrpc":"2.0","id":${identifier},"result":"uncorrelated"}`,
+          `{"jsonrpc":"2.0","id":${identifier},"error":null}`,
+          '{"jsonrpc":"2.0","id":$requestId,"result":"matched"}',
+        ],
+      ],
+      async (client, filePath) => {
+        await expect(client.prepareRename(filePath, { line: 0, character: 0 })).resolves.toBe("matched");
+        await expect(client.rename(filePath, { line: 0, character: 0 }, "updated")).resolves.toEqual([]);
+      },
+    );
+  },
+);
+
+it("ignores messages without a correlatable response object", async () => {
+  await withLanguageServer(
+    [
+      [
+        "null",
+        "false",
+        "0",
+        '"text"',
+        "[]",
+        "{}",
+        '{"jsonrpc":"2.0","result":"missing identifier"}',
+        '{"jsonrpc":"2.0","id":$requestId,"result":"matched"}',
+      ],
+    ],
+    async (client, filePath) => {
+      await expect(client.prepareRename(filePath, { line: 0, character: 0 })).resolves.toBe("matched");
+      await expect(client.rename(filePath, { line: 0, character: 0 }, "updated")).resolves.toEqual([]);
+    },
+  );
+});
+
+it("keeps server request correlation separate from an outstanding client request", async () => {
+  await withLanguageServer(
+    [
+      [
+        '{"jsonrpc":"2.0","id":$requestId,"method":"workspace/configuration","params":{"items":[]},"result":"server request"}',
+        '{"jsonrpc":"2.0","id":$requestId,"result":"client response"}',
+      ],
+    ],
+    async (client, filePath) => {
+      await expect(client.prepareRename(filePath, { line: 0, character: 0 })).resolves.toBe("client response");
+      await expect(client.rename(filePath, { line: 0, character: 0 }, "updated")).resolves.toEqual([
+        { jsonrpc: "2.0", id: 1, result: [] },
+      ]);
+    },
+  );
+});
+
+it.each(["null", "true", "0", "{}", "[]"])(
+  "does not settle a pending request from a malformed method %s",
+  async (method) => {
+    await withLanguageServer(
+      [
+        [
+          `{"jsonrpc":"2.0","id":$requestId,"method":${method},"result":"malformed request"}`,
+          '{"jsonrpc":"2.0","id":$requestId,"result":"client response"}',
+        ],
+      ],
+      async (client, filePath) => {
+        await expect(client.prepareRename(filePath, { line: 0, character: 0 })).resolves.toBe("client response");
+        await expect(client.rename(filePath, { line: 0, character: 0 }, "updated")).resolves.toEqual([]);
+      },
+    );
+  },
+);
+
+it("rejects only the malformed request while another request is pending", async () => {
+  await withLanguageServer(
+    [
+      ['{"jsonrpc":"2.0","id":$requestId,"error":null}', '{"jsonrpc":"2.0","id":$requestId,"result":"late duplicate"}'],
+      ['{"jsonrpc":"2.0","id":$requestId,"result":"other response"}'],
+    ],
+    async (client, filePath) => {
+      const results = await Promise.allSettled([
+        client.prepareRename(filePath, { line: 0, character: 0 }),
+        client.rename(filePath, { line: 0, character: 0 }, "updated"),
+      ]);
+      expect(results).toEqual([
+        { status: "rejected", reason: new Error("Invalid JSON-RPC response") },
+        { status: "fulfilled", value: "other response" },
+      ]);
+      await expect(client.prepareRename(filePath, { line: 0, character: 0 })).resolves.toEqual([]);
+    },
+  );
 });

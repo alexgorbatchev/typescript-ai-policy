@@ -31,7 +31,7 @@ type JsonRpcRequestMessage = JsonRpcRequestEnvelope & {
 
 type JsonRpcSuccessResponse = JsonRpcEnvelope & {
   id: JsonRpcIdentifier;
-  result?: unknown;
+  result: unknown;
 };
 
 type JsonRpcResponse = JsonRpcErrorResponse | JsonRpcSuccessResponse;
@@ -96,7 +96,7 @@ type PendingRequest = {
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isJsonRpcError(value: unknown): value is JsonRpcError {
@@ -104,7 +104,7 @@ function isJsonRpcError(value: unknown): value is JsonRpcError {
     return false;
   }
 
-  return typeof value.code === "number" && typeof value.message === "string";
+  return typeof value.code === "number" && Number.isInteger(value.code) && typeof value.message === "string";
 }
 
 function isJsonRpcIdentifier(value: unknown): value is JsonRpcIdentifier {
@@ -132,11 +132,16 @@ function isJsonRpcResponse(value: unknown): value is JsonRpcResponse {
     return false;
   }
 
-  if (Reflect.has(value, "error")) {
+  const hasError = Object.hasOwn(value, "error");
+  if (hasError === Object.hasOwn(value, "result")) {
+    return false;
+  }
+
+  if (hasError) {
     return isJsonRpcError(value.error);
   }
 
-  return Reflect.has(value, "result");
+  return true;
 }
 
 function readLspPosition(position: LineAndCharacter): LineAndCharacter {
@@ -283,17 +288,21 @@ export class TscLspClient {
   }
 
   private handleMessage(message: unknown): void {
-    if (isJsonRpcResponse(message)) {
-      this.handleResponse(message);
+    if (!isRecord(message)) {
       return;
     }
 
-    if (isJsonRpcRequestEnvelope(message)) {
-      this.handleServerRequest(message);
+    if (Object.hasOwn(message, "method")) {
+      if (isJsonRpcRequestEnvelope(message)) {
+        this.handleServerRequest(message);
+      }
+      return;
     }
+
+    this.handleResponse(message);
   }
 
-  private handleResponse(message: JsonRpcResponse): void {
+  private handleResponse(message: Record<string, unknown>): void {
     if (typeof message.id !== "number") {
       return;
     }
@@ -304,6 +313,11 @@ export class TscLspClient {
     }
 
     this.pendingRequests.delete(message.id);
+
+    if (!isJsonRpcResponse(message)) {
+      pendingRequest.reject(new Error("Invalid JSON-RPC response"));
+      return;
+    }
 
     if ("error" in message) {
       pendingRequest.reject(new Error(`${message.error.message} (code=${String(message.error.code)})`));

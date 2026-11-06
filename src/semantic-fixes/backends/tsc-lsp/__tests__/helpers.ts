@@ -3,7 +3,13 @@ import { chmod, mkdtempDisposable } from "node:fs/promises";
 import { join } from "node:path";
 import { TscLspClient } from "../TscLspClient.ts";
 
-export async function exchangeServerMessages(messages: readonly string[]): Promise<unknown> {
+type LanguageServerAction<T> = (client: TscLspClient, filePath: string) => Promise<T>;
+
+export async function withLanguageServer<T>(
+  responseMessages: readonly (readonly string[])[],
+  run: LanguageServerAction<T>,
+  messages: readonly string[] = [],
+): Promise<T> {
   const root = process.env.POLICY_TEST_ROOT;
   assert(root, "Run protocol tests through just test");
   await using workspace = await mkdtempDisposable(join(root, "lsp-wire-"));
@@ -12,14 +18,23 @@ export async function exchangeServerMessages(messages: readonly string[]): Promi
   await Bun.write(executablePath, `#!${process.execPath}\n${source}`);
   await chmod(executablePath, 0o755);
   await Bun.write(join(workspace.path, "messages.json"), JSON.stringify(messages));
+  await Bun.write(join(workspace.path, "responses.json"), JSON.stringify(responseMessages));
   const client = new TscLspClient({
     tscExecutablePath: executablePath,
     workspacePath: workspace.path,
   });
   try {
     await client.initialize();
-    return await client.prepareRename(join(workspace.path, "file.ts"), { line: 0, character: 0 });
+    return await run(client, join(workspace.path, "file.ts"));
   } finally {
     await client.dispose();
   }
+}
+
+export function exchangeServerMessages(messages: readonly string[]): Promise<unknown> {
+  return withLanguageServer(
+    [],
+    (client, filePath) => client.prepareRename(filePath, { line: 0, character: 0 }),
+    messages,
+  );
 }

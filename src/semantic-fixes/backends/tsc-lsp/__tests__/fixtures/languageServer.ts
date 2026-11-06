@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 const input: unknown = await Bun.file("messages.json").json();
 assert(Array.isArray(input));
 const messages: readonly unknown[] = input;
+const responseInput: unknown = await Bun.file("responses.json").json();
+assert(Array.isArray(responseInput));
+const responseMessages: unknown[] = responseInput;
 const responses: unknown[] = [];
 let buffer = Buffer.alloc(0);
 
@@ -38,9 +41,23 @@ function handleMessage(message: Record<string, unknown>): void {
     case "initialized":
       return;
     case "textDocument/prepareRename":
+    case "textDocument/rename": {
+      const scriptedMessages: unknown = responseMessages.shift();
+      if (scriptedMessages !== undefined) {
+        assert(Array.isArray(scriptedMessages));
+        assert(typeof message.id === "number");
+        const requestId = JSON.stringify(message.id);
+        const frames = scriptedMessages.map((probe: unknown) => {
+          assert(typeof probe === "string");
+          return frame(probe.replaceAll("$requestId", requestId));
+        });
+        process.stdout.write(Buffer.concat(frames));
+        return;
+      }
       // Replies to every earlier probe precede this client request on stdin.
       respond(message.id, responses);
       return;
+    }
     case "shutdown":
       respond(message.id, null);
       return;
