@@ -1,0 +1,8 @@
+import type { Meta, StoryObj } from "@storybook/react";
+import { NativeButton } from "../NativeButton";
+
+const meta: Meta<typeof NativeButton> = { title: "components/NativeButton", component: NativeButton };
+export default meta;
+type Story = StoryObj<typeof NativeButton>;
+const Default: Story = { play: () => { console.log("story"); } };
+export { Default as NativeButton };

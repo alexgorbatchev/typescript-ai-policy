@@ -42,6 +42,10 @@ bun add -d typescript@npm:@typescript/typescript6@latest @typescript/native@npm:
 The `typescript` alias provides the TypeScript 6 compiler API used by semantic fixes. The `@typescript/native`
 alias provides the TypeScript 7 compiler and LSP backend. Help, `check`, and `guidance` work without either compiler.
 
+Story ownership resolution uses the package's runtime dependencies, `oxc-parser`, `oxc-resolver`, and `oxc-walker`; it does not
+require the optional TypeScript compiler peers. The resolver reads component sources, barrels, package boundaries,
+and applicable TypeScript path configuration from the consuming repository.
+
 The published package ships compiled `.js` runtime files plus `.d.ts` declarations. The installed `typescript-ai-policy`
 CLI runs through Bun, so Bun is required to execute the package-installed bin. The `fix-semantic` command still
 expects its optional peer dependencies to be installed in the consuming project, while `guidance` only reads the
@@ -112,12 +116,12 @@ At a glance, the shared policy enforces:
 - hook ownership files that export exactly one main `use*` hook, plus type-only secondary API, and live as direct-child `hooks/useThing.ts[x]` files by default or `hooks/use-thing.ts[x]` when `filenameStyle: FilenameStyle.DashCase` is configured
 - hook-owned `.tsx` files use hook contracts and matching tests instead of component naming, test-id, or Storybook ownership requirements; shared raw-JSX and direct-styling boundaries still apply
 - JSX-only React component code instead of `React.createElement(...)`
-- matching Storybook files for component ownership files under sibling `stories/` directories, with story support files limited to `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
+- matching Storybook files under `stories/` catalog groups in the same package and canonical component area, resolved from the exact typed meta and effective `component` binding; each group may contain `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
 - Storybook project support `.tsx` files under direct or nested `.storybook/` paths without treating them as component ownership files
 - matching test files for hook ownership files under sibling `__tests__/` directories, preserving the source basename and extension (`.ts` hooks require `.test.ts`; `.tsx` hooks require `.test.tsx`), with test support files limited to `helpers.ts[x]`, `fixtures.ts[x]`, or `fixtures/`
 - typed Storybook meta with package-relative titles, typed story exports, and required `play` functions
 - deterministic component test ids such as `ComponentName` and `ComponentName--child`, plus required root test ids for exported ownership components
-- canonical component ownership directories (`components/`, `templates/`, `layouts/`) as the only product `.tsx` surface allowed to render raw intrinsic JSX or pass direct `className` / `style` props, with file-role carve-outs for story/test support and Storybook `.storybook/` support files
+- canonical component ownership directories (`components/`, `templates/`, `layouts/`) as the product `.tsx` surface for raw intrinsic JSX and direct styling, including verified native Base UI primitives in runtime component implementations; raw DOM styling remains available to story/test support and Storybook `.storybook/` support files
 - strict boundaries between runtime code, test code, story code, and fixture code, including no imports from `__tests__/` into runtime code and no type imports from `constants.ts`
 - test-file discipline: no skipped or focused tests, no conditional logic, no `throw`, no module mocking, no test-file exports, and no inline fixture bindings
 - fixture discipline: canonical location, single entrypoint, constrained export naming and export types, no local type declarations, and canonical fixture import paths
@@ -150,6 +154,33 @@ component behavior:
 - the same stories also act as the human visual reference for the component
 - component structure and component verification stay in one place instead of drifting across separate ad-hoc test files
 
+Story groups describe the catalog, not the runtime folder structure. A story may live anywhere under a `stories/`
+tree in its owner's canonical component area, including a feature-local story tree. Its basename must match the
+resolved source file: a story for `Panel.Header` exported by `Panel.tsx` is still `Panel.stories.tsx`.
+
+The default-exported `const meta: Meta<typeof Component>` and its effective `component` property must resolve to
+the same source file **and symbol**, within the same nearest package and the same `components/`, `templates/`, or
+`layouts/` area. Imports, aliases, and re-exports establish that relationship; titles, group names, and same-named
+files do not. A story bound to one `Button.tsx` cannot cover another `Button.tsx` elsewhere in the area.
+
+Compound parts built with native `Object.assign(function Panel() { ... }, { Header })` resolve to their actual
+component bindings. The target must be a fresh function expression and sources must be stable data objects;
+source aliases, spreads, and later-source overrides are followed. Calls with modified built-ins or unsafe sources
+invalidate ownership through their source objects too, including aliases and nested spreads. Unknown factories, accessors, and prototype
+changes cannot certify compound ownership.
+
+Metadata and compound objects must remain statically resolvable. Visible mutations, calls that can mutate an object,
+and untracked escapes invalidate its initializer, including through aliases. Accessor-bearing objects are unknown.
+A later explicit `component` can override an unknown spread, but mutating the completed metadata still invalidates it.
+
+Ownership resolution uses a fresh module graph for each linted file. It reads counterpart files from disk and does
+not retain a process-wide ownership cache, so later lint passes can observe changed components, barrels, package
+boundaries, and resolver configuration. See the [ownership resolution contract](src/oxlint/README.md#resolving-story-ownership)
+for metadata spread precedence and unsupported bindings.
+
+Existing module paths are canonicalized across checkout symlinks. The current linted source remains authoritative
+for that physical file, including unsaved editor contents; new buffers without a disk file retain their absolute path.
+
 A `main.tsx` outside component ownership directories is a React client entrypoint when it has no exports or local
 component declarations and directly renders JSX through an imported `react-dom/client` `createRoot` call (chained
 or assigned to a local root). Such bootstraps do not require a component export, ownership directory, or story.
@@ -166,13 +197,16 @@ That means repositories can choose their feature boundaries, but component, stor
 fixed ownership locations:
 
 - component ownership `.tsx` files live under `components/`, `templates/`, or `layouts/`
-- nested subdirectories inside those component ownership areas are allowed but not required
+- nested subdirectories inside those component ownership areas are allowed but not required; canonical `stories/`,
+  `__tests__/`, and `hooks/` subtrees keep their own strict file-role rules
 - non-story, non-test `.tsx` files must not render raw intrinsic JSX such as `<div>`, `<span>`, or `<p>` unless the
   file lives inside one of those canonical component ownership areas
-- direct `className` and `style` props are only allowed on raw HTML elements in files inside those canonical component ownership areas. Custom/capitalized components must not accept `className` or `style` props in any file.
+- direct `className` and `style` props may style raw HTML elements in component ownership areas, and verified native
+  Base UI primitives in runtime component ownership files; imported styled product components remain protected
 - Storybook project support `.tsx` files under `.storybook/*.tsx` and `.storybook/**/*.tsx` are not component ownership
   files and may use local Storybook wrapper markup
-- story files live under sibling `stories/` directories, and that area is reserved for `*.stories.tsx`, `helpers.ts[x]`, `fixtures.ts[x]`, and `fixtures/`
+- story files live under `stories/` directories in the same package and canonical component area as their resolved
+  owner; each functional catalog group is reserved for `*.stories.tsx`, `helpers.ts[x]`, `fixtures.ts[x]`, and `fixtures/`
 - exported runtime hooks whose names start with `use` live under direct-child `hooks/` ownership files
 - test files live under sibling `__tests__/` directories, and that area is reserved for `*.test.ts[x]`, `helpers.ts[x]`, `fixtures.ts[x]`, and `fixtures/`
 - fixture entrypoints and fixture directories live under `stories/` or `__tests__/`
@@ -189,7 +223,9 @@ feature/
 ├── components/
 │   ├── AccountPanel.tsx
 │   └── stories/
-│       └── AccountPanel.stories.tsx
+│       └── accounts/
+│           ├── AccountPanel.stories.tsx
+│           └── helpers.ts
 └── hooks/
     ├── useAccount.ts
     └── __tests__/
@@ -204,10 +240,21 @@ import createOxlintConfig from "@alexgorbatchev/typescript-ai-policy/oxlint-conf
 export default createOxlintConfig();
 ```
 
-With that config in place, routes, pages, feature views, and other product `.tsx` files must render imported components
-instead of raw DOM tags, and they must not pass direct `className` or `style` props. Raw intrinsic JSX and direct
-styling props stay on raw HTML elements inside canonical component ownership areas, story/test support files, or Storybook `.storybook/`
-support files. Passing `className` or `style` props to custom components is banned everywhere.
+With that config in place, routes, pages, feature views, and other product `.tsx` files outside component ownership
+areas render imported components instead of raw DOM tags. They express supported visual choices through component-owned
+props instead of passing `className` or `style`. Story/test support and Storybook `.storybook/` support files retain
+their raw DOM styling allowance.
+
+Runtime component implementations may style the reviewed native primitives and parts exported by an installed
+`@base-ui/react` **1.9.0**. Recognition checks the actual import binding and reviewed public entrypoint, including
+named aliases and namespace imports. Other versions, unknown exports, local wrapper aliases, and product component
+re-exports do not qualify. Story, test, hook, and fixture files do not acquire this native-primitive allowance.
+
+When explicit styling is combined with Base UI's `render` prop, the visible render chain must end in an intrinsic
+element or another verified native primitive. Styled product components, callbacks, props-supplied targets, and
+unknown later spreads cannot establish that ownership. Composition without explicit styling remains available.
+The [styling rule](src/oxlint/README.md#alexgorbatchevno-classname-style-props-outside-component-globs) gives examples
+and the precise recognition boundary. No additional factory option or consumer allowlist is required.
 
 In a consuming repository, use `typescript-ai-policy check` through your package manager's local binary runner to
 execute the shared formatter and linter checks against that repo.

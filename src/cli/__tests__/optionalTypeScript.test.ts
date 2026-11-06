@@ -30,7 +30,16 @@ beforeAll(async () => {
     'import createOxfmtConfig from "@alexgorbatchev/typescript-ai-policy/oxfmt-config";\n\nexport default createOxfmtConfig();\n',
   );
 
-  for (const dependency of ["commander", "minimatch", "package-manager-detector", "oxfmt", "oxlint"]) {
+  for (const dependency of [
+    "commander",
+    "minimatch",
+    "package-manager-detector",
+    "oxc-parser",
+    "oxc-resolver",
+    "oxc-walker",
+    "oxfmt",
+    "oxlint",
+  ]) {
     await symlink(join(repositoryPath, "node_modules", dependency), join(consumerPath, "node_modules", dependency));
   }
   await mkdir(join(consumerPath, "node_modules/.bin"));
@@ -81,6 +90,41 @@ it("prints rule guidance without the optional TypeScript peer", () => {
   expect(result.exitCode).toBe(0);
   const guidance: unknown = JSON.parse(result.stdout);
   expect(guidance).toEqual(expect.arrayContaining([expect.objectContaining({ ruleName: expect.any(String) })]));
+});
+
+it("resolves grouped JSX story ownership using published files without either compiler peer", async () => {
+  const componentPath = join(consumerPath, "src/components/feature/Button.tsx");
+  const storyPath = join(consumerPath, "src/components/stories/catalog/Button.stories.tsx");
+  await mkdir(join(consumerPath, "src/components/feature"), { recursive: true });
+  await mkdir(join(consumerPath, "src/components/stories/catalog"), { recursive: true });
+  await Bun.write(componentPath, 'export function Button() { return <button data-testid="Button" />; }\n');
+  const story = [
+    'import type { Meta, StoryObj } from "@storybook/react";',
+    'import { Button } from "../../feature/Button.js";',
+    'const meta: Meta<typeof Button> = { component: Button, title: "consumer/components/catalog/Button" };',
+    "export default meta;",
+    "type Story = StoryObj<typeof Button>;",
+    'const Default: Story = { play: async () => { console.log("play"); } };',
+    "export { Default as Button };",
+  ].join("\n");
+  try {
+    await Bun.write(storyPath, story);
+    const require = createRequire(cliPath);
+    expect(() => require.resolve("typescript/package.json")).toThrow();
+    expect(() => require.resolve("@typescript/native/package.json")).toThrow();
+    const valid = Bun.spawnSync(["bun", "--bun", "oxlint", "--deny-warnings", "src"], { cwd: consumerPath });
+    expect({
+      exitCode: valid.exitCode,
+      stdout: valid.stdout.toString(),
+      stderr: valid.stderr.toString(),
+    }).toMatchObject({ exitCode: 0 });
+    await Bun.write(storyPath, story.replace("component: Button", "component: undefined"));
+    const invalid = Bun.spawnSync(["bun", "--bun", "oxlint", "--deny-warnings", "src"], { cwd: consumerPath });
+    expect(invalid.exitCode).toBe(1);
+    expect(invalid.stdout.toString() + invalid.stderr.toString()).toContain("story-file-location-convention");
+  } finally {
+    await rm(join(consumerPath, "src"), { recursive: true, force: true });
+  }
 });
 
 it("publishes FilenameStyle for typed consumers of the oxlint-config package entrypoint", async () => {

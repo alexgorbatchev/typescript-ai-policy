@@ -1,0 +1,6 @@
+import { expect, test } from "bun:test";
+import { useAccount } from "../useAccount";
+
+test("returns the missing account state", () => {
+  expect(useAccount()).toBeNull();
+});

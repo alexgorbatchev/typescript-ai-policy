@@ -7,6 +7,7 @@ import {
   isExemptSupportBasename,
   isInStoriesSubtree,
   isTestsDirectoryPath,
+  readPathFromDirectory,
   readPathFromFirstMatchingDirectory,
   readProgramReportNode,
 } from "./helpers.ts";
@@ -20,8 +21,8 @@ function isAllowedComponentDirectoryRelativePath(relativePath: string, filename:
     return true;
   }
 
-  if (isTestsDirectoryPath(relativePath)) {
-    return false;
+  if (isTestsDirectoryPath(relativePath) || readPathFromDirectory(relativePath, "hooks") !== null) {
+    return true;
   }
 
   if (COMPONENT_OWNERSHIP_SUPPORT_FILES.has(getBaseName(filename))) {
@@ -36,14 +37,14 @@ const componentDirectoryFileConventionRule: RuleModule = {
     type: "problem" as const,
     docs: {
       description:
-        'Restrict "components", "templates", and "layouts" directories to component ownership files, nested component-area subdirectories, support files (`constants.ts`, `index.ts`, `types.ts`), and sibling "stories/" trees',
+        'Restrict "components", "templates", and "layouts" to component ownership files, canonical support files, and nested story, test, or hook roles',
       guidance:
-        'Keep "components/", "templates/", and "layouts/" limited to component ".tsx" ownership files, "constants.ts", "index.ts", "types.ts", nested component subdirectories, and sibling "stories/" trees. Move tests and other file roles to their canonical directories.',
+        'Keep "components/", "templates/", and "layouts/" limited to component ".tsx" ownership files, "constants.ts", "index.ts", "types.ts", and nested component subdirectories. Place local stories, tests, and hooks in "stories/", "__tests__/", and "hooks/" subtrees, where their stricter role rules validate the contents.',
     },
     schema: [],
     messages: {
       invalidComponentDirectoryFile:
-        'Only component ".tsx" files, "constants.ts", "index.ts", "types.ts", nested component subdirectories, and "stories/**" are allowed in "components/", "templates/", and "layouts/".',
+        'Keep component ".tsx" files and "constants.ts", "index.ts", or "types.ts" in component areas. Place stories, tests, and hooks in their canonical "stories/", "__tests__/", or "hooks/" subtrees.',
     },
   },
   create(context) {

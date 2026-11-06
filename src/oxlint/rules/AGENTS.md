@@ -1,12 +1,12 @@
 ---
 created_on: 2026-11-05 03:25
-last_modified: 2026-11-05 03:25
+last_modified: 2026-11-05 14:36
 status: current
 ---
 
 # src/oxlint/rules
 
-Oxlint custom rule modules (`*.ts`), shared rule helpers (`helpers.ts`), and unit tests (`__tests__/*.test.ts`).
+Oxlint custom rule modules (`*.ts`), shared rule helpers, and unit tests (`__tests__/*.test.ts`).
 
 ## Commands
 
@@ -19,7 +19,7 @@ Run these commands from the repository root. Use the test recipe so its supervis
 
 - Format: Write rule modules in TypeScript `.ts` as ESLint 9+ compatible rules (`export default { meta, create(context) { ... } }`).
 - Naming & IDs: Kebab-case filenames matching plugin rule IDs (`no-*` for bans, `require-*` for required patterns, `*-convention` / `consistent-*` for structure).
-- Shared helpers: Place reusable AST/path helpers in `helpers.ts`.
+- Shared helpers: Keep small general AST/path helpers in `helpers.ts`. Put cohesive module-resolution, story-ownership, and primitive-provenance logic in dedicated shared modules; reuse them across related rules.
 - Steering diagnostics: Max 2 short, direct sentences. Do not include current token or identifier spelling in message text. Do not offer escape hatches or policy workarounds.
 - Guidance: Put detailed context in `meta.docs.guidance` (contributes to `just run guidance`).
 - Multi-line highlights: Override `loc` for large declarations to highlight only the first line.

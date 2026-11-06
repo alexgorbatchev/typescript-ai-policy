@@ -75,9 +75,9 @@ it("prints authoritative published rule guidance for every local rule", () => {
       "layouts/". Move files for other roles to their canonical locations.
     - **@alexgorbatchev/component-directory-file-convention**: Keep "components/",
       "templates/", and "layouts/" limited to component ".tsx" ownership files,
-      "constants.ts", "index.ts", "types.ts", nested component subdirectories, and
-      sibling "stories/" trees. Move tests and other file roles to their canonical
-      directories.
+      "constants.ts", "index.ts", "types.ts", and nested component subdirectories.
+      Place local stories, tests, and hooks in "stories/", "__tests__/", and
+      "hooks/" subtrees, where their stricter role rules validate the contents.
     - **@alexgorbatchev/component-file-contract**: Use component ownership files
       only for the component contract they own. Keep unrelated runtime exports out
       of the file.
@@ -86,20 +86,25 @@ it("prints authoritative published rule guidance for every local rule", () => {
       "ComponentName.tsx" by default, or "component-name.tsx" when the shared config
       uses \`FilenameStyle.DashCase\`. For multipart component families, use the
       shared family root name.
-    - **@alexgorbatchev/component-story-file-convention**: Place each component
-      story alongside its owned component in the canonical story role. Do not
-      scatter story files outside the expected component/story relationship.
-    - **@alexgorbatchev/stories-directory-file-convention**: Keep "stories/" limited
-      to "*.stories.tsx", "helpers.ts{,x}", "fixtures.ts{,x}", and "fixtures/". Move
-      runtime files and other support roles out of the story tree.
-    - **@alexgorbatchev/story-file-location-convention**: Keep \`*.stories.tsx\` files
-      under \`stories/\`. Move misplaced story files into the canonical story
-      directory.
+    - **@alexgorbatchev/component-story-file-convention**: Add a same-basename story
+      under a stories directory in the same component area and package. Its typed
+      meta and effective component property must resolve to this source; a story for
+      another same-named component does not satisfy ownership.
+    - **@alexgorbatchev/stories-directory-file-convention**: Organize "stories/"
+      into catalog groups containing "*.stories.tsx", group-local "helpers.ts{,x}",
+      and one "fixtures.ts{,x}" or "fixtures/" entrypoint. Fixture directories may
+      contain nested support files; move runtime modules and other support roles out
+      of the story tree.
+    - **@alexgorbatchev/story-file-location-convention**: Keep stories in a stories
+      directory within the component's owning area and package. Match the source
+      basename and resolve typed meta and its effective component property to the
+      same exported binding; catalog groups do not determine ownership.
     - **@alexgorbatchev/story-meta-type-annotation**: Bind Storybook meta to a typed
       top-level const and default-export that identifier. Do not type story meta
       with object assertions.
-    - **@alexgorbatchev/story-title-convention**: Set each story title from the
-      owned component path and role. Do not invent ad-hoc Storybook titles.
+    - **@alexgorbatchev/story-title-convention**: Set each story title from its
+      package-relative catalog path, preserving functional groups. Do not invent
+      ad-hoc Storybook titles.
     - **@alexgorbatchev/story-export-contract**: Keep story exports limited to the
       approved Storybook surface. Give each exported story a typed \`Story\` binding
       and a \`play\` function unless \`meta.tags\` or \`story.tags\` remove the built-in
@@ -157,10 +162,15 @@ it("prints authoritative published rule guidance for every local rule", () => {
     - **@alexgorbatchev/no-lint-disable-comments**: Fix policy violations in code
       instead of silencing the linter. Do not commit eslint or oxlint disable
       comments.
-    - **@alexgorbatchev/no-classname-style-props-outside-component-globs**: Keep
-      \`className\` and \`style\` props only on raw HTML elements inside component-owned
-      TSX files in canonical component areas. Custom/capitalized components must not
-      accept \`className\` or \`style\` props in any file.
+    - **@alexgorbatchev/no-classname-style-props-outside-component-globs**: Keep raw
+      DOM styling in canonical component areas, stories, and tests. Use \`className\`
+      and \`style\` on verified native @base-ui/react 1.9.0 primitives only in runtime
+      component ownership files. Resolve native imports through their actual lexical
+      bindings and installed public package entries; unsupported versions and
+      exports fail closed. Native render chains must statically reach raw DOM or
+      another verified native primitive, including const element aliases. Do not
+      style product components, unresolved render callbacks, or props-supplied
+      replacements. Raw DOM styling in stories and tests remains allowed.
     - **@alexgorbatchev/no-intrinsic-elements-outside-component-globs**: Keep raw
       intrinsic JSX only in component-owned TSX files inside "components/",
       "templates/", or "layouts/". Outside that surface, compose imported components

@@ -1,0 +1,5 @@
+import { Button } from "@base-ui/react";
+import { StyledButton } from "../product";
+export function NativeButton() {
+  return <Button className="button" data-testid="NativeButton" render={<StyledButton />} />;
+}

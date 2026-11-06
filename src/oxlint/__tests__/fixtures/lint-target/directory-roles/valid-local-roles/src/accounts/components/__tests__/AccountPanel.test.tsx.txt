@@ -1,0 +1,6 @@
+import { expect, test } from "bun:test";
+import { AccountPanel } from "../AccountPanel";
+
+test("renders the account panel root", () => {
+  expect(AccountPanel().type).toBe("section");
+});

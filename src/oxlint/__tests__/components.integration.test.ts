@@ -12,7 +12,7 @@ const FIXTURE_CONFIG_HEADER = {
 const CONSUMER_SETTINGS = {};
 
 describe("component lint-target integration", () => {
-  it("reports component ownership files that are missing a sibling story", () => {
+  it("reports component ownership files without a story bound to their source", () => {
     const lintTargetResult = runLintTargetFixtureWithConsumerConfig(
       "component-story-file-convention/missing-sibling-story-invalid",
       CONSUMER_SETTINGS,
@@ -25,7 +25,8 @@ describe("component lint-target integration", () => {
           column: 17,
           filePath: "src/accounts/components/Button.tsx",
           line: 1,
-          message: 'Create the matching ".stories.tsx" file under a sibling "stories/" directory.',
+          message:
+            'Create a matching ".stories.tsx" file whose typed meta and component property resolve to this component. Keep it under a stories directory in the same ownership area.',
           ruleId: "@alexgorbatchev(component-story-file-convention)",
           severity: "error",
         },
@@ -60,6 +61,14 @@ describe("component lint-target integration", () => {
           ruleId: "@alexgorbatchev(no-intrinsic-elements-outside-component-globs)",
           severity: "error",
         },
+        {
+          column: 1,
+          filePath: "src/accounts/stories/AccountPanel.stories.tsx",
+          line: 1,
+          message: 'Place story files under a "stories/" directory in the owning component area and package.',
+          ruleId: "@alexgorbatchev(story-file-location-convention)",
+          severity: "error",
+        },
       ],
       FIXTURE_CONFIG_HEADER,
     );
@@ -79,7 +88,7 @@ describe("component lint-target integration", () => {
           filePath: "src/accounts/components/utils.ts",
           line: 1,
           message:
-            'Only component ".tsx" files, "constants.ts", "index.ts", "types.ts", nested component subdirectories, and "stories/**" are allowed in "components/", "templates/", and "layouts/".',
+            'Keep component ".tsx" files and "constants.ts", "index.ts", or "types.ts" in component areas. Place stories, tests, and hooks in their canonical "stories/", "__tests__/", or "hooks/" subtrees.',
           ruleId: "@alexgorbatchev(component-directory-file-convention)",
           severity: "error",
         },

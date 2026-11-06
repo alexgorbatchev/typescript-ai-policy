@@ -13,7 +13,6 @@ import type {
 
 const NON_OWNERSHIP_SUPPORT_BASENAMES = new Set(["index", "types", "constants", "helpers"]);
 const STRICT_AREA_ALLOWED_SUPPORT_FILES = new Set(["index.ts", "types.ts"]);
-const PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH = new Map<string, string | null>();
 
 export const COMPONENT_OWNERSHIP_DIRECTORY_NAMES = ["components", "templates", "layouts"] as const;
 export const COMPONENT_OWNERSHIP_DIRECTORY_GLOBS = COMPONENT_OWNERSHIP_DIRECTORY_NAMES.map(
@@ -236,40 +235,11 @@ export function readRootPathBeforeDirectory(filename: string, expectedDirectoryN
 }
 
 export function readNearestPackageRootPath(filename: string): string | null {
-  const visitedDirectoryPaths: string[] = [];
   let currentDirectoryPath = resolve(dirname(filename));
-
   while (true) {
-    if (PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH.has(currentDirectoryPath)) {
-      const cachedPackageRootPath =
-        PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH.get(currentDirectoryPath) ?? null;
-
-      visitedDirectoryPaths.forEach((visitedDirectoryPath) => {
-        PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH.set(visitedDirectoryPath, cachedPackageRootPath);
-      });
-
-      return cachedPackageRootPath;
-    }
-
-    visitedDirectoryPaths.push(currentDirectoryPath);
-
-    if (existsSync(join(currentDirectoryPath, "package.json"))) {
-      visitedDirectoryPaths.forEach((visitedDirectoryPath) => {
-        PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH.set(visitedDirectoryPath, currentDirectoryPath);
-      });
-
-      return currentDirectoryPath;
-    }
-
+    if (existsSync(join(currentDirectoryPath, "package.json"))) return currentDirectoryPath;
     const parentDirectoryPath = dirname(currentDirectoryPath);
-    if (parentDirectoryPath === currentDirectoryPath) {
-      visitedDirectoryPaths.forEach((visitedDirectoryPath) => {
-        PACKAGE_ROOT_DIRECTORY_PATH_BY_SEARCH_DIRECTORY_PATH.set(visitedDirectoryPath, null);
-      });
-
-      return null;
-    }
-
+    if (parentDirectoryPath === currentDirectoryPath) return null;
     currentDirectoryPath = parentDirectoryPath;
   }
 }

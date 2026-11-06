@@ -1,14 +1,15 @@
 import { isInComponentOwnershipDirectory, isIntrinsicElementName, isStoryOrTestTsxFile } from "./helpers.ts";
+import { isRuntimeComponentOwnershipFile } from "./componentOwnership/componentOwnershipRole.ts";
+import { createNativeRenderMatcher } from "./nativeStyling/createNativeRenderMatcher.ts";
 import type { RuleModule } from "./types.ts";
 
 const noClassNameStylePropsOutsideComponentGlobsRuleModule: RuleModule = {
   meta: {
     type: "problem",
     docs: {
-      description:
-        "Ban className and style props outside canonical component areas in TSX files, and ban them on custom components everywhere",
+      description: "Allow styling on raw DOM and verified native primitives while banning product-component overrides",
       guidance:
-        "Keep `className` and `style` props only on raw HTML elements inside component-owned TSX files in canonical component areas. Custom/capitalized components must not accept `className` or `style` props in any file.",
+        "Keep raw DOM styling in canonical component areas, stories, and tests. Use `className` and `style` on verified native @base-ui/react 1.9.0 primitives only in runtime component ownership files. Resolve native imports through their actual lexical bindings and installed public package entries; unsupported versions and exports fail closed. Native render chains must statically reach raw DOM or another verified native primitive, including const element aliases. Do not style product components, unresolved render callbacks, or props-supplied replacements. Raw DOM styling in stories and tests remains allowed.",
     },
     schema: [],
     messages: {
@@ -19,6 +20,7 @@ const noClassNameStylePropsOutsideComponentGlobsRuleModule: RuleModule = {
     },
   },
   create(context) {
+    const isNativeRender = createNativeRenderMatcher(context);
     return {
       JSXAttribute(node) {
         if (node.name.type !== "JSXIdentifier") {
@@ -36,7 +38,7 @@ const noClassNameStylePropsOutsideComponentGlobsRuleModule: RuleModule = {
 
         const isCustomComponent = !isIntrinsicElementName(openingElement.name);
 
-        if (isCustomComponent) {
+        if (isCustomComponent && !isNativeRender(openingElement)) {
           context.report({
             node: node.name,
             messageId: "noClassNameOrStylePropOnCustomComponent",
@@ -44,11 +46,14 @@ const noClassNameStylePropsOutsideComponentGlobsRuleModule: RuleModule = {
           return;
         }
 
-        if (isStoryOrTestTsxFile(context.filename)) {
+        if (!isCustomComponent && isStoryOrTestTsxFile(context.filename)) {
           return;
         }
 
-        if (isInComponentOwnershipDirectory(context.filename)) {
+        const isOwnershipFile = isCustomComponent
+          ? isRuntimeComponentOwnershipFile(context.filename)
+          : isInComponentOwnershipDirectory(context.filename);
+        if (isOwnershipFile) {
           return;
         }
 

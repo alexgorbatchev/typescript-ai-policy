@@ -1,0 +1,1 @@
+export function StyledButton() { return <button data-testid="StyledButton" />; }

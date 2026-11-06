@@ -17,6 +17,16 @@ ruleTester.run(
   {
     valid: [
       {
+        code: `export function Helper() { return <div className="frame" />; }`,
+        filename: "src/components/helpers.tsx",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `export function useFrame() { return <div style={{ color: "red" }} />; }`,
+        filename: "src/components/hooks/useFrame.tsx",
+        languageOptions: languageOpts,
+      },
+      {
         code: `
           export function Button() {
             return <div className="button" style={{ color: "red" }} />;

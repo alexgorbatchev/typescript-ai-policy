@@ -1,0 +1,5 @@
+import { Button, Dialog } from "@base-ui/react";
+const anchor = <a href="/" />;
+export function NativeButton() {
+  return <Button className="button" data-testid="NativeButton" render={<Dialog.Trigger render={anchor} />} />;
+}

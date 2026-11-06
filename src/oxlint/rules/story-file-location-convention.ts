@@ -1,48 +1,32 @@
 import type { AstProgram, RuleModule } from "./types.ts";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
-import {
-  getStorySourceBaseName,
-  readPathFromStoriesDirectory,
-  readProgramReportNode,
-  readRootPathBeforeDirectory,
-} from "./helpers.ts";
-
-function readRequiredSiblingComponentFilePath(filename: string): string | null {
-  const storySourceBaseName = getStorySourceBaseName(filename);
-  if (!storySourceBaseName) {
-    return null;
-  }
-
-  const siblingDirectoryPath = readRootPathBeforeDirectory(filename, "stories");
-  if (siblingDirectoryPath === null) {
-    return null;
-  }
-
-  return join(siblingDirectoryPath, `${storySourceBaseName}.tsx`);
-}
+import { readProgramReportNode } from "./helpers.ts";
+import { readComponentOwnershipRole } from "./componentOwnership/componentOwnershipRole.ts";
+import { StoryOwnershipIndex } from "./componentOwnership/StoryOwnershipIndex.ts";
 
 const storyFileLocationConventionRule: RuleModule = {
   meta: {
     type: "problem" as const,
     docs: {
       description:
-        'Require Storybook files to live under a sibling "stories/" directory and match a sibling component ownership file basename',
+        'Require Storybook files under "stories/" to resolve their typed meta and component property to the same component ownership binding',
       guidance:
-        "Keep `*.stories.tsx` files under `stories/`. Move misplaced story files into the canonical story directory.",
+        "Keep stories in a stories directory within the component's owning area and package. Match the source basename and resolve typed meta and its effective component property to the same exported binding; catalog groups do not determine ownership.",
     },
     schema: [],
     messages: {
-      invalidStoryFileLocation: 'Place story files in a sibling "stories/" directory.',
-      missingSiblingComponent: "Rename or move this story to match a sibling component ownership file.",
+      invalidStoryFileLocation:
+        'Place story files under a "stories/" directory in the owning component area and package.',
+      missingSiblingComponent:
+        "Bind typed meta and its component property to the same runtime component in this ownership area. Match the story basename to that component's source file.",
     },
   },
   create(context) {
+    const ownership = new StoryOwnershipIndex(context.filename, context.sourceCode.text);
     return {
       Program(node: AstProgram) {
         const reportNode = readProgramReportNode(node);
-        const relativeStoryPath = readPathFromStoriesDirectory(context.filename);
-        if (relativeStoryPath === null) {
+        const role = readComponentOwnershipRole(context.filename);
+        if (!role?.rolePath.slice(0, -1).includes("stories")) {
           context.report({
             node: reportNode,
             messageId: "invalidStoryFileLocation",
@@ -50,8 +34,7 @@ const storyFileLocationConventionRule: RuleModule = {
           return;
         }
 
-        const requiredComponentFilePath = readRequiredSiblingComponentFilePath(context.filename);
-        if (requiredComponentFilePath === null || existsSync(requiredComponentFilePath)) {
+        if (ownership.readOwner(context.filename)) {
           return;
         }
 
