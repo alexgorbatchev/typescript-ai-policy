@@ -17,8 +17,8 @@ run-ai *args:
     AGENT=1 bun src/cli/cli.ts "$@"
 
 fmt:
-    just --fmt
     bun scripts/runCheckoutTool.ts oxfmt
+    just --fmt
 
 fmt-check:
     just --fmt --check

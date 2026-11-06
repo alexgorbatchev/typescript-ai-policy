@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { mkdtempDisposable } from "node:fs/promises";
+import { mkdtempDisposable, rm, symlink } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { runCheckoutTool } from "../runCheckoutTool.ts";
 import { runTestCommand } from "../runTestCommand.ts";
@@ -46,6 +46,27 @@ test.each(["tracked.ts", "new dir/new file.ts", "tracked-ignored.ts"])(
       },
     ]);
     expect(await snapshotFiles(fixture.path)).toEqual(before);
+  },
+  30000,
+);
+
+test.each(["fmt", "fix"])(
+  "real %s recipe rejects a symbolic-link justfile before formatting its external target",
+  async (recipe) => {
+    await using fixture = await createCheckoutFixture();
+    await using external = await mkdtempDisposable(join(TEST_ROOT, "external-justfile-"));
+    const justfile = join(fixture.path, "justfile");
+    const target = join(external.path, "foreign.just");
+    const before = (await Bun.file(justfile).text()).replace(/^    /gm, "  ");
+    await Bun.write(target, before);
+    await rm(justfile);
+    await symlink(target, justfile);
+
+    const result = await runCheckoutRecipe(fixture.path, recipe);
+
+    expect(result).toMatchObject({ exitCode: 1, timedOut: false });
+    expect(result.stderr).toContain("Symbolic links are unsupported in checkout checks: justfile");
+    expect(await Bun.file(target).text()).toBe(before);
   },
   30000,
 );
