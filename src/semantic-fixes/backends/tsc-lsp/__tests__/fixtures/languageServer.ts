@@ -7,6 +7,7 @@ const responseInput: unknown = await Bun.file("responses.json").json();
 assert(Array.isArray(responseInput));
 const responseMessages: unknown[] = responseInput;
 const responses: unknown[] = [];
+let initializeParams: unknown;
 let buffer = Buffer.alloc(0);
 
 function isMessage(value: unknown): value is Record<string, unknown> {
@@ -28,6 +29,7 @@ function handleMessage(message: Record<string, unknown>): void {
   }
   switch (message.method) {
     case "initialize": {
+      initializeParams = message.params;
       const probes = messages.map((probe: unknown) => {
         assert(typeof probe === "string");
         return frame(probe);
@@ -49,7 +51,9 @@ function handleMessage(message: Record<string, unknown>): void {
         const requestId = JSON.stringify(message.id);
         const frames = scriptedMessages.map((probe: unknown) => {
           assert(typeof probe === "string");
-          return frame(probe.replaceAll("$requestId", requestId));
+          return frame(
+            probe.replaceAll("$requestId", requestId).replaceAll("$initializeParams", JSON.stringify(initializeParams)),
+          );
         });
         process.stdout.write(Buffer.concat(frames));
         return;

@@ -51,6 +51,7 @@ type LspWorkspaceEditCapabilities = {
 };
 
 type LspWorkspaceCapabilities = {
+  configuration: boolean;
   workspaceEdit: LspWorkspaceEditCapabilities;
 };
 
@@ -105,6 +106,26 @@ function isJsonRpcError(value: unknown): value is JsonRpcError {
   }
 
   return typeof value.code === "number" && Number.isInteger(value.code) && typeof value.message === "string";
+}
+
+function readLspConfigurationResult(value: unknown): readonly null[] | undefined {
+  if (!isRecord(value) || !Array.isArray(value.items)) {
+    return undefined;
+  }
+
+  const items: readonly unknown[] = value.items;
+  if (
+    !items.every(
+      (item) =>
+        isRecord(item) &&
+        (!Object.hasOwn(item, "scopeUri") || typeof item.scopeUri === "string") &&
+        (!Object.hasOwn(item, "section") || typeof item.section === "string"),
+    )
+  ) {
+    return undefined;
+  }
+
+  return items.map(() => null);
 }
 
 function isJsonRpcIdentifier(value: unknown): value is JsonRpcIdentifier {
@@ -204,6 +225,7 @@ export class TscLspClient {
           },
         },
         workspace: {
+          configuration: true,
           workspaceEdit: {
             documentChanges: false,
           },
@@ -345,9 +367,19 @@ export class TscLspClient {
       case "client/registerCapability":
         this.writeResponse(message.id, null);
         return;
-      case "workspace/configuration":
-        this.writeResponse(message.id, []);
+      case "workspace/configuration": {
+        const result = readLspConfigurationResult(message.params);
+        if (!result) {
+          this.writeSerializedMessage({
+            error: { code: -32602, message: "Invalid params" },
+            id: message.id,
+            jsonrpc: "2.0",
+          });
+          return;
+        }
+        this.writeResponse(message.id, result);
         return;
+      }
       default:
         this.writeSerializedMessage({
           error: { code: -32601, message: "Method not found" },
