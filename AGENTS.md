@@ -26,7 +26,7 @@ Shared Oxfmt and Oxlint configurations plus local Oxlint JS plugin enforcing cod
 - Explicit types over anonymous inline shapes: Prefer inference first; ban use-site inline structural type annotations; require named declarations for explicit contracts; require owned placement for shared types.
 - Steering diagnostics: Rule messages must read as direct repair instructions for an LLM agent (what is wrong, repository contract violated, required shape, target file/directory location).
 - Whole-policy compatibility: Evaluate enabled policy surface as one coupled system. Report any mutually incompatible rule interactions immediately to the user.
-- Sibling registry sync: Keep sibling registry skills in `../ai-registry/skills/` (`storybook`, `react-development`, `react-testing`, `typescript-code-quality`, `typescript-testing`) synchronized whenever published guidance or contracts change.
+- Sibling registry sync: Resolve `ai-registry` beside this repository's primary checkout, including when working in a linked worktree. Keep its `skills/agent/programming/references/typescript/` files (`storybook.md`, `react-development.md`, `react-testing.md`, `conventions.md`, `testing.md`) synchronized whenever published guidance or contracts change.
 
 ## React Hook dependencies
 
