@@ -16,6 +16,9 @@ export async function runTestCommand(command: string[], options: ITestCommandOpt
   await mkdir(temporary);
   return await execa(file, args, {
     ...options,
+    // Retain owned pipes through worker shutdown while forwarding live output.
+    stdio: options.stdio === "inherit" ? ["inherit", ["pipe", "inherit"], ["pipe", "inherit"]] : options.stdio,
+    buffer: options.stdio !== "inherit",
     stripFinalNewline: false,
     reject: false,
     killDescendants: true,

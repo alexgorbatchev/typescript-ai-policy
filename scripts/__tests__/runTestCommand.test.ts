@@ -8,6 +8,7 @@ import {
   fixture_artifactWriter,
   fixture_completedTest,
   fixture_processTree,
+  fixture_streamedCommand,
   fixture_timedOutTest,
   fixture_waitingTest,
 } from "./fixtures";
@@ -173,6 +174,8 @@ test.each(["SIGINT", "SIGTERM"])(
       runner.kill(signal);
       const exitCodes: Record<string, number> = { SIGINT: 130, SIGTERM: 143 };
       expect(await runner).toMatchObject({ exitCode: exitCodes[signal], timedOut: false });
+      expect(await Bun.file(join(directory.path, "parent")).text()).toBe("terminated");
+      expect(await Bun.file(join(directory.path, "child")).text()).toBe("terminated");
       expect(await readdir(join(directory.path, "scratch"))).toEqual(["unowned.txt"]);
       for (const receipt of receipts.values()) {
         expect(() => process.kill(receipt.pid, 0)).toThrow();
@@ -185,6 +188,48 @@ test.each(["SIGINT", "SIGTERM"])(
   },
   10000,
 );
+
+test("inherited output streams before completion without buffering the result", async () => {
+  await using directory = await mkdtempDisposable(join(TEST_ROOT, "stream-regression-"));
+  await Bun.write(join(directory.path, "stream.ts"), fixture_streamedCommand);
+  const stdout = Promise.withResolvers<void>();
+  const stderr = Promise.withResolvers<void>();
+  await using server = Bun.serve({
+    hostname: "127.0.0.1",
+    port: 0,
+    async fetch() {
+      await Promise.all([stdout.promise, stderr.promise]);
+      return new Response("output received while worker was running");
+    },
+  });
+  const resultPath = join(directory.path, "result.json");
+  const runner = execa(process.execPath, [join(directory.path, "stream.ts")], {
+    env: {
+      TEST_RUNNER_URL: resolve("scripts/runTestCommand.ts"),
+      STREAM_GATE_URL: server.url.href,
+      STREAM_RESULT_PATH: resultPath,
+    },
+    timeout: 5000,
+    killDescendants: true,
+    reject: false,
+  });
+  runner.stdout.on("data", () => stdout.resolve());
+  runner.stderr.on("data", () => stderr.resolve());
+  try {
+    expect(await runner).toMatchObject({
+      exitCode: 0,
+      timedOut: false,
+      stdout: "worker stdout",
+      stderr: "worker stderr",
+    });
+    expect(await Bun.file(resultPath).json()).toEqual({ stdout: null, stderr: null });
+  } finally {
+    stdout.resolve();
+    stderr.resolve();
+    runner.kill();
+    await runner;
+  }
+});
 
 test.each([
   { outcome: "pass", exitCode: 0, source: fixture_completedTest },

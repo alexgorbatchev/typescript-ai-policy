@@ -1,0 +1,10 @@
+if (process.argv.at(-1) === "worker") {
+  console.log("worker stdout");
+  console.error("worker stderr");
+  await fetch(process.env.STREAM_GATE_URL);
+} else {
+  const { runTestCommand } = await import(process.env.TEST_RUNNER_URL);
+  const result = await runTestCommand([process.execPath, import.meta.path, "worker"], { stdio: "inherit" });
+  await Bun.write(process.env.STREAM_RESULT_PATH, JSON.stringify({ stdout: result.stdout ?? null, stderr: result.stderr ?? null }));
+  process.exitCode = result.exitCode ?? 1;
+}

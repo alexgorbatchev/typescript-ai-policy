@@ -1,3 +1,6 @@
+import { stat } from "node:fs/promises";
+import { setTimeout } from "node:timers/promises";
+
 const [role, readyUrl, evidence] = process.argv.slice(-3);
 const { createFixtureRepo } = await import(process.env.FIXTURE_FACTORY_URL);
 const fixture = createFixtureRepo("fixture-import-path-convention/nested-test-valid-relative-fixtures");
@@ -6,6 +9,9 @@ const child = role === "parent" ? Bun.spawn([process.execPath, import.meta.path,
 }) : undefined;
 const timer = setInterval(() => {}, 1000);
 process.once("SIGTERM", async () => {
+  // Model graceful teardown that still needs its owned files after the signal.
+  await setTimeout(150);
+  await stat(fixture.path);
   await Bun.write(evidence + "/" + role, "terminated");
   await child?.exited;
   clearInterval(timer);
