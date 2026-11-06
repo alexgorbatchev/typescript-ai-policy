@@ -1,0 +1,8 @@
+import { type SEVERITY as severity, COMMENT_KIND } from "./constants.js";
+
+export type ErrorSeverity = typeof severity.ERROR;
+
+export function readCommentKind(severity: string): string {
+  const kind: typeof severity = COMMENT_KIND.TODO;
+  return kind;
+}

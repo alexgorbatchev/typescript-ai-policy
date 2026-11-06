@@ -1,0 +1,5 @@
+import type { SomeTypeAlias, ISomeType, VALUE } from "./constants.js";
+
+export type Alias = SomeTypeAlias;
+export type InterfaceValue = ISomeType["value"];
+export type RuntimeValue = typeof VALUE;

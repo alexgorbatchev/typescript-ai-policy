@@ -45,8 +45,10 @@ it("prints authoritative published rule guidance for every local rule", () => {
       barrel. Re-export the owned public surface and do not place unrelated
       implementation logic there.
     - **@alexgorbatchev/no-type-imports-from-constants**: Keep \`constants.ts\`
-      value-only. Import types from their owning domain modules instead of routing
-      type imports through \`constants.ts\`.
+      value-only and import declared types from their owning type modules. Named
+      \`import type\` bindings from constants are allowed when every resolved
+      reference is a \`typeof\` value query; run TypeScript checking to verify the
+      imported export is a value.
     - **@alexgorbatchev/no-type-exports-from-constants**: Export values only from
       \`constants.ts\`. Move types and interfaces to owned type modules instead of
       leaking them through constants files.

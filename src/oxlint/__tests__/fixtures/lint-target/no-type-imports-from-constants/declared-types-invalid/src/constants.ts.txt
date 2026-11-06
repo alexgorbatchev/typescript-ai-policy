@@ -1,0 +1,5 @@
+export type SomeTypeAlias = string;
+export interface ISomeType {
+  value: string;
+}
+export const VALUE = "runtime";

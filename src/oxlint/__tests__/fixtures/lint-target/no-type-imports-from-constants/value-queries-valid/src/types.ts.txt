@@ -1,0 +1,8 @@
+import type { COMMENT_KIND, EXPORT_KIND, RULE_NAME, RULE_SEVERITY, SEVERITY, USAGE_SOURCE } from "./constants.js";
+
+export type Severity = (typeof SEVERITY)[keyof typeof SEVERITY];
+export type RuleSeverity = (typeof RULE_SEVERITY)[keyof typeof RULE_SEVERITY];
+export type RuleName = (typeof RULE_NAME)[keyof typeof RULE_NAME];
+export type CommentKind = (typeof COMMENT_KIND)[keyof typeof COMMENT_KIND];
+export type ExportKind = (typeof EXPORT_KIND)[keyof typeof EXPORT_KIND];
+export type UsageSource = (typeof USAGE_SOURCE)[keyof typeof USAGE_SOURCE];

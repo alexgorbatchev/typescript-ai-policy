@@ -118,7 +118,7 @@ At a glance, the shared policy enforces:
 - typed Storybook meta with package-relative titles, typed story exports, and required `play` functions
 - deterministic component test ids such as `ComponentName` and `ComponentName--child`, plus required root test ids for exported ownership components
 - canonical component ownership directories (`components/`, `templates/`, `layouts/`) as the only product `.tsx` surface allowed to render raw intrinsic JSX or pass direct `className` / `style` props, with file-role carve-outs for story/test support and Storybook `.storybook/` support files
-- strict boundaries between runtime code, test code, story code, and fixture code, including no imports from `__tests__/` into runtime code and no type imports from `constants.ts`
+- strict boundaries between runtime code, test code, story code, and fixture code, including no imports from `__tests__/` into runtime code and no imports of declared types from `constants.ts`; erased named imports used exclusively in `typeof` value queries are allowed
 - test-file discipline: no skipped or focused tests, no conditional logic, no `throw`, no module mocking, no test-file exports, and no inline fixture bindings
 - fixture discipline: canonical location, single entrypoint, constrained export naming and export types, no local type declarations, and canonical fixture import paths
 - explicit type/value ownership rules for files such as `index.ts`, `constants.ts`, and `types.ts`

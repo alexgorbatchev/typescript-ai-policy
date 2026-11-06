@@ -1,12 +1,28 @@
-import type { AstImportClause, AstImportDeclaration, RuleModule } from "./types.ts";
+import type { AstImportClause, AstImportDeclaration, AstNode, RuleContext, RuleModule } from "./types.ts";
 import { hasBaseName, readLiteralStringValue } from "./helpers.ts";
 
-function readImportBindingName(specifier: AstImportClause): string {
-  if (specifier.local?.type === "Identifier") {
-    return specifier.local.name;
+function isTypeQueryRoot(identifier: AstNode): boolean {
+  let node = identifier;
+  while (node.parent?.type === "TSQualifiedName" && node.parent.left === node) {
+    node = node.parent;
   }
 
-  return "this binding";
+  return node.parent?.type === "TSTypeQuery" && node.parent.exprName === node;
+}
+
+function isExclusiveValueQueryImport(specifier: AstImportClause, context: RuleContext): boolean {
+  if (specifier.type !== "ImportSpecifier") {
+    return false;
+  }
+
+  const [variable] = context.sourceCode.getDeclaredVariables(specifier);
+  return (
+    variable !== undefined &&
+    variable.defs.length === 1 &&
+    variable.defs[0]?.node === specifier &&
+    variable.references.length > 0 &&
+    variable.references.every((reference) => reference.resolved === variable && isTypeQueryRoot(reference.identifier))
+  );
 }
 
 function isTypeImportSpecifier(specifier: AstImportClause, importDeclaration: AstImportDeclaration): boolean {
@@ -19,16 +35,16 @@ const noTypeImportsFromConstantsRule: RuleModule = {
   meta: {
     type: "problem" as const,
     docs: {
-      description: 'Disallow type imports from modules whose filename is "constants"',
+      description: 'Allow erased named imports from "constants" only for exclusive typeof value queries',
       guidance:
-        "Keep `constants.ts` value-only. Import types from their owning domain modules instead of routing type imports through `constants.ts`.",
+        "Keep `constants.ts` value-only and import declared types from their owning type modules. Named `import type` bindings from constants are allowed when every resolved reference is a `typeof` value query; run TypeScript checking to verify the imported export is a value.",
     },
     schema: [],
     messages: {
       unexpectedInlineTypeImport:
-        'Do not reference "{{ importPath }}" through a type import. Move that exported type into a sibling "types.ts" module instead.',
+        "Use a named erased import for typeof queries of runtime constants. Import declared types from their owning types module.",
       unexpectedTypeImport:
-        'Do not import type "{{ name }}" from "{{ importPath }}". Move that exported type into a sibling "types.ts" module instead.',
+        "Import declared types from their owning types module. Use an erased named import from constants only when every reference is a typeof value query.",
     },
   },
   create(context) {
@@ -40,17 +56,13 @@ const noTypeImportsFromConstantsRule: RuleModule = {
         }
 
         node.specifiers.forEach((specifier) => {
-          if (!isTypeImportSpecifier(specifier, node)) {
+          if (!isTypeImportSpecifier(specifier, node) || isExclusiveValueQueryImport(specifier, context)) {
             return;
           }
 
           context.report({
             node: specifier,
             messageId: "unexpectedTypeImport",
-            data: {
-              name: readImportBindingName(specifier),
-              importPath,
-            },
           });
         });
       },
@@ -63,9 +75,6 @@ const noTypeImportsFromConstantsRule: RuleModule = {
         context.report({
           node,
           messageId: "unexpectedInlineTypeImport",
-          data: {
-            importPath,
-          },
         });
       },
     };

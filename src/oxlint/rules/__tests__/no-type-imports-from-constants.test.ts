@@ -17,6 +17,51 @@ noTypeImportsFromConstantsRuleTester.run(
     valid: [
       {
         code: `
+          import type { USER_STATUS } from "./constants.ts";
+          type UserStatus = (typeof USER_STATUS)[number];
+        `,
+        filename: "src/accounts/types.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+          import { type USER_STATUS, CURRENT_STATUS } from "./constants.ts";
+          type UserStatus = keyof typeof USER_STATUS;
+          console.log(CURRENT_STATUS);
+        `,
+        filename: "src/accounts/readStatus.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+          import type { USER_STATUS as status } from "./constants.ts";
+          type Status = typeof status;
+          type StatusKeys = keyof typeof status;
+        `,
+        filename: "src/accounts/types.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+          import type { settings } from "./constants.ts";
+          type Status = typeof settings.account.status;
+        `,
+        filename: "src/accounts/types.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
+          import type { USER_STATUS } from "./constants.ts";
+          type UserStatus = typeof USER_STATUS;
+          function readStatus(USER_STATUS: string) {
+            return USER_STATUS;
+          }
+        `,
+        filename: "src/accounts/readStatus.ts",
+        languageOptions: languageOpts,
+      },
+      {
+        code: `
           import { USER_STATUS } from "./constants";
         `,
         filename: "src/accounts/index.ts",
@@ -47,6 +92,73 @@ noTypeImportsFromConstantsRuleTester.run(
     invalid: [
       {
         code: `
+          import type { USER_STATUS } from "./constants.ts";
+          function readStatus(USER_STATUS: string) {
+            type LocalStatus = typeof USER_STATUS;
+            const status: LocalStatus = USER_STATUS;
+            return status;
+          }
+        `,
+        filename: "src/accounts/readStatus.ts",
+        languageOptions: languageOpts,
+        errors: [{ messageId: "unexpectedTypeImport" }],
+        output: null,
+      },
+      {
+        code: `
+          import type { Status } from "./constants.ts";
+          type Constructor = typeof Status;
+          type Instance = Status;
+        `,
+        filename: "src/accounts/types.ts",
+        languageOptions: languageOpts,
+        errors: [{ messageId: "unexpectedTypeImport" }],
+        output: null,
+      },
+      {
+        code: `
+          import type { USER_STATUS } from "./constants.ts";
+          type Status = typeof USER_STATUS;
+          export type { USER_STATUS };
+        `,
+        filename: "src/accounts/types.ts",
+        languageOptions: languageOpts,
+        errors: [{ messageId: "unexpectedTypeImport" }],
+        output: null,
+      },
+      {
+        code: `
+          import type Status from "./constants.ts";
+          type UserStatus = typeof Status;
+        `,
+        filename: "src/accounts/types.ts",
+        languageOptions: languageOpts,
+        errors: [{ messageId: "unexpectedTypeImport" }],
+        output: null,
+      },
+      {
+        code: `
+          import type * as constants from "./constants.ts";
+          type UserStatus = typeof constants.USER_STATUS;
+        `,
+        filename: "src/accounts/types.ts",
+        languageOptions: languageOpts,
+        errors: [{ messageId: "unexpectedTypeImport" }],
+        output: null,
+      },
+      {
+        code: `
+          import type { UserStatus } from "./constants.ts";
+          declare function readStatus<T>(): T;
+          type ReadStatus = typeof readStatus<UserStatus>;
+        `,
+        filename: "src/accounts/types.ts",
+        languageOptions: languageOpts,
+        errors: [{ messageId: "unexpectedTypeImport" }],
+        output: null,
+      },
+      {
+        code: `
           import type { UserStatus } from "./constants";
         `,
         filename: "src/accounts/index.ts",
@@ -54,10 +166,6 @@ noTypeImportsFromConstantsRuleTester.run(
         errors: [
           {
             messageId: "unexpectedTypeImport",
-            data: {
-              name: "UserStatus",
-              importPath: "./constants",
-            },
           },
         ],
         output: null,
@@ -71,10 +179,6 @@ noTypeImportsFromConstantsRuleTester.run(
         errors: [
           {
             messageId: "unexpectedTypeImport",
-            data: {
-              name: "UserStatus",
-              importPath: "./constants",
-            },
           },
         ],
         output: null,
@@ -88,10 +192,6 @@ noTypeImportsFromConstantsRuleTester.run(
         errors: [
           {
             messageId: "unexpectedTypeImport",
-            data: {
-              name: "UserStatusMap",
-              importPath: "../shared/constants.ts",
-            },
           },
         ],
         output: null,
@@ -105,10 +205,6 @@ noTypeImportsFromConstantsRuleTester.run(
         errors: [
           {
             messageId: "unexpectedTypeImport",
-            data: {
-              name: "userStatusTypes",
-              importPath: "@/accounts/constants",
-            },
           },
         ],
         output: null,
@@ -122,9 +218,6 @@ noTypeImportsFromConstantsRuleTester.run(
         errors: [
           {
             messageId: "unexpectedInlineTypeImport",
-            data: {
-              importPath: "./constants",
-            },
           },
         ],
         output: null,
@@ -138,9 +231,6 @@ noTypeImportsFromConstantsRuleTester.run(
         errors: [
           {
             messageId: "unexpectedInlineTypeImport",
-            data: {
-              importPath: "./constants",
-            },
           },
         ],
         output: null,

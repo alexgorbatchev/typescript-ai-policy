@@ -1,0 +1,4 @@
+import type { VALUE } from "./constants.js";
+
+export type Query = typeof VALUE;
+export type { VALUE };

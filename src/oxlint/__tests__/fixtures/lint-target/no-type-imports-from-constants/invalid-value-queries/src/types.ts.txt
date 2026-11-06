@@ -1,0 +1,4 @@
+import type { SomeTypeAlias, ISomeType } from "./constants.js";
+
+export type AliasQuery = typeof SomeTypeAlias;
+export type InterfaceQuery = typeof ISomeType;

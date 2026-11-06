@@ -513,16 +513,27 @@ export function UserService() {
 
 ### `@alexgorbatchev/no-type-imports-from-constants`
 
-**Policy:** Files may not import types from modules whose filename is `constants`. Runtime constants belong in
-`constants.ts`; exported types belong in `types.ts`.
+**Policy:** Runtime constants belong in `constants.ts`; declared types belong in their owning type modules. A named
+`import type` binding from a constants module is allowed when it has at least one reference and every resolved reference
+is the value root of a `typeof` query. This includes aliases, qualified property queries and inline `type` specifiers in
+mixed imports. Erased imports let `types.ts` derive unions from runtime constants without retaining a runtime dependency
+under `verbatimModuleSyntax`.
+
+The rule follows local binding identity, so a shadowed name cannot qualify an unused import. Actual type references,
+local type re-exports of the imported binding, unused type imports, default type imports, namespace type imports and
+inline `import()` type expressions remain rejected. Direct re-exports with a module source are outside this rule's
+import checks.
+
+This is binding and usage analysis, not cross-module type checking. Run TypeScript checking to verify that the queried
+export is a value: `typeof` applied to a type alias or interface remains a compiler error. The constants ownership rule
+also rejects declared type exports in linted `constants.ts` files.
 
 **Good**
 
 ```ts
-import { USER_STATUS } from "./constants";
-import type { UserStatus } from "./types";
+import type { USER_STATUS } from "./constants";
 
-type UserStatusModule = typeof import("./types");
+export type UserStatus = (typeof USER_STATUS)[keyof typeof USER_STATUS];
 ```
 
 **Bad**
@@ -530,6 +541,7 @@ type UserStatusModule = typeof import("./types");
 ```ts
 import type { UserStatus } from "./constants";
 
+type Status = UserStatus;
 type UserStatusModule = typeof import("./constants");
 ```
 
