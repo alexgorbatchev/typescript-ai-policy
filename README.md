@@ -175,7 +175,9 @@ fixed ownership locations:
 - story files live under sibling `stories/` directories, and that area is reserved for `*.stories.tsx`, `helpers.ts[x]`, `fixtures.ts[x]`, and `fixtures/`
 - exported runtime hooks whose names start with `use` live under direct-child `hooks/` ownership files
 - test files live under sibling `__tests__/` directories, and that area is reserved for `*.test.ts[x]`, `helpers.ts[x]`, `fixtures.ts[x]`, and `fixtures/`
-- fixture entrypoints and fixture directories live under `stories/` or `__tests__/`
+- fixture declarations live in `fixtures.ts[x]` under `stories/` or `__tests__/`; a directory entrypoint uses a pure `fixtures/index.ts` barrel with unaliased named exports or bare wildcards from its own nested `fixtures.ts[x]` declaration files
+- extensionless fixture barrel sources require a matching `.ts` or `.tsx` declaration file; directory barrel hops are not declaration ownership
+- direct relative fixture re-exports from runtime barrels, helpers, or another fixture area are rejected for both named and wildcard syntax; the check does not resolve package aliases or transitive module graphs
 - component filenames match the exported PascalCase component name in `ComponentName.tsx` form by default, or `component-name.tsx` when `filenameStyle: FilenameStyle.DashCase` is configured
 - hook filenames match the exported `use*` hook name in `useThing.ts[x]` form by default, or `use-thing.ts[x]` when `filenameStyle: FilenameStyle.DashCase` is configured
 - `index.ts` is reserved for pure barrel re-exports only

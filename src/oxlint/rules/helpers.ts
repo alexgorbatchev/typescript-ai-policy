@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, posix, relative, resolve } from "node:path";
 import type { NodeWithParent, TSESTree } from "@typescript-eslint/types";
 import type {
   AstClassLike,
@@ -360,6 +360,62 @@ export function isInFixturesArea(filename: string): boolean {
   const relativePath = readPathFromFixtureSupportDirectory(filename);
 
   return relativePath !== null && /(^|\/)fixtures(?:\/|\.tsx?$)/u.test(relativePath);
+}
+
+export function isFixturesBarrelFile(filename: string): boolean {
+  const relativePath = readPathFromFixtureSupportDirectory(posix.normalize(normalizeFilename(filename)));
+
+  return relativePath !== null && /(^|\/)fixtures\/index\.ts$/u.test(relativePath);
+}
+
+function readRelativeFixtureExportPath(exportPath: string, filename: string): string | null {
+  const normalizedExportPath = normalizeFilename(exportPath);
+  if (!/^\.\.?(?:\/|$)/u.test(normalizedExportPath)) {
+    return null;
+  }
+
+  return normalizeFilename(resolve(posix.dirname(normalizeFilename(filename)), normalizedExportPath));
+}
+
+export function isFixturesReExportPath(exportPath: string, filename: string): boolean {
+  const resolvedExportPath = readRelativeFixtureExportPath(exportPath, filename);
+  if (!resolvedExportPath) {
+    return false;
+  }
+
+  const relativePath = readPathFromFixtureSupportDirectory(resolvedExportPath);
+  return relativePath !== null && /(^|\/)fixtures(?:\/|\.tsx?$|$)/u.test(relativePath);
+}
+
+export function isAllowedFixturesReExportPath(exportPath: string, filename: string): boolean {
+  if (!isFixturesBarrelFile(filename) || normalizeFilename(exportPath).endsWith("/")) {
+    return false;
+  }
+
+  const resolvedExportPath = readRelativeFixtureExportPath(exportPath, filename);
+  if (!resolvedExportPath) {
+    return false;
+  }
+
+  const isDeclarationSource =
+    isFixturesFile(resolvedExportPath) ||
+    (isFixturesFile(`${resolvedExportPath}.ts`) &&
+      !statSync(resolvedExportPath, { throwIfNoEntry: false })?.isFile() &&
+      [".ts", ".tsx"].some((extension) =>
+        statSync(`${resolvedExportPath}${extension}`, { throwIfNoEntry: false })?.isFile(),
+      ));
+  if (!isDeclarationSource) {
+    return false;
+  }
+
+  const barrelDirectoryPath = posix.dirname(normalizeFilename(resolve(filename)));
+  const relativeExportPath = posix.relative(barrelDirectoryPath, resolvedExportPath);
+  return (
+    relativeExportPath.length > 0 &&
+    relativeExportPath !== ".." &&
+    !relativeExportPath.startsWith("../") &&
+    !posix.isAbsolute(relativeExportPath)
+  );
 }
 
 export function isTestFile(filename: string): boolean {

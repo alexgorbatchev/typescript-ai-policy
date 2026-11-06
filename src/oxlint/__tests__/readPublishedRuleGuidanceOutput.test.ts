@@ -141,9 +141,11 @@ it("prints authoritative published rule guidance for every local rule", () => {
     - **@alexgorbatchev/fixture-export-type-contract**: Give fixture exports
       explicit types that expose the intended contract. Do not rely on anonymous or
       implicit fixture shapes.
-    - **@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint**: Do not
-      export fixture helpers outside fixture entrypoints under \`__tests__\` or
-      \`stories\`. Move shared fixtures into the canonical fixture area.
+    - **@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint**: Declare
+      shared fixtures in \`fixtures.ts[x]\` under \`__tests__\` or \`stories\`. A
+      \`fixtures/index.ts\` barrel may re-export its own nested declaration files with
+      unchanged named exports or bare wildcards; keep fixture exports inside that
+      area.
     - **@alexgorbatchev/no-inline-fixture-bindings-in-tests**: Define shared
       fixtures in fixture support files and import them into tests or stories. Do
       not declare \`fixture_\` or \`factory_\` bindings inline inside consumer files.

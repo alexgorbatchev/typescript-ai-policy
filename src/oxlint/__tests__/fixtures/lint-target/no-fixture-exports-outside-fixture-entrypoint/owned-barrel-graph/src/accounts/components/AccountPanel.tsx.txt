@@ -1,0 +1,1 @@
+export function AccountPanel() { return <section data-testid="AccountPanel" />; }

@@ -20,7 +20,7 @@ describe("fixture lint-target integration", () => {
         filePath: "src/accounts/buildRows.ts",
         line: 1,
         message:
-          'Export fixture helpers only from nested "fixtures.ts" or "fixtures.tsx" entrypoints under "__tests__/" or "stories/".',
+          'Declare fixtures in nested "fixtures.ts[x]" files under "__tests__/" or "stories/". Re-export them only from their owning "fixtures/index.ts" barrel with unchanged names or a bare wildcard.',
         ruleId: "@alexgorbatchev(no-fixture-exports-outside-fixture-entrypoint)",
         severity: "error",
       },

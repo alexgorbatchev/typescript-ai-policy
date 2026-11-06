@@ -1291,15 +1291,30 @@ export function factory_userAccountRows() {
 
 ### `@alexgorbatchev/no-fixture-exports-outside-fixture-entrypoint`
 
-**Policy:** `fixture_*` and `factory_*` exports may exist only in nested `fixtures.ts` or `fixtures.tsx`
-entrypoints under `__tests__/` or `stories/`. This is a global leak-prevention rule: it intentionally runs outside
-those directories so misplaced fixture exports are rejected at the point they escape.
+**Policy:** Declare `fixture_*` constants and `factory_*` functions in nested `fixtures.ts` or `fixtures.tsx`
+files under `__tests__/` or `stories/`. The existing naming and imported concrete-type contracts apply to those
+declarations. A directory entrypoint uses `fixtures/index.ts` as a pure barrel: re-export its own declaration files,
+including nested `fixtures.ts[x]` files, with unchanged named exports or bare wildcards. An extensionless relative
+source requires an existing matching `.ts` or `.tsx` declaration file; it cannot target a directory barrel. Do not
+use aliases, default exports, namespace exports, type-only exports, local declarations,
+or `index.tsx` for the fixture barrel.
+
+This global rule rejects fixture-like named exports and direct relative named or wildcard exports from fixture
+modules or areas outside their owning barrel, including runtime barrels, helpers, arbitrary support files, and other
+fixture areas. Ordinary non-fixture barrels remain valid. Path checks normalize relative traversal and separators;
+they do not resolve package aliases, symbolic links, or transitive module graphs. Consumers still use named,
+unaliased imports from the canonical relative `fixtures` entrypoint in the same test or story tree.
 
 **Good**
 
 ```ts
-// src/accounts/__tests__/fixtures.ts
-export const fixture_userAccountRows = [{ id: "1" }];
+// src/accounts/__tests__/fixtures/fixtures.ts
+import type { UserRow } from "../../UserRow";
+export const fixture_userAccountRows: UserRow[] = [{ id: "1" }];
+
+// src/accounts/__tests__/fixtures/index.ts
+export { fixture_userAccountRows } from "./fixtures.ts";
+// A bare `export * from "./fixtures.ts"` has the same ownership boundary.
 ```
 
 **Bad**
@@ -1307,6 +1322,10 @@ export const fixture_userAccountRows = [{ id: "1" }];
 ```ts
 // src/accounts/buildRows.ts
 export const fixture_userAccountRows = [{ id: "1" }];
+
+// src/accounts/index.ts: neither export form may leak story fixtures.
+export { fixture_userAccountRows } from "./stories/fixtures";
+export * from "./stories/fixtures";
 ```
 
 ### `@alexgorbatchev/no-inline-fixture-bindings-in-tests`

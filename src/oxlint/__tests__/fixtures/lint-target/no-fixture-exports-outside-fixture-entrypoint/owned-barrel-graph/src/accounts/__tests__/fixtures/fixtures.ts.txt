@@ -1,0 +1,2 @@
+import type { Row } from "../../Row.ts";
+export const fixture_rows: Row[] = [];

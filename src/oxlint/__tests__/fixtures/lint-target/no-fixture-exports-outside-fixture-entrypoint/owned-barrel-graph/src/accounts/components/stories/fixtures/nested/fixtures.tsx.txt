@@ -1,0 +1,2 @@
+import type { Row } from "../../../../Row.ts";
+export function factory_rows(): Row[] { return []; }
